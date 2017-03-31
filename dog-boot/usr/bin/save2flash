@@ -1,0 +1,111 @@
+#!/bin/bash
+
+[ "`whoami`" != "root" ] && exec gsu ${0}
+
+SAVEFILE_MNT="/mnt/live/memory/images/changes-exit"
+
+	if [ -f /tmp/savefile.txt ] && [ -f /mnt/live/etc/nochanges ]; then
+ 
+  . /tmp/savefile.txt
+  if [ ! -d $SAVEFILE_MNT ] ; then
+    mkdir $SAVEFILE_MNT
+  fi
+  if [ ! -d $SAVEFILE ] ; then
+  mount $SAVEFILE $SAVEFILE_MNT
+  else
+  mount --bind $SAVEFILE $SAVEFILE_MNT
+  fi
+
+RAMUSED=$(du -cs --apparent-size /mnt/live/memory/changes | awk 'END {print $1}')
+
+SAVEFREE=$(df -k /mnt/live/memory/images/changes-exit | tr -s ' ' | cut -f 4 -d ' ' | tail -1)
+
+RAMUSEDMB=$(du -chs --apparent-size /mnt/live/memory/changes | awk 'END {print $1}')
+echo -e "Not saved yet session data:
+\e[0;32m$RAMUSEDMB\033[0m"
+
+SAVEFREEMB=$(df -m /mnt/live/memory/images/changes-exit | tr -s ' ' | cut -f 4 -d ' ' | tail -1)
+echo -e "Your save file/folder has free space:
+\e[0;34m$SAVEFREEMB MB\033[0m"
+
+   if [ "$SAVEFREE" -gt "$RAMUSED" ]; then
+
+msg=`echo -e "    Saving session...\n\nSession data to save: $RAMUSEDMB \nFree space in save storage: $SAVEFREEMB MB"`
+gtkdialog-splash -bg blue -fg yellow -text "$msg" -close never &
+
+snapmergepuppy 2> /dev/null
+rm -fr /mnt/live/memory/images/changes-exit/run
+rm -f /mnt/live/memory/images/changes-exit/etc/blkid-cache
+rm -f /mnt/live/memory/images/changes-exit/etc/udev/rules.d/70-persistent-net.rules
+
+#sleep 2
+#mount -no remount,add:1:/mnt/live/memory/images/changes-exit=ro+wh aufs /
+
+sleep 2
+# Remove files from /mnt/live/memory/changes/, but (for safety) exclude all files that are already existing at initial boot in /mnt/live/memory/changes/
+# Will give a 'fresh start' of memory used after running save2flash
+# as /mnt/live/memory/images/changes-exit is remounted, so 'takes over' as new overlay
+# If exists /tmp/skip_files:
+#[ -f /tmp/skip_files ] && find /mnt/live/memory/changes -mindepth 1 $(printf "! -wholename %s " $(cat /tmp/skip_files)) -exec rm -f {} \; 2> /dev/null
+kill $!
+   else
+echo -e "\e[0;31mNo save can be done, $SAVEFREEMB MB is not enough available space.\033[0m"
+Xdialog --title "Save Session" --msgbox " Sorry, not enough space available in savefile (or folder) \n No saving has been done \n Session data to copy: $RAMUSEDMB \n Available free space in save file/folder: $SAVEFREEMB MB  " 0 0
+exit 1
+   fi
+	else
+
+   if [ -f /mnt/live/tmp/changes-exit ]; then
+
+RAMUSED=$(du -cs --apparent-size /mnt/live/memory/changes | awk 'END {print $1}')
+
+SAVEFREE=$(df -k /mnt/live/memory/images/changes-exit | tr -s ' ' | cut -f 4 -d ' ' | tail -1)
+
+RAMUSEDMB=$(du -chs --apparent-size /mnt/live/memory/changes | awk 'END {print $1}')
+echo -e "Not saved yet session data:
+\e[0;32m$RAMUSEDMB\033[0m"
+
+SAVEFREEMB=$(df -m /mnt/live/memory/images/changes-exit | tr -s ' ' | cut -f 4 -d ' ' | tail -1)
+echo -e "Your save file/folder has free space:
+\e[0;34m$SAVEFREEMB MB\033[0m"
+
+   if [ "$SAVEFREE" -gt "$RAMUSED" ]; then
+msg=`echo -e "    Saving session...\n\nSession data to save: $RAMUSEDMB \nFree space in save storage: $SAVEFREEMB MB..."`
+gtkdialog-splash -bg blue -fg yellow -text "$msg" -close never &
+
+snapmergepuppy 2> /dev/null
+rm -fr /mnt/live/memory/images/changes-exit/run
+rm -f /mnt/live/memory/images/changes-exit/etc/blkid-cache
+rm -f /mnt/live/memory/images/changes-exit/etc/udev/rules.d/70-persistent-net.rules
+sleep 2
+#mount -no remount,add:1:/mnt/live/memory/images/changes-exit=ro+wh aufs /
+
+sleep 2
+# Remove files from /mnt/live/memory/changes/, but (for safety) exclude some directories
+# Will give almost a 'fresh start' of tmpfs RAM used after running save2flash
+# as /mnt/live/memory/images/changes-exit is remounted
+#find /mnt/live/memory/changes/ -mindepth 1 -maxdepth 1 -type d -not -name mnt -not -name tmp -not -name .wh..wh.orph -not -name .wh..wh.plnk -not -name .wh..wh.aufs -not -name live -not -name dev -not -name run -not -name etc -exec rm -fr {} \; 2> /dev/null
+#mkdir -p /mnt/live/memory/changes/{bin,opt,usr,var} 2> /dev/null
+
+
+#if [ ! -f /tmp/skip_files ]; then
+#find /mnt/live/memory/changes/ -mindepth 1 > /tmp/skip_files
+#fi
+
+# Remove files from /mnt/live/memory/changes/, but (for safety) exclude all files that are already existing at initial boot in /mnt/live/memory/changes/
+# Will give almost a 'fresh start' of tmpfs RAM used after running save2flash
+# as /mnt/live/memory/images/changes-exit is remounted, so 'takes over' as new overlay
+#[ -f /tmp/skip_files ] && find /mnt/live/memory/changes -mindepth 1 $(printf "! -wholename %s " $(cat /tmp/skip_files)) -exec rm -f {} \; 2> /dev/null
+kill $!
+   else
+echo -e "\e[0;31mNo save can be done, $SAVEFREEMB MB is not enough available space .\033[0m" 
+Xdialog --title "Save Session" --msgbox " Sorry, not enough space available in savefile (or folder) \n No saving has been done \n Session data to copy: $RAMUSEDMB \n Available free space in save file/folder: $SAVEFREEMB MB  " 0 0
+exit 1
+   fi
+
+   else
+Xdialog --title "Save2flash" --msgbox "  Not booted with the 'changes=EXIT:/' option " 0 0
+   fi
+	fi
+
+

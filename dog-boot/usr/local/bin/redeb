@@ -1,0 +1,42 @@
+#!/bin/bash
+[ "`whoami`" != "root" ] && exec gsu ${0} "$@"
+if [ -z "$1" ]; then
+echo "usage: redeb <package>.deb to extract  or: redeb <packagedirectory> to build"
+exit 0
+fi
+
+FILE=$1
+#echo "${FILE%/*}"
+#cd "${FILE%/*}"
+cd "`dirname $FILE`"
+#newdir=`echo "${FILE%%.*}"`
+
+ifdeb=`echo "${FILE##*.}"`
+
+if [ "$ifdeb" = "deb" ]; then
+
+newdir=`basename $1 .deb`
+echo $newdir
+mkdir $newdir
+dpkg-deb -x $FILE $newdir
+dpkg-deb -e $FILE $newdir/DEBIAN
+
+elif [[ $ifdeb != "deb" ]] && [ ! -d $FILE ]; then
+echo " The file you chose is not a .deb file. "
+yad --title="Extract deb" --center --text=" The file you chose is not a .deb file. " --button="gtk-close:0"
+exit
+
+else
+ 
+	if [ -d $FILE ]; then
+lsdeb=`ls $FILE/DEBIAN/control`
+	    if [ -z $lsdeb ]; then
+	  echo "No file DEBIAN/control found, cannot continue"
+	  yad --title="Build deb" --center --text=" No file DEBIAN/control found, cannot build package. " --button="gtk-close:0"
+	  exit
+	    else
+	  mkdir "$FILE"_newbuild
+	  dpkg-deb -b $FILE "$FILE"_newbuild/
+	    fi
+	fi
+fi

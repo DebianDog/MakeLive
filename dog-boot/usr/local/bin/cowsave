@@ -1,0 +1,63 @@
+#!/bin/bash
+
+test_persistence() {
+NUM=$(find /lib/live/mount/persistence -mindepth 1 -maxdepth 1 -not -empty -type d | wc -l)
+if [ "$NUM" -gt 2 ]; then
+    for i in $(ls -d /lib/live/mount/persistence/* 2> /dev/null); do
+    # Create a testfile on / and check if it exists also on the root of the directory '$i'
+    # If it does, then this should be the persistence directory
+    BASE=$(basename "$i") 
+    TESTFILE=$(mktemp --tmpdir=/)  
+    [ -n $i ] && [ -f $i/$TESTFILE ] && PERSIST="$i"
+    # Define the 'home' partition
+    EXCL=$(losetup -a | grep '/live/persistence' | grep -o "$BASE")
+    [ -n "$(ls -A $i 2> /dev/null)" ] && [ -z "$EXCL" ] && [ ! -f $i/$TESTFILE ] && MEDIUM="$i"
+    rm -f $TESTFILE
+    done
+else
+    for i in $(ls -d /lib/live/mount/persistence/* 2> /dev/null); do
+    # Create a testfile on / and check if it exists also on the root of the directory '$i'
+    # If it does, then this should be the persistence directory 
+    TESTFILE=$(mktemp --tmpdir=/)  
+    [ -n $i ] && [ -f $i/$TESTFILE ] && PERSIST="$i"
+    # The directory that does not contain the testfile should be the 'home' partition: 
+    [ -n "$(ls -A $i 2> /dev/null)" ] && [ ! -f $i/$TESTFILE ] && MEDIUM="$i"
+    rm -f $TESTFILE
+    done
+fi
+}
+
+ # First find out if live-boot v3 is in use, if not, we do nothing further
+if grep -q /lib/live/mount /proc/mounts; then # If true we are using live-boot v3 and go on
+
+test_persistence
+
+	if [ -n "$PERSIST" ]; then # If true, persistence is in use
+/usr/local/bin/remount-rw # This is probably needed only with 'unpatched' initrd.img
+# Check if /live/cow and /live/image are empty, if so remove them
+[ -z "$(ls -A /live/cow 2> /dev/null)" ] &&  rm -fr /live/cow
+[ -z "$(ls -A /live/image 2> /dev/null)" ] &&  rm -fr /live/image
+echo "Persistence used, creating symlink /live/cow to $PERSIST"
+echo "Creating symlink /live/image to $MEDIUM"
+[ -n "$PERSIST" ] && ln -snf "$PERSIST" /live/cow
+[ -n "$MEDIUM" ] && ln -snf "$MEDIUM" /live/image
+
+	else # no persistence in use
+/usr/local/bin/remount-rw # This is needed and works when no persistence in use
+# Check if /live/cow and /live/image are empty, if so remove them
+[ -z "$(ls -A /live/cow 2> /dev/null)" ] &&  rm -fr /live/cow
+[ -z "$(ls -A /live/image 2> /dev/null)" ] &&  rm -fr /live/image
+umount /lib/live/mount/overlay 2> /dev/null
+
+echo "No persistence used, creating symlink /live/cow to /lib/live/mount/overlay"
+ln -snf /lib/live/mount/overlay /live/cow
+   if grep -qv persistence /proc/cmdline; then
+echo "Creating symlink /live/image to /lib/live/mount/medium"
+ln -snf  /lib/live/mount/medium /live/image
+   else
+echo "Creating symlink /live/image to $MEDIUM"
+[ -n "$MEDIUM" ] && ln -snf "$MEDIUM" /live/image
+   fi
+	fi
+fi
+
