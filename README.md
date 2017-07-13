@@ -24,7 +24,7 @@ There are different ways to accomplish, but I recommend to follow below steps ex
 32 bit:    
 https://cdimage.debian.org/cdimage/archive/8.8.0/i386/iso-cd/debian-8.8.0-i386-netinst.iso    
 64 bit:  
-https://cdimage.debian.org/cdimage/archive/8.8.0/i386/iso-cd/debian-8.8.0-i386-netinst.iso    
+https://cdimage.debian.org/cdimage/archive/8.8.0/amd64/iso-cd/debian-8.8.0-amd64-netinst.iso    
 - Boot from it and choose "Graphical Install"  
 - Choose as desired: language, keymap, hostname (domain-name can be empty)  
 - Enter password for 'root' twice, choose name for normal user and enter password twice.  
