@@ -22,9 +22,9 @@ There are different ways to accomplish, but I recommend to follow below steps ex
 **2)** Install Debian (not all the steps are described detailled here, just some 'tricky' points)  
 - Download netinstall ISO and burn to CD (or to USB, guides can be found on the net howto do it)  
 32 bit:    
-http://cdimage.debian.org/debian-cd/current/i386/iso-cd/debian-8.7.1-i386-netinst.iso    
+https://cdimage.debian.org/cdimage/archive/8.8.0/i386/iso-cd/debian-8.8.0-i386-netinst.iso    
 64 bit:  
-http://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-8.7.1-amd64-netinst.iso    
+https://cdimage.debian.org/cdimage/archive/8.8.0/i386/iso-cd/debian-8.8.0-i386-netinst.iso    
 - Boot from it and choose "Graphical Install"  
 - Choose as desired: language, keymap, hostname (domain-name can be empty)  
 - Enter password for 'root' twice, choose name for normal user and enter password twice.  
