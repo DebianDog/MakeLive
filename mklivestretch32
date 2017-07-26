@@ -79,8 +79,8 @@ wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive
 
 echo -e "\e[0;36mExtracting...\033[0m"
 tar -zxvf dog-boot-stretch32.tar.gz
-tar -zxvf isodata.tar.gz
-tar -zxvf initrdport-stretch32.tar.gz
+tar -zxvf isodata-stretch.tar.gz
+tar -zxvf initrdport-stretch.tar.gz
 echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
 cp -af dog-boot/* chroot/
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
