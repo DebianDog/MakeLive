@@ -122,7 +122,7 @@ echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[
 sleep 3
 apt-get install --no-install-recommends --yes \
 live-boot isc-dhcp-client net-tools ifupdown wireless-tools sysvinit-core \
-xserver-xorg-core psmisc busybox sudo mawk xinit xterm openbox obconf leafpad pcmanfm lxpanel \
+xserver-xorg-core xserver-xorg psmisc busybox sudo mawk xinit xterm openbox obconf leafpad pcmanfm lxpanel \
 pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic
 echo -e "\e[0;36mDownload and install yad and gtkdialog\033[0m"
 sleep 3
