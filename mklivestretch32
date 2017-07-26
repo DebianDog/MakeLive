@@ -62,8 +62,8 @@ fi
 
 echo -e "\e[0;36mUpdate the package lists...\033[0m"
 apt-get update
-echo -e "\e[0;36mInstall some required packages, e.g. live-boot, squashfs-tools, etc...\033[0m"
-apt-get install wget xorriso isolinux live-boot xz-utils squashfs-tools dialog menu pv -y --force-yes
+echo -e "\e[0;36mInstall some required packages, e.g. debootstrap live-boot, squashfs-tools, etc...\033[0m"
+apt-get install debootstrap wget xorriso isolinux live-boot xz-utils squashfs-tools dialog menu pv -y --force-yes
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 
 echo -e "\e[0;36mSetting up debootstrap in stretch/chroot\033[0m"

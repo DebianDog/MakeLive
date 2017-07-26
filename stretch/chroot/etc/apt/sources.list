@@ -1,0 +1,12 @@
+#deb https://fredx181.github.io/StretchDog/i386/Packages/ ./
+
+deb http://ftp.de.debian.org/debian/ stretch main contrib non-free
+#deb-src http://ftp.de.debian.org/debian/ stretch main contrib non-free 
+
+deb http://security.debian.org/debian-security stretch/updates main contrib non-free
+deb-src http://security.debian.org/debian-security stretch/updates main contrib non-free
+
+#Debian Multimedia
+# deb ftp://ftp.deb-multimedia.org/ stretch main non-free 
+
+# deb http://snapshot.debian.org/archive/debian/20170615/ stretch main contrib non-free

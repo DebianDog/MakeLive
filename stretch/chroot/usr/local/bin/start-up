@@ -1,0 +1,6 @@
+#!/bin/bash
+sleep 5
+ls $HOME/Startup/* | while read J
+do
+   "$J" &
+done

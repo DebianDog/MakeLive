@@ -1,0 +1,22 @@
+[general]
+name = Faenza Spacefun
+author = 
+version = 1.0
+version_req = 0.1-beta2
+
+[window]
+decoration = false
+size = custom
+size.width = 840
+size.heigh = 200
+position = center
+background = image
+background.file = spacefun-bg.png
+
+[buttons]
+relief = none
+spacing = 10
+images = true
+images.directory = faenza
+labels = true
+labels.style = <span size="large" weight="bold" fgcolor="white">%s</span>

@@ -1,0 +1,22 @@
+[general]
+name = Foom Minimal
+author = 
+version = 1.0
+version_req = 0.1-beta2
+
+[window]
+decoration = false
+size = custom
+size.width = 1000
+size.heigh = 200
+position = center
+background = image_repeat
+background.file = minimal-bg.png
+
+[buttons]
+relief = none
+spacing = 10
+images = true
+images.directory = foom
+labels = true
+labels.style = <span size="large" weight="bold" fgcolor="white">%s</span>

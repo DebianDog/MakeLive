@@ -1,0 +1,24 @@
+[general]
+name = Foom
+author = 
+version = 1.0
+version_req = 0.1-beta2
+
+[window]
+decoration = false
+size = fullscreen
+size.width = 640
+size.heigh = 200
+position = center
+background = color
+background.transparency = true
+background.color = #000000
+background.alpha = 0.5
+
+[buttons]
+relief = none
+spacing = 10
+images = true
+images.directory = foom
+labels = true
+labels.style = <span size="large" weight="bold" fgcolor="white">%s</span>

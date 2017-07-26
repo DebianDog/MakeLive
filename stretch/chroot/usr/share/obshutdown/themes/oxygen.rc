@@ -1,0 +1,24 @@
+[general]
+name = Oxygen
+author = 
+version = 1.0
+version_req = 0.1-beta2
+
+[window]
+decoration = false
+size = custom
+size.width = 450
+size.heigh = 105
+position = center
+background = color
+background.transparency = true
+background.color = #26333B
+background.alpha = 0.5
+
+[buttons]
+relief = none
+spacing = 10
+images = true
+images.directory = oxygen
+labels = true
+labels.style = <span size="small" weight="bold" fgcolor="white">%s</span>

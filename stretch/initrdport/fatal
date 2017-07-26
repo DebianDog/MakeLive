@@ -1,0 +1,22 @@
+#!/bin/sh
+
+echo && echo
+echo "[1;36m""Porteus data not found.
+You are maybe using an unsupported boot device (eg. SCSI or old PCMCIA).
+Workaround: Copy the directory /$FOLDER from your boot device to an IDE/SATA
+disk, eg. to /mnt/sda1/porteus or C:\\porteus. Then try to boot again.
+Make sure that your boot parameters (cheatcodes) are correct.
+In case of booting over network - check if the driver for your NIC
+is included in initrd image.
+
+Press space/enter to unmount all devices and reboot or any other key
+to drop to the debug shell.""[0m"
+read -s -n1 ans
+if [ "$ans" = "" ]; then
+    umount /mnt/* 2>/dev/null
+    umount -a 2>/dev/null
+    reboot -f
+else
+    echo -en "[1;36m""Here is debugging shell for you, unmount all partitions and press Ctrl+Alt+Del\nwhen you finish.\n\nGood luck!\n""[0m"
+    sh
+fi
