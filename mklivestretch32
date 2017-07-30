@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install packages in chroot
-export INSTALL="live-boot net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic alsa-volumeicon alsa-utils"
+export INSTALL="live-boot net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils"
 export REMOVE_LOCALES=yes # set to no if you want to keep locale files in /usr/share/locale
 
 if [ "`whoami`" != "root" ]; then
@@ -147,6 +147,7 @@ echo -e "\e[0;36mAnd remove linux-headers and aufs-dkms + dependencies\033[0m"
 sleep 4
 rm -f /var/log/dpkg.log
 apt-get install --no-install-recommends --yes linux-headers-4.9.0-3-686-pae aufs-dkms
+sleep 2
 CRYPTSETUP=Y update-initramfs -t -c -k $(uname -r)
 PURGE=`cat /var/log/dpkg.log  |grep ' unpacked ' |cut -d\  -f5 |cut -d: -f1 |sort |uniq`
 echo -e "\e[0;36mRemoving linux-headers and aufs-dkms + dependencies...\033[0m"
