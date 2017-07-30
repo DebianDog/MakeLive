@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Install packages in chroot
+export INSTALL="live-boot net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic alsa-volumeicon alsa-utils"
+export REMOVE_LOCALES=yes # set to no if you want to keep locale files in /usr/share/locale
+
 if [ "`whoami`" != "root" ]; then
 echo "This script should be run as root"
 echo "Please run again, e.g. 'sudo ./mklivestretch32', exiting now..."
@@ -70,6 +74,7 @@ echo -e "\e[0;36mSetting up debootstrap in stretch/chroot\033[0m"
 echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p stretch/chroot && cd stretch &&
 debootstrap --arch=i386 --variant=minbase stretch chroot http://ftp.us.debian.org/debian/
+
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
 rm -f dog-boot-stretch32.tar.gz isodata-stretch.tar.gz initrdport-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch32.tar.gz
@@ -82,7 +87,7 @@ tar -zxvf dog-boot-stretch32.tar.gz
 tar -zxvf isodata-stretch.tar.gz
 tar -zxvf initrdport-stretch.tar.gz
 echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
-cp -af dog-boot/* chroot/
+cp -af dog-boot-stretch32/* chroot/
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 
 
@@ -100,7 +105,7 @@ export LC_ALL=C
 apt-get update
 echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
 sleep 1
-apt-get install dialog dbus wget --yes --force-yes
+apt-get install dialog dbus wget ca-certificates apt-transport-https --yes --force-yes
 dbus-uuidgen > /var/lib/dbus/machine-id
 echo "live" > /etc/hostname
 echo "127.0.0.1	 localhost" > /etc/hosts
@@ -109,7 +114,7 @@ echo "127.0.1.1	 live" >> /etc/hosts
 update-rc.d snapexit defaults
 
 # make /bin/sh symlink to bash instead of dash:
-echo -e "\e[0;36mmake /bin/sh symlink to bash instead of dash\033[0m"
+echo -e "\e[0;36mmake /bin/sh symlink to bash instead of default dash\033[0m"
 echo "dash dash/sh boolean false" | debconf-set-selections
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
@@ -120,18 +125,19 @@ apt-get install --yes linux-image-4.9.0-3-686-pae
 echo -e "\e[0;36mInstall more packages, e.g. required for network connection\033[0m"
 echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[0m"
 sleep 3
-apt-get install --no-install-recommends --yes \
-live-boot isc-dhcp-client net-tools ifupdown wireless-tools sysvinit-core \
-xserver-xorg-core xserver-xorg psmisc busybox sudo mawk xinit xterm openbox obconf leafpad pcmanfm lxpanel \
-pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic
+# Install packages, $INSTALL is defined on top of this script
+apt-get install --no-install-recommends --yes $INSTALL
 echo -e "\e[0;36mDownload and install yad and gtkdialog\033[0m"
 sleep 3
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.28.1_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.38.1_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/midori_0.5.2b_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.3-2_i386.deb
 dpkg -i *.deb
 apt-get -f install -y --force-yes
 
 rm -f *.deb
+ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
 
 # install linux-headers and aufs-dkms
 # and remove directly after initrd (aufs included) is created
@@ -187,6 +193,7 @@ zerosize() {
 
     chown -R man:root usr/share/man
 rm -f vmlinuz* initrd*
+[ "$REMOVE_LOCALES" = "yes" ] && rm -fr usr/share/locale/*
 echo
 echo -e "\e[0;36mPlease set the password for 'root'\033[0m" 
 passwd root
