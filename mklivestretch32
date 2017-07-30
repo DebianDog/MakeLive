@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install packages in chroot
-export INSTALL="live-boot net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils"
+export INSTALL="live-boot net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils"
 export REMOVE_LOCALES=yes # set to no if you want to keep locale files in /usr/share/locale
 
 if [ "`whoami`" != "root" ]; then
