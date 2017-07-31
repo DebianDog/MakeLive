@@ -1,8 +1,12 @@
 #!/bin/bash
 
+# fredx181 2017-07-31, 'MakeLive' for Stretch (Debian 9), creates a minimal live system
+# with aufs support and porteus-boot style included
+
 # Install packages in chroot
-export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori"
-export REMOVE_LOCALES=yes # set to no if you want to keep locale files in /usr/share/locale
+export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori"
+
+export REMOVE_LOCALES="yes" # set to no if you want to keep locale files in /usr/share/locale
 
 if [ "`whoami`" != "root" ]; then
 echo "This script should be run as root"
@@ -12,7 +16,7 @@ exit
 fi
 
 echo -e "\e[0;33mThis will create a 'Dog alike' Debian 9 (Stretch) live system\nPlease choose 32-bit or 64-bit\033[0m"
-read -p "Type 32 (for 32-bit (i386)) or 64 (for 64-bit (amd64)): " choice
+read -p "Type 32 or 64 : " choice
 
 case "$choice" in 
   32)
@@ -28,6 +32,7 @@ exit
 ;;
 esac
 
+# This makes sure when the script is interrupted, that all mount 'binds' will unmount 
 exitfn () {
     trap SIGINT              # Resore signal handling for SIGINT
 echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
@@ -137,10 +142,14 @@ echo "dash dash/sh boolean false" | debconf-set-selections
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
 if [ "$ARCH" = "i386" ]; then
+sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
+apt-get update
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-686-pae\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-686-pae
 elif [ "$ARCH" = "amd64" ]; then
+sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /etc/apt/sources.list
+apt-get update
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-amd64\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-amd64
@@ -211,32 +220,13 @@ rm -rf lib/keymaps
 rm -fr var/lib/aptitude/*
 ls var/lib/apt/lists | grep -v "lock" | grep -v "partial" | xargs -i rm var/lib/apt/lists/{} ;
 
-zerosize() {
-  find $* | while read file; do
-    echo -n "."
-    rm -f $file
-    touch $file
-  done
-}
-
-    zerosize usr/share/doc -type f -size +1c
-#    zerosize usr/share/doc -type l
-
-    zerosize usr/share/man -type f -size +1c
-#    zerosize usr/share/man -type l
-
-
-    zerosize usr/share/info -type f -size +1c
-#    zerosize usr/share/info -type l
-
-    zerosize usr/share/gnome/help -type f -size +1c
-#    zerosize usr/share/gnome/help -type l
-
-    zerosize usr/share/gtk-doc -type f -size +1c
-#    zerosize usr/share/gtk-doc -type l
-
+find usr/share/doc -type f -exec rm -f {} \;
+find usr/share/man -type f -exec rm -f {} \;
+find usr/share/gtk-doc -type f -exec rm -f {} \;
+find usr/share/info -type f -exec rm -f {} \;
     chown -R man:root usr/share/man
-rm -f vmlinuz* initrd*
+
+rm -f vmlinuz* initrd* # remove symlinks on /
 [ "$REMOVE_LOCALES" = "yes" ] && rm -fr usr/share/locale/*
 echo
 echo -e "\e[0;36mPlease set the password for 'root'\033[0m" 
