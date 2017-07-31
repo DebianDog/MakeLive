@@ -4,7 +4,7 @@
 # with aufs support and porteus-boot style included
 
 # Install packages in chroot
-export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils firefox-esr pup-volume-monitor"
+export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor"
 
 export REMOVE_LOCALES="yes" # set to no if you want to keep locale files in /usr/share/locale
 
@@ -205,8 +205,8 @@ PURGE=`cat /var/log/dpkg.log  |grep ' unpacked ' |cut -d\  -f5 |cut -d: -f1 |sor
 echo -e "\e[0;36mRemoving linux-headers and aufs-dkms + dependencies...\033[0m"
 sleep 3
 apt-get purge --yes --force-yes $PURGE
-apt-get purge --yes --force-yes libllvm3.9 # in case installed
-apt-get autoremove
+apt-get purge --yes libllvm3.9 # in case installed
+apt-get --yes --force-yes autoremove
 
 echo "Cleaning..."
 rm -f var/lib/alsa/asound.state
@@ -221,6 +221,7 @@ rm -rf lib/consolefonts
 rm -rf lib/keymaps
 rm -fr var/lib/aptitude/*
 ls var/lib/apt/lists | grep -v "lock" | grep -v "partial" | xargs -i rm var/lib/apt/lists/{} ;
+rm -f var/cache/debconf/*-old
 
 find usr/share/doc -type f -exec rm -f {} \;
 find usr/share/man -type f -exec rm -f {} \;
