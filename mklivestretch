@@ -1,0 +1,360 @@
+#!/bin/bash
+
+# Install packages in chroot
+export INSTALL="live-boot net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori"
+export REMOVE_LOCALES=yes # set to no if you want to keep locale files in /usr/share/locale
+
+if [ "`whoami`" != "root" ]; then
+echo "This script should be run as root"
+echo "Please run again, e.g. 'sudo ./mklivestretch', exiting now..."
+sleep 3
+exit
+fi
+
+echo -e "\e[0;33mThis will create a 'Dog alike' Debian 9 (Stretch) live system\nPlease choose 32-bit or 64-bit\033[0m"
+read -p "Type 32 (for i386 architecture) or 64 (for amd64 architecture)  : " choice
+
+case "$choice" in 
+  32)
+export ARCH="i386"
+;;
+  64)
+export ARCH="amd64"
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, exiting... \033[0m"
+sleep 3
+exit
+;;
+esac
+
+exitfn () {
+    trap SIGINT              # Resore signal handling for SIGINT
+echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
+#umount chroot/tmp
+umount chroot/proc 2> /dev/null
+umount chroot/dev/pts 2> /dev/null
+umount chroot/dev 2> /dev/null
+umount chroot/sys 2> /dev/null
+exit 0
+
+}
+export -f exitfn
+
+trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
+
+rm -rf stretch/initrdlive stretch/initrdport 
+
+if [ -d "stretch/chroot" ]; then 
+echo -e "\e[0;33m Working directory stretch/chroot already exists \n To be able to continue, it needs to be removed first\033[0m"
+read -p "Remove? (Y/n)?" choice
+
+case "$choice" in 
+  y|Y|"")
+
+echo -e "\e[0;36mUnmount mount binds and remove stretch/chroot...\033[0m"
+#umount chroot/tmp
+umount stretch/chroot/proc 2> /dev/null
+umount stretch/chroot/dev/pts 2> /dev/null
+umount stretch/chroot/dev 2> /dev/null
+umount stretch/chroot/sys 2> /dev/null
+rm -rf stretch/chroot
+   if [ "$?" -ne "0" ]; then
+   echo -e "\e[0;31mSomething went wrong, directory stretch/chroot cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
+   sleep 2
+   exit
+   fi
+
+echo -e "\e[0;32mOK, removed stretch/chroot and will continue...\033[0m"
+;;
+  n|N)
+echo "Exiting..."
+sleep 3
+exit 0
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, exiting....\033[0m"
+sleep 3
+exit 0
+;;
+esac
+fi
+
+echo -e "\e[0;36mUpdate the package lists...\033[0m"
+apt-get update
+echo -e "\e[0;36mInstall some required packages, e.g. debootstrap live-boot, squashfs-tools, etc...\033[0m"
+apt-get install debootstrap wget xorriso isolinux live-boot xz-utils squashfs-tools dialog menu pv -y --force-yes
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+
+echo -e "\e[0;36mSetting up debootstrap in stretch/chroot\033[0m"
+echo -e "\e[0;36mThis may take a while...\033[0m"
+mkdir -p stretch/chroot && cd stretch &&
+debootstrap --arch=$ARCH --variant=minbase stretch chroot http://ftp.us.debian.org/debian/
+
+echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
+rm -f dog-boot-stretch.tar.gz isodata-stretch.tar.gz initrdport-stretch.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-stretch.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-stretch.tar.gz
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+
+echo -e "\e[0;36mExtracting...\033[0m"
+tar -zxvf dog-boot-stretch.tar.gz
+tar -zxvf isodata-stretch.tar.gz
+tar -zxvf initrdport-stretch.tar.gz
+echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
+cp -af dog-boot-stretch/* chroot/
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+
+
+mount --bind /proc chroot/proc
+#mount --bind /tmp chroot/tmp
+mount --bind /dev chroot/dev
+mount --bind /sys chroot/sys
+mount -t devpts devpts chroot/dev/pts
+
+echo -en "`cat /etc/resolv.conf`" > chroot/etc/resolv.conf
+
+chroot_in () {
+export HOME=/root
+export LC_ALL=C
+apt-get update
+echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
+sleep 1
+apt-get install dialog dbus wget ca-certificates apt-transport-https --yes --force-yes
+dbus-uuidgen > /var/lib/dbus/machine-id
+echo "live" > /etc/hostname
+echo "127.0.0.1	 localhost" > /etc/hosts
+echo "127.0.1.1	 live" >> /etc/hosts
+
+update-rc.d snapexit defaults
+
+# make /bin/sh symlink to bash instead of dash:
+echo -e "\e[0;36mmake /bin/sh symlink to bash instead of default dash\033[0m"
+echo "dash dash/sh boolean false" | debconf-set-selections
+DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+if [ "$ARCH" = "i386" ]; then
+echo -e "\e[0;36mInstall linux-image-4.9.0-3-686-pae\033[0m"
+sleep 3
+apt-get install --yes linux-image-4.9.0-3-686-pae
+elif [ "$ARCH" = "amd64" ]; then
+echo -e "\e[0;36mInstall linux-image-4.9.0-3-amd64\033[0m"
+sleep 3
+apt-get install --yes linux-image-4.9.0-3-amd64
+fi
+
+echo -e "\e[0;36mInstall more packages, e.g. required for network connection\033[0m"
+echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[0m"
+sleep 3
+# Install packages, $INSTALL is defined on top of this script
+apt-get install --no-install-recommends --yes $INSTALL
+echo -e "\e[0;36mDownload and install yad and gtkdialog\033[0m"
+sleep 3
+if [ "$ARCH" = "i386" ]; then
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.38.1_i386.deb
+#wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/midori_0.5.2b_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-0_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_i386.deb
+
+elif [ "$ARCH" = "amd64" ]; then
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_amd64.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.31.2_amd64.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-0_amd64.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_amd64.deb
+fi
+dpkg -i *.deb
+apt-get -f install -y --force-yes
+rm -f *.deb
+
+ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
+
+# install linux-headers and aufs-dkms
+# and remove directly after initrd (aufs included) is created
+echo -e "\e[0;36mInstall linux-headers and aufs-dkms (for creating initrd with aufs support)\033[0m"
+echo -e "\e[0;36mAnd create new initrd for the live system (aufs included)\033[0m"
+echo -e "\e[0;36mAnd remove linux-headers and aufs-dkms + dependencies\033[0m"
+sleep 4
+rm -f /var/log/dpkg.log    # to start fresh
+
+if [ "$ARCH" = "i386" ]; then
+apt-get install --no-install-recommends --yes linux-headers-4.9.0-3-686-pae aufs-dkms
+sleep 2
+elif [ "$ARCH" = "amd64" ]; then
+apt-get install --no-install-recommends --yes linux-headers-4.9.0-3-amd64 aufs-dkms
+sleep 2
+fi
+
+# create new initrd with aufs included
+CRYPTSETUP=Y update-initramfs -t -c -k $(uname -r)
+ 
+# remove just installed linux-headers and aufs-dkms
+PURGE=`cat /var/log/dpkg.log  |grep ' unpacked ' |cut -d\  -f5 |cut -d: -f1 |sort |uniq`
+echo -e "\e[0;36mRemoving linux-headers and aufs-dkms + dependencies...\033[0m"
+sleep 3
+apt-get purge --yes --force-yes $PURGE
+
+echo "Cleaning..."
+rm -f var/lib/alsa/asound.state
+rm -f root/.bash_history
+rm -f root/.xsession-errors
+rm -rf root/.cache
+rm -rf root/.thumbnails
+rm -f etc/blkid-cache
+rm -f var/lib/dhcp/dhclient.eth0.leases
+rm -f var/lib/dhcpcd/*.lease
+rm -rf lib/consolefonts
+rm -rf lib/keymaps
+rm -fr var/lib/aptitude/*
+ls var/lib/apt/lists | grep -v "lock" | grep -v "partial" | xargs -i rm var/lib/apt/lists/{} ;
+
+zerosize() {
+  find $* | while read file; do
+    echo -n "."
+    rm -f $file
+    touch $file
+  done
+}
+
+    zerosize usr/share/doc -type f -size +1c
+#    zerosize usr/share/doc -type l
+
+    zerosize usr/share/man -type f -size +1c
+#    zerosize usr/share/man -type l
+
+
+    zerosize usr/share/info -type f -size +1c
+#    zerosize usr/share/info -type l
+
+    zerosize usr/share/gnome/help -type f -size +1c
+#    zerosize usr/share/gnome/help -type l
+
+    zerosize usr/share/gtk-doc -type f -size +1c
+#    zerosize usr/share/gtk-doc -type l
+
+    chown -R man:root usr/share/man
+rm -f vmlinuz* initrd*
+[ "$REMOVE_LOCALES" = "yes" ] && rm -fr usr/share/locale/*
+echo
+echo -e "\e[0;36mPlease set the password for 'root'\033[0m" 
+passwd root
+
+rm -f /var/lib/dbus/machine-id
+apt-get clean
+rm -rf /tmp/*
+rm /etc/resolv.conf
+mv -f /usr/local/XTerm /etc/X11/app-defaults/
+}
+export -f chroot_in
+
+chroot chroot /bin/bash -c chroot_in
+
+echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
+#umount chroot/tmp
+umount chroot/proc
+umount chroot/dev/pts
+umount chroot/dev
+umount chroot/sys
+
+echo -e "\e[0;36mStart extracting and creating new 'live' initrd files...\033[0m"
+sleep 3
+mkdir initrdlive
+mv -f chroot/boot/initrd.img-* initrdlive/initrd.img
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+cd initrdlive
+zcat initrd.img | cpio -i -d
+rm -f initrd.img
+echo -e "\e[0;36mCreating initrd.img, please wait...\033[0m"
+find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd.img
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+cd ..
+echo -e "\e[0;36mCopy kernel modules, contents of lib/modules, from extracted 'live-boot' initrd\n to extracted 'porteus-boot' initrd skeleton, initrdport/lib/modules/ ...\033[0m"
+sleep 2 
+echo
+cp -a initrdlive/lib/modules/* initrdport/lib/modules/
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mCreating initrd1.xz, please wait...\033[0m"
+cd initrdport
+find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd1.xz
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+cd ..
+echo -e "\e[0;36mCopy initrd.img, initrd1.xz to isodata/live...\033[0m"
+mv -f initrd.img isodata/live/
+mv -f initrd1.xz isodata/live/
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mMove vmlinuz, from chroot/boot/, to isodata/live/vmlinuz1 ...\033[0m"
+mv -f chroot/boot/vmlinuz-* isodata/live/vmlinuz1
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+
+
+rm -f chroot/boot/System.map*
+rm -f isodata/live/01-filesystem.squashfs 
+
+echo -e "\e[0;33mNow we will create compressed filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip, but xz takes much longer time to compress\033[0m"
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs
+;;
+  xz)
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, please try again, type: gzip or xz \033[0m"
+sleep 1
+TRYAGAIN=yes
+;;
+esac
+
+if [ "$TRYAGAIN" = "yes" ]; then
+### Second chance in case having made a typo
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs
+;;
+  xz)
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, exiting now... \033[0m"
+sleep 1
+
+exit 0
+;;
+esac
+fi
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+
+echo -e "\e[0;36mFinally creating ISO...\033[0m"
+NEWISO=$PWD/isodata
+LABEL=deblive
+NAME=../DebLive_Stretch-i386.iso
+
+cd "$NEWISO"
+
+xorriso -as mkisofs -r -J -joliet-long -l -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -partition_offset 16 -V "$LABEL" -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ${NAME} "$NEWISO"
+cd ..
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo
+echo -e "\e[0;32mFinished! If all went well, Deblive_Netinst.iso has been created. \nAlso the required files for a frugal install are in isodata 'live' folder \n\nHave a good day!\033[0m"
+echo
+
+exit 0
+
+
