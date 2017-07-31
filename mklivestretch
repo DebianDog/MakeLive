@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install packages in chroot
-export INSTALL="live-boot net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori"
+export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori"
 export REMOVE_LOCALES=yes # set to no if you want to keep locale files in /usr/share/locale
 
 if [ "`whoami`" != "root" ]; then
@@ -12,7 +12,7 @@ exit
 fi
 
 echo -e "\e[0;33mThis will create a 'Dog alike' Debian 9 (Stretch) live system\nPlease choose 32-bit or 64-bit\033[0m"
-read -p "Type 32 (for i386 architecture) or 64 (for amd64 architecture)  : " choice
+read -p "Type 32 (for 32-bit (i386)) or 64 (for 64-bit (amd64)): " choice
 
 case "$choice" in 
   32)
@@ -84,7 +84,7 @@ fi
 echo -e "\e[0;36mUpdate the package lists...\033[0m"
 apt-get update
 echo -e "\e[0;36mInstall some required packages, e.g. debootstrap live-boot, squashfs-tools, etc...\033[0m"
-apt-get install debootstrap wget xorriso isolinux live-boot xz-utils squashfs-tools dialog menu pv -y --force-yes
+apt-get install debootstrap wget xorriso isolinux xz-utils squashfs-tools -y --force-yes
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 
 echo -e "\e[0;36mSetting up debootstrap in stretch/chroot\033[0m"
@@ -122,11 +122,12 @@ export LC_ALL=C
 apt-get update
 echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
 sleep 1
-apt-get install dialog dbus wget ca-certificates apt-transport-https --yes --force-yes
+apt-get install dialog dbus ca-certificates apt-transport-https --yes --force-yes
 dbus-uuidgen > /var/lib/dbus/machine-id
 echo "live" > /etc/hostname
 echo "127.0.0.1	 localhost" > /etc/hosts
 echo "127.0.1.1	 live" >> /etc/hosts
+mkdir /live
 
 update-rc.d snapexit defaults
 
