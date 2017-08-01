@@ -2,7 +2,7 @@
 
 ### **How Create your own DebianLive from netinstall and also include porteus-boot style**   
 
-## **New!** Debian 9 (Stretch) based, much easier and faster using debootstrap, see:   
+### New! Debian 9 (Stretch) based, much easier and faster using debootstrap, see:   
 [Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'](README-Stretch.md)   
    
 **The following is for Debian 8 (Jessie) only**  

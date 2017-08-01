@@ -183,13 +183,13 @@ if [ "$ARCH" = "i386" ]; then
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.38.1_i386.deb
 #wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/midori_0.5.2b_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-0_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-1_i386.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_i386.deb
 
 elif [ "$ARCH" = "amd64" ]; then
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_amd64.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.31.2_amd64.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-0_amd64.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-1_amd64.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_amd64.deb
 fi
 dpkg -i *.deb

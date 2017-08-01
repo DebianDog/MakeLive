@@ -110,7 +110,7 @@ apt-get install --no-install-recommends --yes live-boot wget net-tools ifupdown 
 # Download and install yad, gtkdialog, obshutdown, peasywifi
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.38.1_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-0_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-1_i386.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_i386.deb
 dpkg -i *.deb
 apt-get -f install -y --force-yes
