@@ -11,7 +11,7 @@ Before running, make it executable:
 chmod +x mklive-stretch
 ```   
 
-The script does it all, except during run, 3 times user input is required:  
+The script does it **all**, except during run, 3 times user input is required:  
 Choose keyboard-layout, set the 'root' passwd and choose for gzip or xz compression   
 
 Run from a Debian based system 32-bit or 64-bit (will create i686 (32-bit) or x86_64 (64-bit) live system accordingly to the architecture of the OS you are running from)
@@ -30,13 +30,17 @@ Currenly the contents of the created live ISO are (preconfigured):
 Midori webbrowser, gparted, pcmanfm, leafpad, xterm, synaptic, peasywifi   
 
 The build process takes around 15-25 minutes, depending on your internet speed and computer power.   
-Size of the created ISO will be around 164 MB (with xz compressed filesystem.squashfs)      
+**Size of the created ISO will be around 164 MB (with xz compressed filesystem.squashfs)**      
 
-Below are very basically the commands used (for 32-bit) in the 'mklive-stretch' script   
-**Note that this is written down below just to give some insight in the build process**   
-The script does much more, e.g. error checking, cleaning, e.g. remove man and doc files, locales   
+The packages installed by the script can be easily changed, edit with texteditor.  
+See at the top the INSTALL= variable, add or remove as desired, e.g. change 'midori' to 'firefox-esr' and firefox will be included in the build.          
 
----
+**Below are very basically the commands used (for 32-bit) in the 'mklive-stretch' script**     
+**Note that this is written down below just to give some insight in how the build process is done**     
+The script does much more, e.g. error checking, cleaning, e.g. remove man and doc files, locales**      
+
+---    
+---   
 
 ### Install required packages for the build process   
 ```   
@@ -94,11 +98,16 @@ update-rc.d snapexit defaults
 # make /bin/sh symlink to bash instead of dash (required to make gtkdialog work):
 echo "dash dash/sh boolean false" | debconf-set-selections
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+# Activate dog repository and update package list
+sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
+apt-get update
+
 # Install kernel
 apt-get install --yes linux-image-4.9.0-3-686-pae
 # Install packages, for example:
-apt-get install --no-install-recommends --yes live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori
-# Download and install yad, gtkdialog, obshutdown
+apt-get install --no-install-recommends --yes live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor pm-utils
+# Download and install yad, gtkdialog, obshutdown, peasywifi
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.38.1_i386.deb
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-0_i386.deb
