@@ -4,7 +4,7 @@
 # with aufs support and porteus-boot style included
 
 # Install packages in chroot, MODIFY AS DESIRED
-export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor"
+export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor pm-utils"
 
 export REMOVE_LOCALES="yes" # SET to "no" if you want to keep locale files in /usr/share/locale
 
@@ -27,7 +27,7 @@ echo
 echo -e "\e[0;32mOK, running 64-bit OS, building live system for 64-bit: $(uname -m)\033[0m"
 export ARCH="amd64"
 fi
-echo
+echo -e "\e[0;32mBuilding will be done in: $PWD/stretch\033[0m"
 read -sp "Press ENTER to continue . . . "
 echo
 echo
@@ -66,11 +66,9 @@ export -f exitfn
 
 trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
 
-rm -rf stretch/initrdlive stretch/initrdport 
-
-if [ -d "stretch/chroot" ]; then 
-echo -e "\e[0;33m Working directory stretch/chroot already exists \n To be able to continue, it needs to be removed first\033[0m"
-read -p "Remove? (Enter=yes) (Y/n)?" choice
+if [ -d "stretch" ]; then 
+echo -e "\e[0;33m Working directory 'stretch' already exists \n To be able to continue, it needs to be removed first\n All files inside will be deleted \033[0m"
+read -p "Are you sure to delete directory stretch ? (Enter=yes) (Y/n)?" choice
 
 case "$choice" in 
   y|Y|"")
@@ -82,14 +80,15 @@ umount stretch/chroot/dev/pts 2> /dev/null
 umount stretch/chroot/dev 2> /dev/null
 umount stretch/chroot/sys 2> /dev/null
 rm -rf stretch/chroot
+rm -rf stretch
    if [ "$?" -ne "0" ]; then
-   echo -e "\e[0;31mSomething went wrong, directory stretch/chroot cannot be removed\033[0m"
+   echo -e "\e[0;31mSomething went wrong, directory stretch cannot be removed\033[0m"
    echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
    sleep 2
    exit
    fi
 
-echo -e "\e[0;32mOK, removed stretch/chroot and will continue...\033[0m"
+echo -e "\e[0;32mOK, removed directory stretch and will continue...\033[0m"
 ;;
   n|N)
 echo "Exiting..."
@@ -355,7 +354,7 @@ echo
 echo -e "\e[0;36mFinally creating ISO...\033[0m"
 NEWISO=$PWD/isodata
 LABEL=deblive
-NAME=../DebLive_Stretch-i386.iso
+NAME=../DebLive_Stretch-$ARCH.iso
 
 cd "$NEWISO"
 
