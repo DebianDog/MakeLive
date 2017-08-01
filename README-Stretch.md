@@ -5,7 +5,7 @@
 It's required to have at least 2 GB free space and to run the script on a Linux filesystem, e.g. ext4   
 
 Similar to [This](README.md) (for Jessie) but this is **way** better, easier, faster!  
-Just download and run [This script](https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/mklive-stretch)  (right-click > Save link as)   
+Just download and run [This mklive-stretch script](https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/mklive-stretch) (right-click > Save link as)   
 Before running, make it executable:
 ```   
 chmod +x mklive-stretch
@@ -21,7 +21,7 @@ Run from a Debian based system 32-bit or 64-bit (will create i686 (32-bit) or x8
 ```   
 
 #### If all went well...
-#### In folder stretch DebLive_Stretch-<arch>.iso is created and also the required files for a frugal install are in stretch/isodata/live folder   
+#### In folder stretch DebLive_Stretch-yourarch.iso is created and also the required files for a frugal install are in stretch/isodata/live folder   
 
 Currenly the contents of the created live ISO are (preconfigured):   
 (but this might well be a work in progress, e.g. modify the script to have more choice of window-managers, applications, add more 'DebianDog goodies', right-click actions etc...)      
@@ -58,6 +58,7 @@ wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive
 tar -zxvf dog-boot-stretch.tar.gz
 tar -zxvf isodata-stretch.tar.gz
 tar -zxvf initrdport-stretch.tar.gz
+# copy contents of 'dog-boot-stretch' folder to chroot
 cp -af dog-boot-stretch/* chroot/
 ```   
 ### Mount bind /proc /dev and /sys in chroot   
@@ -116,7 +117,7 @@ CRYPTSETUP=Y update-initramfs -t -c -k $(uname -r)
 # remove just installed linux-headers and aufs-dkms
 PURGE=`cat /var/log/dpkg.log  |grep ' unpacked ' |cut -d\  -f5 |cut -d: -f1 |sort |uniq`
 echo -e "\e[0;36mRemoving linux-headers and aufs-dkms + dependencies...\033[0m"
-sleep 3
+sleep 2
 apt-get purge --yes --force-yes $PURGE
 rm -f vmlinuz* initrd* # remove symlinks on /
 # set the password for 'root'
@@ -144,22 +145,22 @@ umount chroot/sys
 mkdir initrdlive
 mv -f chroot/boot/initrd.img-* initrdlive/initrd.img
 cd initrdlive
+# extract initrd.img
 zcat initrd.img | cpio -i -d
 rm -f initrd.img
+# create new (xz compressed) initrd.img 
 find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd.img
 cd ..
 # Copy kernel modules, contents of lib/modules, from extracted 'live-boot' initrd
-# to extracted 'porteus-boot' initrd skeleton, initrdport/lib/modules/ 
-sleep 2 
-echo
+# to extracted 'porteus-boot' initrd skeleton: initrdport/lib/modules/  
 cp -a initrdlive/lib/modules/* initrdport/lib/modules/
 # Creating initrd1.xz
 cd initrdport
 find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd1.xz
 cd ..
-mv -f initrd.img isodata/live/
+mv -f initrd.img isodata/live/ # move to isodata/live folder
 mv -f initrd1.xz isodata/live/
-echo -e "\e[0;36mMove vmlinuz, from chroot/boot/, to isodata/live/vmlinuz1 ...\033[0m"
+# Move vmlinuz-*, from chroot/boot/, to isodata/live/vmlinuz1
 mv -f chroot/boot/vmlinuz-* isodata/live/vmlinuz1
 
 ```   
