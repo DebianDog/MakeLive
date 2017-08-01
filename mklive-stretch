@@ -3,34 +3,44 @@
 # fredx181 2017-07-31, 'MakeLive' for Stretch (Debian 9), creates a minimal live system
 # with aufs support and porteus-boot style included
 
-# Install packages in chroot
+# Install packages in chroot, MODIFY AS DESIRED
 export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor"
 
-export REMOVE_LOCALES="yes" # set to no if you want to keep locale files in /usr/share/locale
+export REMOVE_LOCALES="yes" # SET to "no" if you want to keep locale files in /usr/share/locale
 
 if [ "`whoami`" != "root" ]; then
 echo "This script should be run as root"
-echo "Please run again, e.g. 'sudo ./mklivestretch', exiting now..."
+echo "Please run again, e.g. 'sudo ./mklive-stretch', exiting now..."
 sleep 3
 exit
 fi
 
-echo -e "\e[0;33mThis will create a 'Dog alike' Debian 9 (Stretch) live system\nPlease choose 32-bit or 64-bit\033[0m"
-read -p "Type 32 or 64 : " choice
+echo
+echo -e "\e[0;33mCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog'\nWith aufs support and porteus-boot style included\n\nIt's required to have at least 2 GB free space\nand to run this script on a Linux filesystem, e.g. ext4\033[0m"
 
-case "$choice" in 
-  32)
+if [ "$(uname -m)" = "i686" ]; then
+echo
+echo -e "\e[0;32mOK, running 32-bit OS, building live system for 32-bit: $(uname -m)\033[0m"
 export ARCH="i386"
-;;
-  64)
+elif [ "$(uname -m)" = "x86_64" ]; then
+echo
+echo -e "\e[0;32mOK, running 64-bit OS, building live system for 64-bit: $(uname -m)\033[0m"
 export ARCH="amd64"
-;;
-*)
-echo -e "\e[0;31mNot a valid choice, exiting... \033[0m"
+fi
+echo
+read -sp "Press ENTER to continue . . . "
+echo
+echo
+
+echo -e "\e[0;36mChecking network connection...\033[0m"
+if ping -c1 google.com 2>&1 | grep unknown; then 
+echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"
 sleep 3
 exit
-;;
-esac
+else
+echo -e "\e[0;32mOK\033[0m"
+sleep 1
+fi
 
 # This makes sure when the script is interrupted, that all mount 'binds' will unmount 
 exitfn () {
@@ -41,8 +51,16 @@ umount chroot/proc 2> /dev/null
 umount chroot/dev/pts 2> /dev/null
 umount chroot/dev 2> /dev/null
 umount chroot/sys 2> /dev/null
+sleep 2
+rm -rf chroot
+echo -e "\e[0;36mRemoved chroot\033[0m"
+   if [ "$?" -ne "0" ]; then
+   echo -e "\e[0;31mSomething went wrong, directory chroot cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
+   sleep 2
+   exit
+   fi
 exit 0
-
 }
 export -f exitfn
 
@@ -52,7 +70,7 @@ rm -rf stretch/initrdlive stretch/initrdport
 
 if [ -d "stretch/chroot" ]; then 
 echo -e "\e[0;33m Working directory stretch/chroot already exists \n To be able to continue, it needs to be removed first\033[0m"
-read -p "Remove? (Y/n)?" choice
+read -p "Remove? (Enter=yes) (Y/n)?" choice
 
 case "$choice" in 
   y|Y|"")
@@ -88,7 +106,7 @@ fi
 
 echo -e "\e[0;36mUpdate the package lists...\033[0m"
 apt-get update
-echo -e "\e[0;36mInstall some required packages, e.g. debootstrap live-boot, squashfs-tools, etc...\033[0m"
+echo -e "\e[0;36mInstall some required packages, e.g. debootstrap, squashfs-tools, etc...\033[0m"
 apt-get install debootstrap wget xorriso isolinux xz-utils squashfs-tools -y --force-yes
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 
