@@ -1,5 +1,7 @@
 
-## Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'      
+## Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'
+
+[Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)           
 
 #### With aufs support and porteus-boot style included   
 It's required to have at least 2 GB free space and to run the script on a Linux filesystem, e.g. ext4   
