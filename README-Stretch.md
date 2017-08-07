@@ -42,11 +42,12 @@ The build process takes around 12-20 minutes, depending on your internet speed a
 **Size of the created ISO will be around 161 MB (with xz compressed filesystem.squashfs)**      
 
 The packages installed by the script can be easily changed, edit with texteditor.  
-See at the top the INSTALL= variable, add or remove as desired, e.g. change 'midori' to 'firefox-esr' and firefox will be included in the build.          
+See at the top e.g. the BASE_INSTALL= variable, add or remove as desired.              
 
 **Below are very basically the commands used (for 32-bit) in the 'mklive-stretch' script**     
 **Note that this is written down below just to give some insight in how the build process is done**     
-The script does much more, e.g. error checking, cleaning, e.g. remove man and doc files, locales**      
+The script does much more, e.g. error checking, cleaning, e.g. remove man and doc files, locales**
+**Update 2017-08-07: the script is now even more modified, below just for reference**           
 
 ---    
 ---   
@@ -115,15 +116,8 @@ apt-get update
 # Install kernel
 apt-get install --yes linux-image-4.9.0-3-686-pae
 # Install packages, for example:
-apt-get install --no-install-recommends --yes live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor pm-utils
-# Download and install yad, gtkdialog, obshutdown, peasywifi
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.38.1_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-1_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_i386.deb
-dpkg -i *.deb
-apt-get -f install -y --force-yes
-rm -f *.deb
+apt-get install --no-install-recommends --yes live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor pm-utils yad gtkdialog obshutdown peasywifi
+
 # Instead of the 'cryptic' network interface names, make it traditional, e.g. ethernet is eth0
 ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
 # install linux-headers and aufs-dkms
