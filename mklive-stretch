@@ -2,11 +2,36 @@
 
 # fredx181 2017-07-31, 'MakeLive' for Stretch (Debian 9), creates a minimal live system
 # with aufs support and porteus-boot style included
+# 2017-08-05, fixed support for Jessie host (previously worked only from Stretch)
+# and removed install of linux-headers and aufs-dkms (build time gets shorter)
+# instead copy aufs.ko for kernel 4.9.3 to /lib/modules/<kernel_version>/kernel/fs/aufs
+# and execute "depmod <kernel_version>" and create new initrd.img-<kernel_version> in /boot
 
-# Install packages in chroot, MODIFY AS DESIRED
-export INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm openbox obconf menu leafpad pcmanfm lxpanel pciutils usbutils gparted file rsync dosfstools parted nano pv synaptic volumeicon-alsa alsa-utils midori pup-volume-monitor pm-utils"
+##### Install packages in chroot, MODIFY BELOW AS DESIRED #####
 
+export BASE_INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools"
+
+export BASE_APPS_INSTALL="openbox obconf menu leafpad pcmanfm lxpanel gparted parted pv synaptic volumeicon-alsa alsa-utils viewnior firefox-esr=24.8.0esr-1~deb8u2 pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools conky lxrandr lxinput lxappearance fakeroot xserver-xorg-input-evdev"
+
+export BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
+
+# Uncomment for dog-extras (random selection for now, more available)
+# export EXTRA_DOG_APPS_INSTALL="debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui"
+
+########### End of user input for install choices ###########
+
+############################ Remove locales ? #################################
 export REMOVE_LOCALES="yes" # SET to "no" if you want to keep locale files in /usr/share/locale
+###### Note about removing (e.g.libllvm3.9) and extra apt-get commands: ###########
+export APTGET_EXTRA="yes" # set to "no" if you don't want
+# Further in script the (big) library 'libllvm3.9' and gnome-icon-theme will be uninstalled to keep ISO size small as possible
+### depending on if/how you edited the installed packages variables on top of the script
+### it may uninstall some packages not desired, set above to APTGET_EXTRA="no" then
+### Find the line with 'Extra apt-get' further in the script (more can be adjusted)
+##########################################################
+
+
+######### Start #########
 
 if [ "`whoami`" != "root" ]; then
 echo "This script should be run as root"
@@ -109,13 +134,14 @@ echo -e "\e[0;36mInstall some required packages, e.g. debootstrap, squashfs-tool
 apt-get install debootstrap wget xorriso isolinux xz-utils squashfs-tools -y --force-yes
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 
+########## Set up debootstrap ##########
 echo -e "\e[0;36mSetting up debootstrap in stretch/chroot\033[0m"
 echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p stretch/chroot && cd stretch &&
 debootstrap --arch=$ARCH --variant=minbase stretch chroot http://ftp.us.debian.org/debian/
 
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
-rm -f dog-boot-stretch.tar.gz isodata-stretch.tar.gz initrdport-stretch.tar.gz
+sleep 3
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-stretch.tar.gz
@@ -129,16 +155,19 @@ echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0
 cp -af dog-boot-stretch/* chroot/
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 
-
+# mount bind some required directories from host filesystem
 mount --bind /proc chroot/proc
 #mount --bind /tmp chroot/tmp
 mount --bind /dev chroot/dev
 mount --bind /sys chroot/sys
 mount -t devpts devpts chroot/dev/pts
-
+# provide a network connection in chroot
 echo -en "`cat /etc/resolv.conf`" > chroot/etc/resolv.conf
 
-chroot_in () {
+#################################################
+############ Start running in chroot ############
+#################################################
+chroot_in () { 
 export HOME=/root
 export LC_ALL=C
 apt-get update
@@ -150,6 +179,7 @@ echo "live" > /etc/hostname
 echo "127.0.0.1	 localhost" > /etc/hosts
 echo "127.0.1.1	 live" >> /etc/hosts
 mkdir /live
+mkdir -p /opt/bin
 
 update-rc.d snapexit defaults
 
@@ -160,70 +190,62 @@ DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
 if [ "$ARCH" = "i386" ]; then
 sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
-apt-get update
+apt-get update # required, dog repository just added to sources.list
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-686-pae\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-686-pae
+
 elif [ "$ARCH" = "amd64" ]; then
 sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /etc/apt/sources.list
-apt-get update
+apt-get update # required, dog repository just added to sources.list
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-amd64\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-amd64
 fi
 
+# check kernel version just installed in chroot, output of VERNEWKERNEL will be used later 
+VERNEWKERNEL=$(grep " install " /var/log/dpkg.log | sort -r |  cut -d " " -sf4 | grep -o "^[^:]*" | grep linux-image | head -n 1 | sed -e 's/linux-image-//')
+
+####### Start installing packages, defined on top of this script #######
 echo -e "\e[0;36mInstall more packages, e.g. required for network connection\033[0m"
 echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[0m"
 sleep 3
-# Install packages, $INSTALL is defined on top of this script
-apt-get install --no-install-recommends --yes $INSTALL
-echo -e "\e[0;36mDownload and install yad and gtkdialog\033[0m"
+# If one of the variables is commented out (on top of this script), it will be skipped
+apt-get install --no-install-recommends --yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL
+############ End of installing ############
+
+echo -e "\e[0;36mCopy aufs and squashfs (LZ4 support) module\033[0m"
 sleep 3
 if [ "$ARCH" = "i386" ]; then
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.38.1_i386.deb
-#wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/midori_0.5.2b_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-1_i386.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_i386.deb
+mv -f /lib/aufs32 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
+rm -rf /lib/aufs64
+mv -f /lib/squashfs32 /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs
+rm -rf /lib/squashfs64
+depmod $VERNEWKERNEL
 
 elif [ "$ARCH" = "amd64" ]; then
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_amd64.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.31.2_amd64.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/peasywifi_4.4-1_amd64.deb
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/obshutdown_1.0.0_amd64.deb
+mv -f /lib/aufs64 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
+rm -rf /lib/aufs32
+mv -f /lib/squashfs64 /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs
+rm -rf /lib/squashfs32
+depmod $VERNEWKERNEL
 fi
-dpkg -i *.deb
-apt-get -f install -y --force-yes
-rm -f *.deb
 
 ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
 
-# install linux-headers and aufs-dkms
-# and remove directly after initrd (aufs included) is created
-echo -e "\e[0;36mInstall linux-headers and aufs-dkms (for creating initrd with aufs support)\033[0m"
-echo -e "\e[0;36mAnd create new initrd for the live system (aufs included)\033[0m"
-echo -e "\e[0;36mAnd remove linux-headers and aufs-dkms + dependencies\033[0m"
-sleep 4
-rm -f /var/log/dpkg.log    # to start fresh
+# create new initrd with aufs and new squashfs (lz4) included
+CRYPTSETUP=Y update-initramfs -t -c -k $VERNEWKERNEL
 
-if [ "$ARCH" = "i386" ]; then
-apt-get install --no-install-recommends --yes linux-headers-4.9.0-3-686-pae aufs-dkms
-sleep 2
-elif [ "$ARCH" = "amd64" ]; then
-apt-get install --no-install-recommends --yes linux-headers-4.9.0-3-amd64 aufs-dkms
-sleep 2
-fi
-
-# create new initrd with aufs included
-CRYPTSETUP=Y update-initramfs -t -c -k $(uname -r)
- 
-# remove just installed linux-headers and aufs-dkms
-PURGE=`cat /var/log/dpkg.log  |grep ' unpacked ' |cut -d\  -f5 |cut -d: -f1 |sort |uniq`
-echo -e "\e[0;36mRemoving linux-headers and aufs-dkms + dependencies...\033[0m"
-sleep 3
-apt-get purge --yes --force-yes $PURGE
+##### Extra apt-get #####
+### libllvm3.9 takes a lot of space, uninstall it to keep ISO size small as possible
+if [ "$APTGET_EXTRA" = "yes" ]; then # if set to yes on top of script 
 apt-get purge --yes libllvm3.9 # in case installed
+apt-get purge --yes gnome-icon-theme # uncomment if not desired to remove
+# if "xserver-xorg-input-evdev" is installed:
+# apt-get purge --yes  xserver-xorg-input-libinput # uncomment if lxinput doesn't work
+fi
 apt-get --yes --force-yes autoremove
+#####################################
 
 echo "Cleaning..."
 rm -f var/lib/alsa/asound.state
@@ -261,6 +283,10 @@ mv -f /usr/local/XTerm /etc/X11/app-defaults/
 export -f chroot_in
 
 chroot chroot /bin/bash -c chroot_in
+
+################################################
+############ End running in chroot #############
+################################################
 
 echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
 #umount chroot/tmp
@@ -363,7 +389,7 @@ cd ..
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 echo
 echo
-echo -e "\e[0;32mFinished! If all went well, Deblive_Netinst.iso has been created. \nAlso the required files for a frugal install are in isodata 'live' folder \n\nHave a good day!\033[0m"
+echo -e "\e[0;32mFinished! If all went well, DebLive_Stretch-$ARCH.iso has been created. \nAlso the required files for a frugal install are in isodata 'live' folder \n\nHave a good day!\033[0m"
 echo
 
 exit 0

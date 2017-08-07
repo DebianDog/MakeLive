@@ -1,10 +1,13 @@
 
 ## Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'
 
-[Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)           
+[Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)
+
+**Updated 2017-08-07**     
+Bug fixes and improvements, info below updated               
 
 #### With aufs support and porteus-boot style included   
-It's required to have at least 2 GB free space and to run the script on a Linux filesystem, e.g. ext4   
+It's required to have at least 3 GB free space and to run the script on a Linux filesystem, e.g. ext4   
 
 Similar to [This](README.md) (for Jessie) but this is **way** better, easier, faster!  
 Just download and run [This mklive-stretch script](https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/mklive-stretch) (right-click > Save link as)   
@@ -17,6 +20,7 @@ The script does it **all**, except during run, 3 times user input is required:
 Choose keyboard-layout, set the 'root' passwd and choose for gzip or xz compression   
 
 Run from a Debian based system 32-bit or 64-bit (will create i686 (32-bit) or x86_64 (64-bit) live system accordingly to the architecture of the OS you are running from)
+Works well building from Debian Jessie (bug fixed) and Stretch, not from Wheezy (oldoldstable) and not from Xenial(dog), from terminal:   
    
 ```   
 ./mklive-stretch
@@ -25,14 +29,17 @@ Run from a Debian based system 32-bit or 64-bit (will create i686 (32-bit) or x8
 #### If all went well...
 #### In folder stretch DebLive_Stretch-yourarch.iso is created and also the required files for a frugal install are in stretch/isodata/live folder   
 
-Currenly the contents of the created live ISO are (preconfigured):   
+Currenly the contents of the created live ISO are (preconfigured): (updated 2017-08-07)   
 (but this might well be a work in progress, e.g. modify the script to have more choice of window-managers, applications, add more 'DebianDog goodies', right-click actions etc...)      
 - Openbox with PcManFM providing the desktop and bottom panel is lxpanel   
 - Applications included are:   
-Midori webbrowser, gparted, pcmanfm, leafpad, xterm, synaptic, peasywifi   
+Firefox-ESR webbrowser (older version), gparted, pcmanfm, leafpad viewnior, xterm, synaptic, peasywifi, lxappearance, lxinput, lxrandr, more 'dog' specific applications, e.g. sfs-load, remaster tools, apt2sfs etc...    
+- Right-click actions for e.g. activate module, deb extract...       
+- LZ4 squashfs support, for booting and mounting  
+- Conky display on the desktop   
 
-The build process takes around 15-25 minutes, depending on your internet speed and computer power.   
-**Size of the created ISO will be around 164 MB (with xz compressed filesystem.squashfs)**      
+The build process takes around 12-20 minutes, depending on your internet speed and computer power.   
+**Size of the created ISO will be around 161 MB (with xz compressed filesystem.squashfs)**      
 
 The packages installed by the script can be easily changed, edit with texteditor.  
 See at the top the INSTALL= variable, add or remove as desired, e.g. change 'midori' to 'firefox-esr' and firefox will be included in the build.          
