@@ -41,7 +41,7 @@ exit
 fi
 
 echo
-echo -e "\e[0;33mCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog'\nWith aufs support and porteus-boot style included\n\nIt's required to have at least 2 GB free space\nand to run this script on a Linux filesystem, e.g. ext4\033[0m"
+echo -e "\e[0;33mCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog'\nWith aufs support and porteus-boot style included\n\nIt's required to have at least 3 GB free space\nand to run this script on a Linux filesystem, e.g. ext4\033[0m"
 
 if [ "$(uname -m)" = "i686" ]; then
 echo
