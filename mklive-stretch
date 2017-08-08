@@ -8,12 +8,20 @@
 # and execute "depmod <kernel_version>" and create new initrd.img-<kernel_version> in /boot
 
 ##### Install packages in chroot, MODIFY BELOW AS DESIRED #####
+##### Having duplicate packages in the different sections below is not a problem
+##### apt-get will skip them, without error
 
 export BASE_INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools"
 
-export BASE_APPS_INSTALL="openbox obconf menu leafpad pcmanfm lxpanel gparted parted pv synaptic volumeicon-alsa alsa-utils viewnior firefox-esr=24.8.0esr-1~deb8u2 pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools conky lxrandr lxinput lxappearance fakeroot xserver-xorg-input-evdev"
+export BASE_APPS_INSTALL="openbox obconf menu leafpad pcmanfm lxpanel gparted parted pv synaptic volumeicon-alsa alsa-utils viewnior firefox-esr=24.8.0esr-1~deb8u2 pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools conky lxrandr lxinput lxappearance fakeroot xserver-xorg-input-evdev pfind"
 
 export BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
+
+# Add firmware packages as desired, separated by a space 
+export FIRMWARE="firmware-linux-free" 
+##### Below a selection of firmware packages available (mostly for wireless) #####  
+##### atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211
+#######################################################
 
 # Uncomment for dog-extras (random selection for now, more available)
 # export EXTRA_DOG_APPS_INSTALL="debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui"
@@ -128,11 +136,13 @@ exit 0
 esac
 fi
 
-echo -e "\e[0;36mUpdate the package lists...\033[0m"
-apt-get update
-echo -e "\e[0;36mInstall some required packages, e.g. debootstrap, squashfs-tools, etc...\033[0m"
-apt-get install debootstrap wget xorriso isolinux xz-utils squashfs-tools -y --force-yes
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+if [ $(command -v apt-get 2>/dev/null) ];then
+ echo -e "\e[0;36mUpdate the package lists...\033[0m"
+ apt-get update
+ echo -e "\e[0;36mInstall some required packages, e.g. debootstrap, squashfs-tools, etc...\033[0m"
+ apt-get install debootstrap wget xorriso isolinux xz-utils squashfs-tools -y --force-yes
+ [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+fi
 
 ########## Set up debootstrap ##########
 echo -e "\e[0;36mSetting up debootstrap in stretch/chroot\033[0m"
@@ -191,6 +201,17 @@ DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 if [ "$ARCH" = "i386" ]; then
 sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
 apt-get update # required, dog repository just added to sources.list
+# simulate install first to check for errors, if there are, exit
+echo -e "\e[0;36mChecking packages . . .\033[0m"
+apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+ret=$?
+if [[ $ret -eq 100 ]]; then
+echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
+echo -e "\e[0;36mExiting . . .\033[0m"
+touch /exit_
+sleep 3
+exit
+fi
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-686-pae\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-686-pae
@@ -198,6 +219,17 @@ apt-get install --yes linux-image-4.9.0-3-686-pae
 elif [ "$ARCH" = "amd64" ]; then
 sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /etc/apt/sources.list
 apt-get update # required, dog repository just added to sources.list
+# simulate install first to check for errors, if there are, exit
+echo -e "\e[0;36mChecking packages . . .\033[0m"
+apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+ret=$?
+if [[ $ret -eq 100 ]]; then
+echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
+echo -e "\e[0;36mExiting . . .\033[0m"
+touch /exit_
+sleep 3
+exit
+fi
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-amd64\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-amd64
@@ -211,7 +243,7 @@ echo -e "\e[0;36mInstall more packages, e.g. required for network connection\033
 echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[0m"
 sleep 3
 # If one of the variables is commented out (on top of this script), it will be skipped
-apt-get install --no-install-recommends --yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL
+apt-get install --no-install-recommends --yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 ############ End of installing ############
 
 echo -e "\e[0;36mCopy aufs and squashfs (LZ4 support) module\033[0m"
@@ -283,6 +315,9 @@ mv -f /usr/local/XTerm /etc/X11/app-defaults/
 export -f chroot_in
 
 chroot chroot /bin/bash -c chroot_in
+
+# do not continue if there were errors
+[ -f "chroot/exit_" ] && exitfn
 
 ################################################
 ############ End running in chroot #############
