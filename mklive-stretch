@@ -177,7 +177,14 @@ echo -en "`cat /etc/resolv.conf`" > chroot/etc/resolv.conf
 #################################################
 ############ Start running in chroot ############
 #################################################
-chroot_in () { 
+chroot_in () {
+if [ -z $(which apt-get) ]; then
+echo -e "\e[0;31mSorry, apt-get not found, cannot continue\033[0m"
+echo -e "\e[0;36mExiting . . .\033[0m"
+touch /exit_
+sleep 3
+exit
+fi 
 export HOME=/root
 export LC_ALL=C
 apt-get update
