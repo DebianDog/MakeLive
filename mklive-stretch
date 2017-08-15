@@ -11,11 +11,13 @@
 ##### Having duplicate packages in the different sections below is not a problem
 ##### apt-get will skip them, without error
 
-export BASE_INSTALL="live-boot wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools"
+export BASE_INSTALL="live-boot wget menu net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools xserver-xorg-input-synaptics"
 
-export BASE_APPS_INSTALL="openbox obconf menu leafpad pcmanfm lxpanel gparted parted pv synaptic volumeicon-alsa alsa-utils viewnior firefox-esr=24.8.0esr-1~deb8u2 pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools conky lxrandr lxinput lxappearance fakeroot xserver-xorg-input-evdev pfind"
+export BASE_APPS_INSTALL="leafpad gparted parted pv synaptic volumeicon-alsa alsa-utils viewnior firefox-esr=24.8.0esr-1~deb8u2 pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools conky fakeroot xserver-xorg-input-evdev pfind"
 
 export BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
+
+export DESK_APPS_INSTALL="openbox obconf pcmanfm lxpanel lxrandr lxinput lxappearance"
 
 # Add firmware packages as desired, separated by a space 
 export FIRMWARE="firmware-linux-free" 
@@ -30,12 +32,12 @@ export FIRMWARE="firmware-linux-free"
 
 ############################ Remove locales ? #################################
 export REMOVE_LOCALES="yes" # SET to "no" if you want to keep locale files in /usr/share/locale
-###### Note about removing (e.g.libllvm3.9) and extra apt-get commands: ###########
-export APTGET_EXTRA="yes" # set to "no" if you don't want
-# Further in script the (big) library 'libllvm3.9' and gnome-icon-theme will be uninstalled to keep ISO size small as possible
-### depending on if/how you edited the installed packages variables on top of the script
-### it may uninstall some packages not desired, set above to APTGET_EXTRA="no" then
-### Find the line with 'Extra apt-get' further in the script (more can be adjusted)
+##### Extra apt-get remove #####
+# Remove xserver-xorg-video-vmware ? 
+# Takes a lot of space due to (large) dependency libllvm3.9 package
+export REM_AUTO_INST="yes"   # set to "'no" to keep xserver-xorg-video-vmware
+### However it depends also on other package choice if libllvm3.9 will be removed
+### Find the line with 'Extra apt-get remove' further in the script (more can be adjusted)
 ##########################################################
 
 
@@ -74,7 +76,7 @@ else
 echo -e "\e[0;32mOK\033[0m"
 sleep 1
 fi
-
+export ARCH="i386"
 # This makes sure when the script is interrupted, that all mount 'binds' will unmount 
 exitfn () {
     trap SIGINT              # Resore signal handling for SIGINT
@@ -150,6 +152,17 @@ echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p stretch/chroot && cd stretch &&
 debootstrap --arch=$ARCH --variant=minbase stretch chroot http://ftp.us.debian.org/debian/
 
+# Create setup info list build_setup.txt
+echo "Live system built on $(uname -m) for $ARCH on $(date)" > build_setup.txt
+echo -e "Preinstalled on top of debootstrap build:\nlive-boot wget menu dialog apt-utils dbus ca-certificates apt-transport-https xserver-xorg-legacy\n" >> build_setup.txt
+echo -e "Base Install:\n$BASE_INSTALL\n" >> build_setup.txt
+echo -e "Base Applications Install:\n$BASE_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Base Dog Applications Install:\n$BASE_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Desktop Apps:\n$DESK_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Firmware:\n$FIRMWARE\n" >> build_setup.txt
+echo -e "Extra Dog Apps:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Remove xserver-xorg-video-vmware=$REM_AUTO_INST" >> build_setup.txt
+
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
 sleep 3
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch.tar.gz
@@ -188,9 +201,11 @@ fi
 export HOME=/root
 export LC_ALL=C
 apt-get update
+# Google chrome for 64 bit only, so remove on i386
+[ "$ARCH" = "i386" ] && rm -f /etc/apt/sources.list.d/google-chrome.list
 echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
 sleep 1
-apt-get install dialog dbus ca-certificates apt-transport-https --yes --force-yes
+apt-get install dialog dbus ca-certificates apt-transport-https apt-utils xserver-xorg-legacy gnupg --yes --force-yes
 dbus-uuidgen > /var/lib/dbus/machine-id
 echo "live" > /etc/hostname
 echo "127.0.0.1	 localhost" > /etc/hosts
@@ -210,7 +225,7 @@ sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /e
 apt-get update # required, dog repository just added to sources.list
 # simulate install first to check for errors, if there are, exit
 echo -e "\e[0;36mChecking packages . . .\033[0m"
-apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 ret=$?
 if [[ $ret -eq 100 ]]; then
 echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
@@ -228,7 +243,7 @@ sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /
 apt-get update # required, dog repository just added to sources.list
 # simulate install first to check for errors, if there are, exit
 echo -e "\e[0;36mChecking packages . . .\033[0m"
-apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 ret=$?
 if [[ $ret -eq 100 ]]; then
 echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
@@ -250,7 +265,7 @@ echo -e "\e[0;36mInstall more packages, e.g. required for network connection\033
 echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[0m"
 sleep 3
 # If one of the variables is commented out (on top of this script), it will be skipped
-apt-get install --no-install-recommends --yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install --no-install-recommends --yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 ############ End of installing ############
 
 echo -e "\e[0;36mCopy aufs and squashfs (LZ4 support) module\033[0m"
@@ -275,15 +290,21 @@ ln -s /dev/null /etc/systemd/network/99-default.link # traditional network inter
 # create new initrd with aufs and new squashfs (lz4) included
 CRYPTSETUP=Y update-initramfs -t -c -k $VERNEWKERNEL
 
-##### Extra apt-get #####
-### libllvm3.9 takes a lot of space, uninstall it to keep ISO size small as possible
-if [ "$APTGET_EXTRA" = "yes" ]; then # if set to yes on top of script 
-apt-get purge --yes libllvm3.9 # in case installed
-apt-get purge --yes gnome-icon-theme # uncomment if not desired to remove
+##### Extra apt-get remove #####
+# Remove xserver-xorg-video-vmware ? 
+# Takes a lot of space due to (large) dependency libllvm3.9 package
+if [ "$REM_AUTO_INST" = "yes" ]; then
+echo -e "\e[0;36mAs requested, remove xserver-xorg-video-vmware\033[0m"
+apt-get purge -y xserver-xorg-video-vmware
+fi
+
+### Uninstall gnome-icon-theme
+GNOME_ICON=$(apt-cache rdepends --installed gnome-icon-theme | grep -v "gnome-icon-theme\|Reverse Depends" | grep -v "|")  # check for reverse dependencies, remove only if none
+[ -z "$GNOME_ICON" ] && apt-get purge --yes gnome-icon-theme    # in case installed
+
 # if "xserver-xorg-input-evdev" is installed:
 # apt-get purge --yes  xserver-xorg-input-libinput # uncomment if lxinput doesn't work
-fi
-apt-get --yes --force-yes autoremove
+apt-get --yes autoremove
 #####################################
 
 echo "Cleaning..."
