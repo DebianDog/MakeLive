@@ -59,7 +59,6 @@ SETUP=`yad --borders=4 --height=700 --width=800  --center --title="MakeLive Stre
 --field="Desktop Apps:: " "$DESKAPPS" \
 --field="Firmware:: " "$FIRMWARE" \
 --field="Extra Dog Apps:: " "$EXTRA_DOG_APPS" \
---field="Show dialog for e.g. set keyboard layout (unchecked will default to'US English'):CHK" "TRUE" \
 --field="Remove some automatically installed packages (these may take much space, see Information):CHK" "TRUE" \
 --field="If running 64 bit host OS, create a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "FALSE" \
 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
@@ -72,9 +71,8 @@ export BASE_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 3`"
 export DESK_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 4`"
 export FIRMWARE="`echo $SETUP | cut -d "|" -f 5`"
 export EXTRA_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 6`"
-export SET_KEYB="`echo $SETUP | cut -d "|" -f 7`"
-export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 8`"
-export FORCE32="`echo $SETUP | cut -d "|" -f 9`"
+export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 7`"
+export FORCE32="`echo $SETUP | cut -d "|" -f 8`"
 
 # This makes sure when the script is interrupted, that all mount 'binds' will unmount 
 exitfn () {
@@ -343,17 +341,10 @@ sleep 3
 exit
 fi
 ### Do the real installing
-if [ "$SET_KEYB" = "FALSE" ]; then
-DF="DEBIAN_FRONTEND=noninteractive"
-Q="q"
-else
-DF=""
-Q=""
-fi
-$DF apt-get install -y${Q} $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install -y $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 # try again if failed
 if [ $? -ne 0 ]; then
-$DF apt-get install -y${Q} $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install -y $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
