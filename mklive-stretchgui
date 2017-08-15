@@ -7,19 +7,20 @@
 # instead copy aufs.ko for kernel 4.9.3 to /lib/modules/<kernel_version>/kernel/fs/aufs
 # and execute "depmod <kernel_version>" and create new initrd.img-<kernel_version> in /boot
 # 2017-08-14 GUI version using yad, but should be run from terminal
- 
 
 # set to yes if you want to keep the locale files in /usr/share/locale
 export KEEP_LOCALES="no"
 
 # Set the standard
-BASE="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools"
+BASE="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools xserver-xorg-input-synaptics"
 APPS="leafpad gparted parted pv synaptic volumeicon-alsa alsa-utils viewnior firefox-esr=24.8.0esr-1~deb8u2 pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pfind conky"
 DESKAPPS="openbox obconf pcmanfm lxpanel lxrandr lxinput lxappearance"  
 DOG_APPS="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
 FIRMWARE="firmware-linux-free"
 EXTRA_DOG_APPS=""
 
+##### Below a selection of firmware packages available (mostly for wireless) #####  
+##### atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211
 
 # Not running from terminal ?
 tty -s;
@@ -58,7 +59,7 @@ SETUP=`yad --borders=4 --height=700 --width=800  --center --title="MakeLive Stre
 --field="Desktop Apps:: " "$DESKAPPS" \
 --field="Firmware:: " "$FIRMWARE" \
 --field="Extra Dog Apps:: " "$EXTRA_DOG_APPS" \
---field="Use xz compression for creating filesystem.squashfs (unchecked=gzip larger size):CHK" "TRUE" \
+--field="Show dialog for e.g. set keyboard layout (unchecked will default to'US English'):CHK" "TRUE" \
 --field="Remove some automatically installed packages (these may take much space, see Information):CHK" "TRUE" \
 --field="If running 64 bit host OS, create a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "FALSE" \
 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
@@ -71,7 +72,7 @@ export BASE_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 3`"
 export DESK_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 4`"
 export FIRMWARE="`echo $SETUP | cut -d "|" -f 5`"
 export EXTRA_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 6`"
-export XZCOMPR="`echo $SETUP | cut -d "|" -f 7`"
+export SET_KEYB="`echo $SETUP | cut -d "|" -f 7`"
 export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 8`"
 export FORCE32="`echo $SETUP | cut -d "|" -f 9`"
 
@@ -126,8 +127,7 @@ echo -e "\e[0;32mBuilding will be done in: $PWD/stretch\033[0m"
 echo -e "\e[0;33mBuild setup info can be found in: $PWD/stretch/build_setup.txt\033[0m"
 echo -e "\e[0;32mIf you'd like a log from the output, run again e.g:\033[0m"
 echo -e "\e[0;33m$0 2>&1 | tee mklive-stretch.log\033[0m"
-echo -e "\e[0;36mFirst setting up debootstrap, this will take a few minutes\nAfter that you will be asked to set the password for 'root'\nIt will be the only user input required.\033[0m"
-echo -e "\e[0;33mAlso at that point you may want to add/edit files in chroot folder\033[0m"
+echo -e "\e[0;36mFirst setting up debootstrap, this will take a few minutes\nAfter that you will be asked to set the password for 'root'\033[0m"
 echo
 read -sp "Press ENTER to continue . . . "
 echo
@@ -203,7 +203,6 @@ echo -e "Base Dog Applications Install:\n$BASE_DOG_APPS_INSTALL\n" >> build_setu
 echo -e "Desktop Apps:\n$DESK_APPS_INSTALL\n" >> build_setup.txt
 echo -e "Firmware:\n$FIRMWARE\n" >> build_setup.txt
 echo -e "Extra Dog Apps:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
-echo -e "Use xz compression=$XZCOMPR" >> build_setup.txt
 echo -e "Remove xserver-xorg-video-vmware=$REM_AUTO_INST" >> build_setup.txt
 
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
@@ -344,10 +343,17 @@ sleep 3
 exit
 fi
 ### Do the real installing
-DEBIAN_FRONTEND=noninteractive apt-get install -yq $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+if [ "$SET_KEYB" = "FALSE" ]; then
+DF="DEBIAN_FRONTEND=noninteractive"
+Q="q"
+else
+DF=""
+Q=""
+fi
+$DF apt-get install -y${Q} $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 # try again if failed
 if [ $? -ne 0 ]; then
-DEBIAN_FRONTEND=noninteractive apt-get install -yq $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+$DF apt-get install -y${Q} $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
@@ -501,18 +507,55 @@ rm -f chroot/boot/System.map*
 rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
 
 # copy build_setup.txt to chroot/root
-cp -a build_setup.txt chroot/root/ 
+cp -a build_setup.txt chroot/root/
 
-echo -e "\e[0;33mNow we will create compressed filesystem: '01-filesystem.squashfs'\033[0m"
-[ "$XZCOMPR" = "TRUE" ] && compr=xz || compr=gzip
-echo -e "\e[0;33mUsing $compr compression\033[0m"
+# Allow the user to makes changes in chroot just before creating filesystem.squashfs 
+echo -e "\e[0;33mAt this point you may want to add/edit files in chroot folder\033[0m"
+read -sp "Make any changes to chroot and then Press ENTER to continue . . . "
+echo
+echo -e "\e[0;33mNow we will create compressed filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip, but xz takes much longer time to compress\033[0m"
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
 echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
-
-if [ "$XZCOMPR" = "TRUE" ]; then    # xz compression
-mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k
-else    # gzip compression
 mksquashfs chroot isodata/live/01-filesystem.squashfs
+;;
+  xz)
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, please try again, type: gzip or xz \033[0m"
+sleep 1
+TRYAGAIN=yes
+;;
+esac
+
+if [ "$TRYAGAIN" = "yes" ]; then
+### Second chance in case having made a typo
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs
+;;
+  xz)
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, exiting now... \033[0m"
+sleep 1
+
+exit 0
+;;
+esac
 fi
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+
 ok_or_failed
 
 echo -e "\e[0;36mFinally creating ISO...\033[0m"
