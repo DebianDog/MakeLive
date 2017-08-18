@@ -46,10 +46,11 @@ Changes on 2017-08-18:
 - Allow the user to make changes in chroot just before creating 01-filesystem.squashfs (script paused)  
 (use upgrade-kernel to upgrade to newer version)  
 
-To create log from output run it this way:  
-[code]./mklive-stretch 2>&1 | tee mklive-stretch.log[/code]  
+To create log from output run e.g:  
+```    
+./mklive-stretch -cli 2>&1 | tee mklive-stretch.log  
 (note that progress of mksquashfs looks like it's idle for sometime)  
-
+```  
 
 #### If all went well...
 #### In folder stretch DebLive_Stretch-yourarch.iso is created and also the required files for a frugal install are in stretch/isodata/live folder   
