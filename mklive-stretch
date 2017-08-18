@@ -44,7 +44,7 @@ FORCE32="FALSE"
 create_conf () {     # option -conf
 ##### Generate standard config file stretchlive.conf #####
 echo '# Configuration for mklive-stretch, modify as desired
-NOTE: Leave every commented (#) line commented as it is
+# NOTE: Leave every commented (#) line commented as it is
 # See at the bottom commented out for info
 
 ### Start configuration
