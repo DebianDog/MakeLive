@@ -6,52 +6,247 @@
 # and removed install of linux-headers and aufs-dkms (build time gets shorter)
 # instead copy aufs.ko for kernel 4.9.3 to /lib/modules/<kernel_version>/kernel/fs/aufs
 # and execute "depmod <kernel_version>" and create new initrd.img-<kernel_version> in /boot
+# dancytron suggestion, separate field for Desktop related packages 
+# 2017-08-14 GUI version using yad, but should be run from terminal
+# 2017-08-17 GUI and CLI version into one, added different options:
+# -help (or no option, will show help) -gui -cli, or e.g. -cli <config_file> (use config file), -conf (create standard config file)
+# jd7654 and AndresC2 suggestion, keep the apt cache, jd7654, separate field for (graphical) applications (such as leafpad firefox)
+#####################################################################################
 
-##### Install packages in chroot, MODIFY BELOW AS DESIRED #####
-##### Having duplicate packages in the different sections below is not a problem
-##### apt-get will skip them, without error
+# set to yes if you want to keep the locale files in /usr/share/locale
+export KEEP_LOCALES="no"
 
-export BASE_INSTALL="live-boot wget menu net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools xserver-xorg-input-synaptics"
+standard () {
+# Set the standard, (modify as desired, or run with a custom config file)
 
-export BASE_APPS_INSTALL="leafpad gparted parted pv synaptic volumeicon-alsa alsa-utils viewnior firefox-esr=24.8.0esr-1~deb8u2 pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools conky fakeroot xserver-xorg-input-evdev pfind"
+# Be careful with removing from this section (mostly essential)
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev xserver-xorg-input-synaptics"
+# Base Dog Packages, recommended to keep: yad gtkdialog obshutdown pup-volume-monitor peasywifi
+BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
+# Applications
+BASE_APPS_INSTALL="leafpad gparted parted pv synaptic viewnior firefox-esr=24.8.0esr-1~deb8u2 pfind conky"
+# Desktop environment related
+DESK_APPS_INSTALL="openbox obconf pcmanfm lxpanel lxrandr lxinput lxappearance"  
+FIRMWARE="firmware-linux-free"   # see below for choices
+EXTRA_DOG_APPS_INSTALL=""
+# Remove automatically installed packages: during installing, some are installed that you might not need, e.g.
+# xserver-xorg-video-vmware, REM_AUTO_INST=TRUE will uninstall it.
+REM_AUTO_INST="TRUE"
+# To force 32 bit build on a 64 bit OS, set to TRUE
+FORCE32="FALSE"
+}
 
-export BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
-
-export DESK_APPS_INSTALL="openbox obconf pcmanfm lxpanel lxrandr lxinput lxappearance"
-
-# Add firmware packages as desired, separated by a space 
-export FIRMWARE="firmware-linux-free" 
 ##### Below a selection of firmware packages available (mostly for wireless) #####  
 ##### atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211
-#######################################################
 
-# Uncomment for dog-extras (random selection for now, more available)
-# export EXTRA_DOG_APPS_INSTALL="debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui"
+##### Some extra dog applications: debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue
 
-########### End of user input for install choices ###########
+create_conf () {     # option -conf
+##### Generate standard config file stretchlive.conf #####
+echo '# Configuration for mklive-stretch, modify as desired
+# See at the bottom commented out for info
 
-############################ Remove locales ? #################################
-export REMOVE_LOCALES="yes" # SET to "no" if you want to keep locale files in /usr/share/locale
-##### Extra apt-get remove #####
-# Remove xserver-xorg-video-vmware ? 
-# Takes a lot of space due to (large) dependency libllvm3.9 package
-export REM_AUTO_INST="yes"   # set to "'no" to keep xserver-xorg-video-vmware
-### However it depends also on other package choice if libllvm3.9 will be removed
-### Find the line with 'Extra apt-get remove' further in the script (more can be adjusted)
-##########################################################
+### Start configuration
 
+# Be careful with removing from this section (mostly essential)  
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev xserver-xorg-input-synaptics"
 
-######### Start #########
+# Base Dog Packages, recommended to keep:
+# yad gtkdialog obshutdown pup-volume-monitor peasywifi
+BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
+
+BASE_APPS_INSTALL="leafpad gparted parted pv synaptic viewnior firefox-esr=24.8.0esr-1~deb8u2 pfind conky"
+
+DESK_APPS_INSTALL="openbox obconf pcmanfm lxpanel lxrandr lxinput lxappearance"
+  
+FIRMWARE="firmware-linux-free"
+
+EXTRA_DOG_APPS_INSTALL=""
+
+REM_AUTO_INST="TRUE"
+
+FORCE32="FALSE"
+
+### End configuration
+
+# A selection of firmware packages available (mostly for wireless):
+# atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 
+# Some extra dog applications:
+# debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue
+# Choice of Desktop:
+# Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..
+# To change, replace what is in the DESK_APPS_INSTALL field with for example:
+# mate-core (for MATE), xfce4 (for XFCE), lxde (for LXDE)
+# No guarantee that all work as expected, might require some fixing
+# Remove automatically installed packages:
+# During installing all the packages, some are installed that you might not need, e.g.
+# xserver-xorg-video-vmware, REM_AUTO_INST=TRUE will uninstall it.
+# (possibly (large) library libllvm3.9 will then be autoremoved, depending on your other package choices)
+# To force 32 bit build on a 64 bit OS set FORCE32=TRUE
+# Locales: To keep locale files, set to KEEP_LOCALES=yes on top of the script' > stretchlive.conf
+}
+
+# Not running from terminal ?
+tty -s;
+if [ $? -ne 0 ]; then
+	msg=" Please run this script from terminal"
+	xmessage "`echo -e $msg`"
+	exit 0
+fi
 
 if [ "`whoami`" != "root" ]; then
 echo "This script should be run as root"
-echo "Please run again, e.g. 'sudo ./mklive-stretch', exiting now..."
+echo "Please run again, e.g. 'sudo ./mklive-gui', exiting now..."
 sleep 3
 exit
 fi
 
-echo
-echo -e "\e[0;33mCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog'\nWith aufs support and porteus-boot style included\n\nIt's required to have at least 3 GB free space\nand to run this script on a Linux filesystem, e.g. ext4\033[0m"
+# Information button
+function info () {
+echo -e "\n *** A selection of firmware packages available (mostly for wireless) *** \n atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 \n\n *** Some extra dog applications *** \n debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue \n\n *** Choice of Desktop *** \n Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..\n To change, replace what's in the 'Desktop Apps' field with for example: \nmate-core (for MATE), xfce4 (for XFCE), lxde (for LXDE)\n No guarantee that all work as expected, might require some fixing \n\n *** Remove automatically installed packages (checkbox) *** \n During installing all the packages, some are installed that you might not need, e.g.\nxserver-xorg-video-vmware, having the box checked will uninstall it.\n(possibly (large) library libllvm3.9 will then be autoremoved, depending on your other package choices)\n\n *** Locales ***\nTo keep locale files, set to 'KEEP_LOCALES=yes' on top of the script  " | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information about Firmware and More" --fontname="MonoSpace Bold 12" --back=#ffffff --height=660 --width=775 --text-info --wrap --button="gtk-close:0"
+}
+export -f info
+
+
+yad_gui () {
+if [ -z `which yad` ]; then
+	msg="  You don't have yad installed.\nIt's a dependency of this program.\n Please install it."
+	echo $msg
+	xmessage "`echo -e $msg`"
+exit 0
+fi
+# Yad Gui
+SETUP=`yad --borders=4 --height=680 --width=790  --center --title="MakeLive Stretch"  --text="<b>       \tCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog' </b>\n With aufs support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " \
+--window-icon="preferences-system" --form --columns=1 \
+--field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
+--field="Base Dog Packages Install:  (recommended to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi):TXT" "$BASE_DOG_APPS_INSTALL" \
+--field="Applications Install::TXT" "$BASE_APPS_INSTALL" \
+--field="Desktop :: " "$DESK_APPS_INSTALL" \
+--field="Firmware:: " "$FIRMWARE" \
+--field="Extra Dog Packages:: " "$EXTRA_DOG_APPS_INSTALL" \
+--field="Remove some automatically installed packages (these may take much space, see Information):CHK" "$REM_AUTO_INST" \
+--field="If running 64 bit host OS, create a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "$FORCE32" \
+--button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
+ret=$?
+[ $ret -ne 0 ] && exit
+export BASE_INSTALL="`echo $SETUP | cut -d "|" -f 1`"
+export BASE_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 2`"
+export BASE_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 3`"
+export DESK_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 4`"
+export FIRMWARE="`echo $SETUP | cut -d "|" -f 5`"
+export EXTRA_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 6`"
+export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 7`"
+export FORCE32="`echo $SETUP | cut -d "|" -f 8`"
+}
+
+########### Options (GUI or CLI, configuration)  ###########
+
+helptext="mklive-stretch\n
+usage: $(basename $0) [OPTION] <config_file>\n
+ 	Options:\n
+	-gui (run yad GUI, requires yad installed)\n
+	(no loading custom config file, using the standard config on top of script)\n
+	-cli (commandline only, no GUI)\n 
+	no loading custom config file, using the standard config on top of script\n  
+	-gui <config_file>\n
+	loading custom config file in the same directory as running this script from\n
+	-cli <config_file>\n
+	loading custom config file in the same directory as running this script from\n
+	-conf (create 'stretchlive.conf') \n
+	create a standard config file in same directory as running this script from\n
+	(to modify and load as custom configuration)\n 
+	-help show this help\n
+	Example using custom config file: \n
+	mklive-stretch -cli mycustom.conf \n"
+
+params=$@
+	
+if [ ${#params} -eq 0 ]; then	# no options, no text, so print info/help...
+	echo -e $helptext
+	exit
+fi
+
+config=$2
+# GUI
+if [ $1 = "-gui" ]; then
+	if [ $2 ]; then
+	. $config
+	CONFIG="yes"
+	yad_gui
+	else
+	standard
+	yad_gui
+	fi
+fi
+# CLI
+if [ $1 = "-cli" ]; then
+CLI="yes"
+	if [ $2 ]; then
+	. $config
+	CONFIG="yes"
+	else
+	standard
+	fi
+fi
+# Help
+if [ $1 = "-help" -o $1 = "--help" ]; then
+echo -e $helptext
+exit
+fi
+
+# create standard config file that can be used to modify and load as custom configuration
+if [ $1 = "-conf" ]; then
+echo -e "\e[0;32mCreating $PWD/stretchlive.conf\033[0m"
+create_conf
+exit
+fi
+#####################################################
+
+# This makes sure when the script is interrupted, that all mount 'binds' will unmount 
+exitfn () {
+    trap SIGINT              # Resore signal handling for SIGINT
+echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
+#umount chroot/tmp
+umount chroot/proc 2> /dev/null
+umount chroot/dev/pts 2> /dev/null
+umount chroot/dev 2> /dev/null
+umount chroot/sys 2> /dev/null
+sleep 2
+mv chroot/var/cache/apt ./
+rm -rf chroot
+   if [ "$?" -ne "0" ]; then
+   echo -e "\e[0;31mSomething went wrong, directory chroot cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
+   sleep 2
+   exit
+   fi
+
+mkdir -p chroot/var/cache
+mv ./apt chroot/var/cache/
+find chroot -mindepth 1 ! -wholename 'chroot/*' -delete 2> /dev/null
+echo -e "\e[0;36mRemoved chroot, except the apt cache\033[0m"
+exit 0
+}
+export -f exitfn
+
+trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
+
+# OK or FAILED
+ok_or_failed () {
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+}
+export -f ok_or_failed
+
+######### Start #########
+
+# export final variables defined through GUI or CLI (with or without custom config)
+export BASE_INSTALL="$BASE_INSTALL"
+export BASE_DOG_APPS_INSTALL="$BASE_DOG_APPS_INSTALL"
+export BASE_APPS_INSTALL="$BASE_APPS_INSTALL"
+export DESK_APPS_INSTALL="$DESK_APPS_INSTALL"
+export EXTRA_DOG_APPS_INSTALL="$EXTRA_DOG_APPS_INSTALL"
+export REM_AUTO_INST="$REM_AUTO_INST"
+export FORCE32="$FORCE32"
 
 if [ "$(uname -m)" = "i686" ]; then
 echo
@@ -59,12 +254,33 @@ echo -e "\e[0;32mOK, running 32-bit OS, building live system for 32-bit: $(uname
 export ARCH="i386"
 elif [ "$(uname -m)" = "x86_64" ]; then
 echo
-echo -e "\e[0;32mOK, running 64-bit OS, building live system for 64-bit: $(uname -m)\033[0m"
-export ARCH="amd64"
+	if [ "$FORCE32" = "TRUE" ]; then
+	echo -e "\e[0;32mOK, running 64-bit OS, building live system for 32-bit: i686\033[0m"
+	export ARCH="i386"
+	else
+	echo -e "\e[0;32mOK, running 64-bit OS, building live system for 64-bit: $(uname -m)\033[0m"
+	export ARCH="amd64"
+	fi
 fi
+echo -e "\e[0;33mCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog'\nWith aufs support and porteus-boot style included\n\nIt's required to have at least 3 GB free space\nand to run this script on a Linux filesystem, e.g. ext4\033[0m"
 echo -e "\e[0;32mBuilding will be done in: $PWD/stretch\033[0m"
-read -sp "Press ENTER to continue . . . "
+if [ "$CONFIG" = "yes" ]; then
+	if [ -z "$BASE_INSTALL" ]; then
+	echo -e "\e[0;31mThis config file cannot be used, sorry, exiting...\033[0m"
+	exit
+	else
+	echo -e "\e[0;36mRunning with configuration: \e[1;29m$PWD/$config\e[0;29m\033[0m"
+	fi
+else
+echo -e "\e[0;36mNo custom config in use\033[0m"
+echo -e "\e[0;36mUsing configuration defined on top of script\033[0m"
+fi
+echo -e "\e[0;33mBuild setup info can be found in: $PWD/stretch/build_setup.txt\033[0m"
+echo -e "\e[0;32mIf you'd like a log from the output, run again e.g:\033[0m"
+echo -e "\e[0;33m$0 2>&1 | tee mklive-stretch.log\033[0m"
+echo -e "\e[0;36mFirst setting up debootstrap, this will take a few minutes\nAfter that you will be asked to set the password for 'root'\033[0m"
 echo
+read -sp "Press ENTER to continue . . . "
 echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
@@ -76,34 +292,11 @@ else
 echo -e "\e[0;32mOK\033[0m"
 sleep 1
 fi
-export ARCH="i386"
-# This makes sure when the script is interrupted, that all mount 'binds' will unmount 
-exitfn () {
-    trap SIGINT              # Resore signal handling for SIGINT
-echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
-#umount chroot/tmp
-umount chroot/proc 2> /dev/null
-umount chroot/dev/pts 2> /dev/null
-umount chroot/dev 2> /dev/null
-umount chroot/sys 2> /dev/null
-sleep 2
-rm -rf chroot
-echo -e "\e[0;36mRemoved chroot\033[0m"
-   if [ "$?" -ne "0" ]; then
-   echo -e "\e[0;31mSomething went wrong, directory chroot cannot be removed\033[0m"
-   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
-   sleep 2
-   exit
-   fi
-exit 0
-}
-export -f exitfn
 
-trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
 
 if [ -d "stretch" ]; then 
-echo -e "\e[0;33m Working directory 'stretch' already exists \n To be able to continue, it needs to be removed first\n All files inside will be deleted \033[0m"
-read -p "Are you sure to delete directory stretch ? (Enter=yes) (Y/n)?" choice
+echo -e "\e[0;33m Working directory 'stretch' already exists \n To be able to continue, contents need to be removed first\n All files inside will be deleted, except the apt cache in chroot\033[0m"
+read -p "Are you sure to delete contents of directory stretch ? (Enter=yes) (Y/n)?" choice
 
 case "$choice" in 
   y|Y|"")
@@ -114,16 +307,20 @@ umount stretch/chroot/proc 2> /dev/null
 umount stretch/chroot/dev/pts 2> /dev/null
 umount stretch/chroot/dev 2> /dev/null
 umount stretch/chroot/sys 2> /dev/null
+sleep 2
+mv stretch/chroot/var/cache/apt stretch/ 2> /dev/null
 rm -rf stretch/chroot
-rm -rf stretch
    if [ "$?" -ne "0" ]; then
-   echo -e "\e[0;31mSomething went wrong, directory stretch cannot be removed\033[0m"
+   echo -e "\e[0;31mSomething went wrong, directory stretch/chroot cannot be removed\033[0m"
    echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
    sleep 2
    exit
    fi
 
-echo -e "\e[0;32mOK, removed directory stretch and will continue...\033[0m"
+mkdir -p stretch/chroot/var/cache 2> /dev/null
+mv stretch/apt stretch/chroot/var/cache/ 2> /dev/null
+find stretch -mindepth 1 ! -wholename 'stretch/chroot/*' -delete 2> /dev/null
+echo -e "\e[0;32mOK, continue...\033[0m"
 ;;
   n|N)
 echo "Exiting..."
@@ -142,25 +339,25 @@ if [ $(command -v apt-get 2>/dev/null) ];then
  echo -e "\e[0;36mUpdate the package lists...\033[0m"
  apt-get update
  echo -e "\e[0;36mInstall some required packages, e.g. debootstrap, squashfs-tools, etc...\033[0m"
- apt-get install debootstrap wget xorriso isolinux xz-utils squashfs-tools -y --force-yes
- [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+ apt-get install debootstrap wget xorriso isolinux xz-utils squashfs-tools cpio -y
+ ok_or_failed
 fi
 
 ########## Set up debootstrap ##########
 echo -e "\e[0;36mSetting up debootstrap in stretch/chroot\033[0m"
 echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p stretch/chroot && cd stretch &&
-debootstrap --arch=$ARCH --variant=minbase stretch chroot http://ftp.us.debian.org/debian/
+debootstrap --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates stretch chroot http://ftp.us.debian.org/debian/
 
 # Create setup info list build_setup.txt
 echo "Live system built on $(uname -m) for $ARCH on $(date)" > build_setup.txt
 echo -e "Preinstalled on top of debootstrap build:\nlive-boot wget menu dialog apt-utils dbus ca-certificates apt-transport-https xserver-xorg-legacy\n" >> build_setup.txt
 echo -e "Base Install:\n$BASE_INSTALL\n" >> build_setup.txt
-echo -e "Base Applications Install:\n$BASE_APPS_INSTALL\n" >> build_setup.txt
-echo -e "Base Dog Applications Install:\n$BASE_DOG_APPS_INSTALL\n" >> build_setup.txt
-echo -e "Desktop Apps:\n$DESK_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Base Dog Packages Install:\n$BASE_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Applications Install:\n$BASE_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Desktop Environment Packages:\n$DESK_APPS_INSTALL\n" >> build_setup.txt
 echo -e "Firmware:\n$FIRMWARE\n" >> build_setup.txt
-echo -e "Extra Dog Apps:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Extra Dog Packages:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
 echo -e "Remove xserver-xorg-video-vmware=$REM_AUTO_INST" >> build_setup.txt
 
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
@@ -168,15 +365,16 @@ sleep 3
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-stretch.tar.gz
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+ok_or_failed
 
 echo -e "\e[0;36mExtracting...\033[0m"
-tar -zxvf dog-boot-stretch.tar.gz
-tar -zxvf isodata-stretch.tar.gz
-tar -zxvf initrdport-stretch.tar.gz
+tar -zxf dog-boot-stretch.tar.gz
+tar -zxf isodata-stretch.tar.gz
+tar -zxf initrdport-stretch.tar.gz
+ok_or_failed
 echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
 cp -af dog-boot-stretch/* chroot/
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+ok_or_failed
 
 # mount bind some required directories from host filesystem
 mount --bind /proc chroot/proc
@@ -200,12 +398,33 @@ exit
 fi 
 export HOME=/root
 export LC_ALL=C
-apt-get update
+echo -e "\e[0;36mPlease set the password for 'root'\033[0m"
+echo -e "\e[0;33mAlso now you may want to add to or edit files in the chroot folder\033[0m" 
+passwd root
+
 # Google chrome for 64 bit only, so remove on i386
 [ "$ARCH" = "i386" ] && rm -f /etc/apt/sources.list.d/google-chrome.list
+
+# Install without install recommends
 echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
 sleep 1
-apt-get install dialog dbus ca-certificates apt-transport-https apt-utils xserver-xorg-legacy gnupg --yes --force-yes
+[ "$ARCH" = "i386" ] && sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
+[ "$ARCH" = "amd64" ] && sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /etc/apt/sources.list
+
+apt-get update # required, dog repository just added
+[ $? -ne 0 ] && apt-get update # try again if failed
+
+# Install some basic packages (do not edit, essential!)
+apt-get install live-boot wget menu dialog dbus apt-utils xserver-xorg-legacy gnupg --yes
+# try again if failed
+if [ $? -ne 0 ]; then
+apt-get install live-boot wget menu dialog dbus apt-utils xserver-xorg-legacy gnupg --yes
+	if [ $? -ne 0 ]; then
+	echo -e "\e[0;31mFAILED\033[0m"
+	touch /exit_
+	exit
+	fi
+fi
 dbus-uuidgen > /var/lib/dbus/machine-id
 echo "live" > /etc/hostname
 echo "127.0.0.1	 localhost" > /etc/hosts
@@ -220,53 +439,76 @@ echo -e "\e[0;36mmake /bin/sh symlink to bash instead of default dash\033[0m"
 echo "dash dash/sh boolean false" | debconf-set-selections
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
+############ Start installing packages ############
+### First install the kernel
 if [ "$ARCH" = "i386" ]; then
-sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
-apt-get update # required, dog repository just added to sources.list
-# simulate install first to check for errors, if there are, exit
-echo -e "\e[0;36mChecking packages . . .\033[0m"
-apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
-ret=$?
-if [[ $ret -eq 100 ]]; then
-echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
-echo -e "\e[0;36mExiting . . .\033[0m"
-touch /exit_
-sleep 3
-exit
-fi
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-686-pae\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-686-pae
-
-elif [ "$ARCH" = "amd64" ]; then
-sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /etc/apt/sources.list
-apt-get update # required, dog repository just added to sources.list
-# simulate install first to check for errors, if there are, exit
-echo -e "\e[0;36mChecking packages . . .\033[0m"
-apt-get install -s -y --force-yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
-ret=$?
-if [[ $ret -eq 100 ]]; then
-echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
-echo -e "\e[0;36mExiting . . .\033[0m"
-touch /exit_
-sleep 3
-exit
+# try again if failed
+if [ $? -ne 0 ]; then
+	apt-get install --yes linux-image-4.9.0-3-686-pae
+	if [ $? -ne 0 ]; then
+	echo -e "\e[0;31mFAILED\033[0m"
+	touch /exit_
+	exit
+	fi
 fi
+ 
+elif [ "$ARCH" = "amd64" ]; then
+# Add google signing key
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+apt-get update # required, google repository key just added to sources.list
+[ $? -ne 0 ] && apt-get update # try again
+echo
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-amd64\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-amd64
+# try again if failed
+  if [ $? -ne 0 ]; then
+	apt-get install --yes linux-image-4.9.0-3-amd64
+	if [ $? -ne 0 ]; then
+	echo -e "\e[0;31mFAILED\033[0m"
+	touch /exit_
+	exit
+	fi
+  fi 
 fi
+### End installing kernel
 
 # check kernel version just installed in chroot, output of VERNEWKERNEL will be used later 
 VERNEWKERNEL=$(grep " install " /var/log/dpkg.log | sort -r |  cut -d " " -sf4 | grep -o "^[^:]*" | grep linux-image | head -n 1 | sed -e 's/linux-image-//')
 
-####### Start installing packages, defined on top of this script #######
-echo -e "\e[0;36mInstall more packages, e.g. required for network connection\033[0m"
+####### Start installing packages, defined on GUI #######
+echo -e "\e[0;36mInstall packages, e.g. required for network connection\033[0m"
 echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[0m"
 sleep 3
-# If one of the variables is commented out (on top of this script), it will be skipped
-apt-get install --no-install-recommends --yes $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
-############ End of installing ############
+# If one of the variables is empty, it will be skipped
+
+# simulate install first to check for errors, if there are, exit
+echo -e "\e[0;36mChecking packages . . .\033[0m"
+apt-get install -s -y $BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+ret=$?
+if [ $ret -eq 100 ]; then
+echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
+echo -e "\e[0;31mCould be a typo in a package name.\033[0m"
+echo -e "\e[0;36mExiting . . .\033[0m"
+touch /exit_
+sleep 3
+exit
+fi
+### Do the real installing
+apt-get install -y $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+# try again if failed
+if [ $? -ne 0 ]; then
+apt-get install -y $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+	if [ $? -ne 0 ]; then
+	echo -e "\e[0;31mFAILED\033[0m"
+	touch /exit_
+	exit
+	fi
+fi
+############ End of installing packages ############
 
 echo -e "\e[0;36mCopy aufs and squashfs (LZ4 support) module\033[0m"
 sleep 3
@@ -285,6 +527,31 @@ rm -rf /lib/squashfs32
 depmod $VERNEWKERNEL
 fi
 
+# Pin the kernel version
+echo "Adding new entry (pin) of package linux-image-$VERNEWKERNEL in preferences files..."
+VERSION=$(dpkg -s linux-image-$VERNEWKERNEL | grep "Version:" | awk '{ print $2 }')
+echo '
+
+Package: linux-image-'$VERNEWKERNEL'
+Pin: version '$VERSION'
+Pin-Priority: 1001
+' >> /etc/apt/preferences
+
+echo '
+
+Package: linux-image-'$VERNEWKERNEL'
+Pin: version '$VERSION'
+Pin-Priority: 1001
+' >> /var/lib/synaptic/preferences
+
+echo "Fixing preferences files... (e.g. remove first empty line(s) )"
+# no empty lines allowed at top of preferences files, delete them
+sed -i '/./,$!d' /etc/apt/preferences 
+sed -i '/./,$!d' /var/lib/synaptic/preferences
+# replace multiple empty lines by one
+sed -i '/^$/N;/^\n$/D' /etc/apt/preferences
+sed -i '/^$/N;/^\n$/D' /var/lib/synaptic/preferences
+
 ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
 
 # create new initrd with aufs and new squashfs (lz4) included
@@ -293,7 +560,7 @@ CRYPTSETUP=Y update-initramfs -t -c -k $VERNEWKERNEL
 ##### Extra apt-get remove #####
 # Remove xserver-xorg-video-vmware ? 
 # Takes a lot of space due to (large) dependency libllvm3.9 package
-if [ "$REM_AUTO_INST" = "yes" ]; then
+if [ "$REM_AUTO_INST" = "TRUE" ]; then
 echo -e "\e[0;36mAs requested, remove xserver-xorg-video-vmware\033[0m"
 apt-get purge -y xserver-xorg-video-vmware
 fi
@@ -329,13 +596,10 @@ find usr/share/info -type f -exec rm -f {} \;
     chown -R man:root usr/share/man
 
 rm -f vmlinuz* initrd* # remove symlinks on /
-[ "$REMOVE_LOCALES" = "yes" ] && rm -fr usr/share/locale/*
-echo
-echo -e "\e[0;36mPlease set the password for 'root'\033[0m" 
-passwd root
+[ "$KEEP_LOCALES" = "no" ] && rm -fr usr/share/locale/*
 
 rm -f /var/lib/dbus/machine-id
-apt-get clean
+#apt-get clean
 rm -rf /tmp/*
 rm /etc/resolv.conf
 mv -f /usr/local/XTerm /etc/X11/app-defaults/
@@ -362,41 +626,41 @@ echo -e "\e[0;36mStart extracting and creating new 'live' initrd files...\033[0m
 sleep 3
 mkdir initrdlive
 mv -f chroot/boot/initrd.img-* initrdlive/initrd.img
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-echo
+ok_or_failed
 cd initrdlive
 zcat initrd.img | cpio -i -d
 rm -f initrd.img
 echo -e "\e[0;36mCreating initrd.img, please wait...\033[0m"
 find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd.img
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-echo
+ok_or_failed
 cd ..
 echo -e "\e[0;36mCopy kernel modules, contents of lib/modules, from extracted 'live-boot' initrd\n to extracted 'porteus-boot' initrd skeleton, initrdport/lib/modules/ ...\033[0m"
 sleep 2 
-echo
 cp -a initrdlive/lib/modules/* initrdport/lib/modules/
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-echo
+ok_or_failed
 echo -e "\e[0;36mCreating initrd1.xz, please wait...\033[0m"
 cd initrdport
 find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd1.xz
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-echo
+ok_or_failed
 cd ..
 echo -e "\e[0;36mCopy initrd.img, initrd1.xz to isodata/live...\033[0m"
 mv -f initrd.img isodata/live/
 mv -f initrd1.xz isodata/live/
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-echo
+ok_or_failed
 echo -e "\e[0;36mMove vmlinuz, from chroot/boot/, to isodata/live/vmlinuz1 ...\033[0m"
 mv -f chroot/boot/vmlinuz-* isodata/live/vmlinuz1
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-
+ok_or_failed
 
 rm -f chroot/boot/System.map*
-rm -f isodata/live/01-filesystem.squashfs 
+rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
 
+# copy build_setup.txt to chroot/root
+cp -a build_setup.txt chroot/root/
+mv chroot/var/cache/apt ./
+# Allow the user to makes changes in chroot just before creating filesystem.squashfs 
+echo -e "\e[0;33mAt this point you may want to add/edit files in chroot folder\033[0m"
+read -sp "Make any changes to chroot and then Press ENTER to continue . . . "
+echo
 echo -e "\e[0;33mNow we will create compressed filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip, but xz takes much longer time to compress\033[0m"
 read -p "Type gzip or xz : " choice
 
@@ -440,6 +704,11 @@ fi
 [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
 echo
 
+ok_or_failed
+
+# Move back the cache to chroot
+mv ./apt chroot/var/cache/
+
 echo -e "\e[0;36mFinally creating ISO...\033[0m"
 NEWISO=$PWD/isodata
 LABEL=deblive
@@ -448,13 +717,13 @@ NAME=../DebLive_Stretch-$ARCH.iso
 cd "$NEWISO"
 
 xorriso -as mkisofs -r -J -joliet-long -l -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -partition_offset 16 -V "$LABEL" -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ${NAME} "$NEWISO"
+ok_or_failed
 cd ..
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-echo
 echo
 echo -e "\e[0;32mFinished! If all went well, DebLive_Stretch-$ARCH.iso has been created. \nAlso the required files for a frugal install are in isodata 'live' folder \n\nHave a good day!\033[0m"
 echo
 
-exit 0
+# read -s -n 1 -p "Press any key to close . . ."
 
+exit 0
 

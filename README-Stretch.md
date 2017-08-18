@@ -3,7 +3,7 @@
 
 [Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)
 
-**Updated 2017-08-07**     
+**Updated 2017-08-18**     
 Bug fixes and improvements, info below updated               
 
 #### With aufs support and porteus-boot style included   
@@ -23,8 +23,33 @@ Run from a Debian based system 32-bit or 64-bit (will create i686 (32-bit) or x8
 Works well building from Debian Jessie (bug fixed) and Stretch, not from Wheezy (oldoldstable) and not from Xenial(dog), from terminal:   
    
 ```   
-./mklive-stretch
+./mklive-stretch --help
 ```   
+To show the options  
+
+Changes on 2017-08-18:   
+- GUI and CLI version into one, added different options: -help (no option, will show help) -gui -cli, or e.g. -cli <config_file> (use config file), -conf (create standard config file 'stretchlive.conf')    
+- The apt cache in /var/cache/apt will be kept (instead of downloading each time script is run)   
+- Added field 'Desktop' to the gui (see more info when clicking Information button)  
+- Creates 'build_setup.txt' in stretch folder containing how you configured the build   
+- Added checkboxes (GUI):   
+  ------ Remove some automatically installed packages   
+ (to keep ISO size more down)   
+ (more info when clicking Information button)   
+  ------ If running 64 bit host OS, create a 32 bit build  
+- Multi-user support improved ('Add new user' in Menu)  
+(user puppy does not exist in the system but can be added, /home/puppy folder exists preconfigured already for openbox type of build)  
+- Added google-chrome repository (64 bit only)   
+(google-chrome-stable package can be added to apps list in the GUI)  
+  (in /usr/local/bin there are launchers 'chrome-root.sh' and 'chrome-puppy.sh', thanks to dancytron  
+- Pin the kernel version (lock)  
+- Allow the user to make changes in chroot just before creating 01-filesystem.squashfs (script paused)  
+(use upgrade-kernel to upgrade to newer version)  
+
+To create log from output run it this way:  
+[code]./mklive-stretch 2>&1 | tee mklive-stretch.log[/code]  
+(note that progress of mksquashfs looks like it's idle for sometime)  
+
 
 #### If all went well...
 #### In folder stretch DebLive_Stretch-yourarch.iso is created and also the required files for a frugal install are in stretch/isodata/live folder   
@@ -42,7 +67,8 @@ The build process takes around 12-20 minutes, depending on your internet speed a
 **Size of the created ISO will be around 161 MB (with xz compressed filesystem.squashfs)**      
 
 The packages installed by the script can be easily changed, edit with texteditor.  
-See at the top e.g. the BASE_INSTALL= variable, add or remove as desired.              
+See at the top e.g. the BASE_INSTALL= variable, add or remove as desired.  
+Update 2017-08-18: or by specyfying a config file or by running the GUI, run without option or with -help for more info   
 
 **Below are very basically the commands used (for 32-bit) in the 'mklive-stretch' script**     
 **Note that this is written down below just to give some insight in how the build process is done**     
