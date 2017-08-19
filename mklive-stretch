@@ -11,6 +11,7 @@
 # 2017-08-17 GUI and CLI version into one, added different options:
 # -help (or no option, will show help) -gui -cli, or e.g. -cli <config_file> (use config file), -conf (create standard config file)
 # jd7654 and AndresC2 suggestion, keep the apt cache, jd7654, separate field for (graphical) applications (such as leafpad firefox)
+# 2017-08-19 show helptext when made a typo on first parameter and create build_setup.conf (ready to use as config file)
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
