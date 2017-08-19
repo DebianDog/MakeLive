@@ -31,7 +31,7 @@ Changes on 2017-08-18:
 - GUI and CLI version into one, added different options: -help (no option, will show help) -gui -cli, or e.g. -cli <config_file> (use config file), -conf (create standard config file 'stretchlive.conf')    
 - The apt cache in /var/cache/apt will be kept (instead of downloading each time script is run)   
 - Added field 'Desktop' to the gui (see more info when clicking Information button)  
-- Creates 'build_setup.txt' in stretch folder containing how you configured the build   
+- Creates 'build_setup.txt' in stretch folder containing how you configured the build and create 'build_setup.conf' (ready to use as config file)      
 - Added checkboxes (GUI):   
   ------ Remove some automatically installed packages   
  (to keep ISO size more down)   
@@ -48,9 +48,9 @@ Changes on 2017-08-18:
 
 To create log from output run e.g:  
 ```    
-./mklive-stretch -cli 2>&1 | tee mklive-stretch.log  
-(note that progress of mksquashfs looks like it's idle for sometime)  
-```  
+./mklive-stretch -cli 2>&1 | tee mklive-stretch.log   
+```    
+(note that progress of mksquashfs looks like it's idle for sometime)      
 
 #### If all went well...
 #### In folder stretch DebLive_Stretch-yourarch.iso is created and also the required files for a frugal install are in stretch/isodata/live folder   
