@@ -737,7 +737,7 @@ rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
 cp -a build_setup.txt chroot/root/
 mv chroot/var/cache/apt ./
 
-if [ "$(cat chroot/etc/X11/default-display-manager)" ]; then
+if [ "$(cat chroot/etc/X11/default-display-manager 2> /dev/null)" ]; then
 echo -e "\e[0;36mIt looks like you have a display-manager installed\033[0m"
 cat chroot/etc/X11/default-display-manager
 echo -e "\e[0;36mThis probably will conflict with the default login method (through /etc/inittab)\033[0m"
