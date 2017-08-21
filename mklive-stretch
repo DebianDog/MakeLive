@@ -66,7 +66,7 @@ FIRMWARE="firmware-linux-free"
 EXTRA_DOG_APPS_INSTALL=""
 
 REM_AUTO_INST="TRUE"
-
+# Force 32 bit on 64 bit OS (set to FALSE for 64-bit build on 64-bit OS)
 FORCE32="FALSE"
 
 ### End configuration
@@ -117,7 +117,8 @@ if [ -z `which yad` ]; then
 	xmessage "`echo -e $msg`"
 exit 0
 fi
-# Yad Gui
+
+if [ "$(uname -m)" = "i686" ]; then 
 SETUP=`yad --borders=4 --height=680 --width=790  --center --title="MakeLive Stretch"  --text="<b>       \tCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog' </b>\n With aufs support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " \
 --window-icon="preferences-system" --form --columns=1 \
 --field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
@@ -127,7 +128,30 @@ SETUP=`yad --borders=4 --height=680 --width=790  --center --title="MakeLive Stre
 --field="Firmware:: " "$FIRMWARE" \
 --field="Extra Dog Packages:: " "$EXTRA_DOG_APPS_INSTALL" \
 --field="Remove some automatically installed packages (these may take much space, see Information):CHK" "$REM_AUTO_INST" \
---field="If running 64 bit host OS, create a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "$FORCE32" \
+--button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
+ret=$?
+[ $ret -ne 0 ] && exit
+export BASE_INSTALL="`echo $SETUP | cut -d "|" -f 1`"
+export BASE_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 2`"
+export BASE_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 3`"
+export DESK_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 4`"
+export FIRMWARE="`echo $SETUP | cut -d "|" -f 5`"
+export EXTRA_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 6`"
+export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 7`"
+export FORCE32="TRUE"
+
+elif [ "$(uname -m)" = "x86_64" ]; then
+[ "$FORCE32" = "TRUE" ] && CONF32="Build configuration loaded <b>possibly suitable only for  i686</b> (32 bit) uncheck bottom checkbox for a 64-bit build \n"  
+SETUP=`yad --borders=4 --height=680 --width=790  --center --title="MakeLive Stretch"  --text="<b>       \tCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog' </b>\n With aufs support and porteus-boot style included\n $CONF32 It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " \
+--window-icon="preferences-system" --form --columns=1 \
+--field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
+--field="Base Dog Packages Install:  (recommended to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi):TXT" "$BASE_DOG_APPS_INSTALL" \
+--field="Applications Install::TXT" "$BASE_APPS_INSTALL" \
+--field="Desktop :: " "$DESK_APPS_INSTALL" \
+--field="Firmware:: " "$FIRMWARE" \
+--field="Extra Dog Packages:: " "$EXTRA_DOG_APPS_INSTALL" \
+--field="Remove some automatically installed packages (these may take much space, see Information):CHK" "$REM_AUTO_INST" \
+--field="Force a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "$FORCE32" \
 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
 ret=$?
 [ $ret -ne 0 ] && exit
@@ -139,6 +163,7 @@ export FIRMWARE="`echo $SETUP | cut -d "|" -f 5`"
 export EXTRA_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 6`"
 export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 7`"
 export FORCE32="`echo $SETUP | cut -d "|" -f 8`"
+fi
 }
 
 ########### Options (GUI or CLI, configuration)  ###########
@@ -257,6 +282,7 @@ if [ "$(uname -m)" = "i686" ]; then
 echo
 echo -e "\e[0;32mOK, running 32-bit OS, building live system for 32-bit: $(uname -m)\033[0m"
 export ARCH="i386"
+export FORCE32="TRUE"
 elif [ "$(uname -m)" = "x86_64" ]; then
 echo
 	if [ "$FORCE32" = "TRUE" ]; then
@@ -278,7 +304,7 @@ if [ "$CONFIG" = "yes" ]; then
 	fi
 else
 echo -e "\e[0;36mNo custom config in use\033[0m"
-echo -e "\e[0;36mUsing configuration defined on top of script\033[0m"
+echo -e "\e[0;36mUsing standard configuration defined on top of script\033[0m"
 fi
 echo -e "\e[0;33mBuild setup info can be found in: $PWD/stretch/build_setup.txt\033[0m"
 echo -e "\e[0;32mIf you'd like a log from the output, run again e.g:\033[0m"
@@ -365,8 +391,10 @@ echo -e "Firmware:\n$FIRMWARE\n" >> build_setup.txt
 echo -e "Extra Dog Packages:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
 echo -e "Remove xserver-xorg-video-vmware=$REM_AUTO_INST" >> build_setup.txt
 
+# Info architecture for build config
+[ "$ARCH" = "i386" ] && INFO_i386="Config generated for $ARCH, FORCE32 is set to TRUE (this way it works also on 64 bit)"
 ##### Generate config from build #####
-echo '# Configuration for mklive-stretch, modify as desired
+echo '# Configuration for mklive-stretch, generated for architecture: '$ARCH', modify as desired
 # NOTE: Leave every commented (#) line commented as it is
 ### Start configuration
 
@@ -387,6 +415,8 @@ EXTRA_DOG_APPS_INSTALL="'"$EXTRA_DOG_APPS_INSTALL"'"
 
 REM_AUTO_INST="'"$REM_AUTO_INST"'"
 
+# Force 32 bit on 64 bit OS (set to FALSE for 64-bit build on 64-bit OS)
+# '$INFO_i386'
 FORCE32="'"$FORCE32"'"
 
 ### End configuration
@@ -704,6 +734,16 @@ rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
 # copy build_setup.txt to chroot/root
 cp -a build_setup.txt chroot/root/
 mv chroot/var/cache/apt ./
+
+if [ "$(cat chroot/etc/X11/default-display-manager)" ]; then
+echo -e "\e[0;36mIt looks like you have a display-manager installed\033[0m"
+cat chroot/etc/X11/default-display-manager
+echo -e "\e[0;36mThis probably will conflict with the default login method (through /etc/inittab)\033[0m"
+cp -af chroot/etc/inittab-noauto chroot/etc/inittab
+echo -e "\e[0;32mDisabled autologin through /etc/inittab, using display-manager for login\033[0m"
+sleep 3
+fi
+
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo -e "\e[0;33mAt this point you may want to add/edit files in chroot folder\033[0m"
 read -sp "Make any changes to chroot and then Press ENTER to continue . . . "
