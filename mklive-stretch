@@ -747,8 +747,9 @@ sleep 3
 fi
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
-echo -e "\e[0;33mAt this point you may want to add/edit files in chroot folder\033[0m"
-read -sp "Make any changes to chroot and then Press ENTER to continue . . . "
+echo "At this point you may want to add/edit files in chroot folder"
+echo "Also you can add .squashfs modules in the isodata/live folder, to be included in the ISO"
+read -sp "Press ENTER to continue . . . "
 echo
 echo -e "\e[0;33mNow we will create compressed filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip, but xz takes much longer time to compress\033[0m"
 read -p "Type gzip or xz : " choice
