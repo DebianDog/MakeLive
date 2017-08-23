@@ -799,6 +799,7 @@ echo
 ok_or_failed
 
 # Move back the cache to chroot
+rm -fr chroot/var/cache/apt
 mv -f ./apt chroot/var/cache/
 
 echo -e "\e[0;36mFinally creating ISO...\033[0m"
