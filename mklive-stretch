@@ -311,7 +311,7 @@ echo -e "\e[0;36mUsing standard configuration defined on top of script\033[0m"
 fi
 echo -e "\e[0;33mBuild setup info can be found in: $PWD/stretch/build_setup.txt\033[0m"
 echo -e "\e[0;32mIf you'd like a log from the output, run again e.g:\033[0m"
-echo -e "\e[0;33m$0 2>&1 | tee mklive-stretch.log\033[0m"
+echo -e "\e[0;33m$0 -gui 2>&1 | tee mklive-stretch.log\033[0m"
 echo -e "\e[0;36mFirst setting up debootstrap, this will take a few minutes\nAfter that you will be asked to set the password for 'root'\033[0m"
 echo
 read -sp "Press ENTER to continue . . . "
