@@ -303,7 +303,7 @@ if [ "$CONFIG" = "yes" ]; then
 	echo -e "\e[0;31mThis config file cannot be used, sorry, exiting...\033[0m"
 	exit
 	else
-	echo -e "\e[0;36mRunning with configuration: \e[1;29m$PWD/$config\e[0;29m\033[0m"
+echo -e "\e[0;36mRunning with configuration: \e[1;29m$(readlink -f $config)\e[0;29m\033[0m"
 	fi
 else
 echo -e "\e[0;36mNo custom config in use\033[0m"
@@ -736,8 +736,9 @@ rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
 
 # copy build_setup.txt to chroot/root
 cp -a build_setup.txt chroot/root/
-mv chroot/var/cache/apt ./
-mkdir -p chroot/var/cache/apt/archives/partial 2> /dev/null
+rm -f chroot/var/cache/apt/*.bin
+mkdir cached
+mv -f chroot/var/cache/apt/archives/*.deb ./cached/
 
 if [ "$(cat chroot/etc/X11/default-display-manager 2> /dev/null)" ]; then
 echo -e "\e[0;36mIt looks like you have a display-manager installed\033[0m"
@@ -799,8 +800,9 @@ echo
 ok_or_failed
 
 # Move back the cache to chroot
-rm -fr chroot/var/cache/apt
-mv -f ./apt chroot/var/cache/
+
+mv -f ./cached/*.deb chroot/var/cache/apt/archives/
+rmdir cached 2> /dev/null
 
 echo -e "\e[0;36mFinally creating ISO...\033[0m"
 NEWISO=$PWD/isodata
