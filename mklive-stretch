@@ -14,6 +14,7 @@
 # 2017-08-19 show helptext when made a typo on first parameter and create build_setup.conf (ready to use as config file)
 # 2017-08-21 detect if login-manager is installed (and make that default)
 # and make obvious in build_setup.conf which architecture the build has been made for
+# 2017-08-26 GUI only, choice of DE's at start, when run without config file 
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
