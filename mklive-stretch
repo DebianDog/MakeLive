@@ -105,14 +105,28 @@ sleep 3
 exit
 fi
 
+echo -e "\e[0;36mChecking network connection...\033[0m"
+if ping -c1 google.com 2>&1 | grep unknown; then 
+echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"
+sleep 3
+exit
+else
+echo -e "\e[0;32mOK\033[0m"
+sleep 1
+fi
+
 # Information button
 function info () {
 echo -e "\n *** A selection of firmware packages available (mostly for wireless) *** \n atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 \n\n *** Some extra dog applications *** \n debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue \n\n *** Choice of Desktop *** \n Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..\n To change, replace what's in the 'Desktop Apps' field with for example: \nmate-core (for MATE), xfce4 (for XFCE), lxde (for LXDE)\n No guarantee that all work as expected, might require some fixing \n\n *** Remove automatically installed packages (checkbox) *** \n During installing all the packages, some are installed that you might not need, e.g.\nxserver-xorg-video-vmware, having the box checked will uninstall it.\n(possibly (large) library libllvm3.9 will then be autoremoved, depending on your other package choices)\n\n *** Locales ***\nTo keep locale files, set to 'KEEP_LOCALES=yes' on top of the script  " | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information about Firmware and More" --fontname="MonoSpace Bold 12" --back=#ffffff --height=660 --width=775 --text-info --wrap --button="gtk-close:0"
 }
 export -f info
 
+function de_info () {
+echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots/ \n\n *** Thunar without root warning debs (32 bit only) *** \n https://debiandog.github.io/MakeLive/thunar/ " | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=460 --width=775 --text-info --wrap --button="gtk-close:0"
+}
+export -f de_info
 
-yad_gui () {
+de_config () {
 if [ -z `which yad` ]; then
 	msg="  You don't have yad installed.\nIt's a dependency of this program.\n Please install it."
 	echo $msg
@@ -120,6 +134,33 @@ if [ -z `which yad` ]; then
 exit 0
 fi
 
+wget --no-check-certificate -P /tmp/ -r -e robots=off -N -q -nd -l1 -A "*png" https://debiandog.github.io/MakeLive/icons/ 2> /dev/null
+
+LFONT="  ***  <span size='large' >  <b>Choose Desktop Environment</b>  </span>  *** "
+CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 440 --width="790" --list --title="Choose Desktop Environment" --text=" $LFONT  \n  Select one of the options and click Ok \n Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" --column ":IMG" --column Name --column Description /tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel (standard)" /tmp/xfce4.png "Xfce4" " Xfce4 with Whisker Menu" /tmp/jwm.png "Jwm" " Jwm preconfigured" /tmp/mate.png "Mate" " Mate basic" /tmp/lxde.png "LxDD" " LxDog with LXDE environment (32 bit only) by Peebee, many additions and configurations" --print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
+ret=$?
+
+case $ret in
+0)
+[ -z "$CHOICE" ] && yad --title="Nothing Selected" --center --text "  Please select one of the options            " --button="gtk-close:0" && exec $0 -gui
+export DE_CONFIG="$CHOICE"
+[ "$DE_CONFIG" = "Openbox" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/openbox_lx.conf && config=/tmp/openbox_lx.conf
+[ "$DE_CONFIG" = "Xfce4" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/xfce4.conf && config=/tmp/xfce4.conf
+[ "$DE_CONFIG" = "Jwm" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/jwm.conf && config=/tmp/jwm.conf
+[ "$DE_CONFIG" = "Mate" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/mate.conf && config=/tmp/mate.conf
+[ "$DE_CONFIG" = "LxDD" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/lxdd.conf && config=/tmp/lxdd.conf
+;;
+1|252)
+exit
+;;
+2)
+echo "Skipping DE configuration"
+;;
+esac
+}
+export -f de_config
+
+yad_gui () {
 if [ "$(uname -m)" = "i686" ]; then 
 SETUP=`yad --borders=4 --height=680 --width=790  --center --title="MakeLive Stretch"  --text="<b>       \tCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog' </b>\n With aufs support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " \
 --window-icon="preferences-system" --form --columns=1 \
@@ -173,17 +214,17 @@ fi
 helptext="mklive-stretch\n
 usage: $(basename $0) [OPTION] <config_file>\n
  	Options:\n
-	-gui (run yad GUI, requires yad installed)\n
-	(no loading custom config file, using the standard config on top of script)\n
-	-cli (commandline only, no GUI)\n 
-	no loading custom config file, using the standard config on top of script\n  
+	-gui ( run GUI, requires yad installed )\n
+	choice of Desktop Environments (GUI only) and packages to install \n
+	-cli ( commandline only, no GUI )\n 
+	not loading custom config file, using the standard config on top of script\n  
 	-gui <config_file>\n
-	loading custom config file in the same directory as running this script from\n
+	load custom config file\n
 	-cli <config_file>\n
-	loading custom config file in the same directory as running this script from\n
-	-conf (create 'stretchlive.conf') \n
+	load custom config file \n
+	-conf ( create 'stretchlive.conf' ) \n
 	create a standard config file in same directory as running this script from\n
-	(to modify and load as custom configuration)\n 
+	( to modify and load as custom configuration )\n 
 	-help show this help\n
 	Example using custom config file: \n
 	mklive-stretch -cli mycustom.conf \n"
@@ -204,8 +245,15 @@ config=$2
 	CONFIG="yes"
 	yad_gui
 	else
-	standard
-	yad_gui
+	de_config
+		if [ "$DE_CONFIG" ]; then
+		. $config
+		CONFIG="yes"
+		yad_gui
+		else
+		standard # when DE config skipped
+		yad_gui
+		fi
 	fi
 			;;
 		-cli)
@@ -748,6 +796,13 @@ cp -af chroot/etc/inittab-noauto chroot/etc/inittab
 echo -e "\e[0;32mDisabled autologin through /etc/inittab, using display-manager for login\033[0m"
 sleep 3
 fi
+
+# Download extra squashfs modules if DE config is set
+[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/openbox/ 2> /dev/null
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/xfce4/ 2> /dev/null
+[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/jwm/ 2> /dev/null
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/mate/ 2> /dev/null
+[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/lxdd/ 2> /dev/null
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
