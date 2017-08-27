@@ -24,7 +24,7 @@ standard () {
 # Set the standard, (modify as desired, or run with a custom config file)
 
 # Be careful with removing from this section (mostly essential)
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano"
 # Base Dog Packages, recommended to keep: yad gtkdialog obshutdown pup-volume-monitor peasywifi
 BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice"
 # Applications
@@ -54,7 +54,7 @@ echo '# Configuration for mklive-stretch, modify as desired
 ### Start configuration
 
 # Be careful with removing from this section (mostly essential)  
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano"
 
 # Base Dog Packages, recommended to keep:
 # yad gtkdialog obshutdown pup-volume-monitor peasywifi
@@ -138,7 +138,16 @@ fi
 wget --no-check-certificate -P /tmp/ -r -e robots=off -N -q -nd -l1 -A "*png" https://debiandog.github.io/MakeLive/icons/ 2> /dev/null
 
 LFONT="  ***  <span size='large' >  <b>Choose Desktop Environment</b>  </span>  *** "
-CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 440 --width="790" --list --title="Choose Desktop Environment" --text=" $LFONT  \n  Select one of the options and click Ok \n Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" --column ":IMG" --column Name --column Description /tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel (standard)" /tmp/xfce4.png "Xfce4" " Xfce4 with Whisker Menu" /tmp/jwm.png "Jwm" " Jwm preconfigured" /tmp/mate.png "Mate" " Mate basic" /tmp/lxde.png "LxDD" " LxDog with LXDE environment (32 bit only) by Peebee, many additions and configurations" --print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
+CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 490 --width="810" --list --title="Choose Desktop Environment" \
+--text=" $LFONT  \n  Select one of the options and click Ok \n Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" \
+--column ":IMG" --column Name --column Description \
+/tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel (standard)" \
+/tmp/xfce4.png "Xfce4" " Xfce4 with Whisker Menu" \
+/tmp/jwm.png "Jwm" " Jwm preconfigured" \
+/tmp/mate.png "Mate" " Mate basic" \
+/tmp/lxde.png "LxDD" " LxDog with LXDE environment (32 bit only) by Peebee, many additions and configurations" \
+/tmp/fvwm-crystal.png "Fvwm-crystal" " FVWM-Crystal, eye-candy but also powerful desktop environment" \
+--print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
 ret=$?
 
 case $ret in
@@ -150,6 +159,7 @@ export DE_CONFIG="$CHOICE"
 [ "$DE_CONFIG" = "Jwm" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/jwm.conf && config=/tmp/jwm.conf
 [ "$DE_CONFIG" = "Mate" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/mate.conf && config=/tmp/mate.conf
 [ "$DE_CONFIG" = "LxDD" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/lxdd.conf && config=/tmp/lxdd.conf
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
 ;;
 1|252)
 exit
@@ -804,6 +814,7 @@ fi
 [ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/jwm/ 2> /dev/null
 [ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/mate/ 2> /dev/null
 [ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/lxdd/ 2> /dev/null
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/fvwm-crystal/ 2> /dev/null
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
