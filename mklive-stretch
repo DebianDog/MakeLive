@@ -553,6 +553,23 @@ sleep 1
 apt-get update # required, dog repository just added
 [ $? -ne 0 ] && apt-get update # try again if failed
 
+# simulate install first to check for errors, if there are, exit
+echo -e "\e[0;36mChecking packages . . .\033[0m"
+sleep 3
+apt-get install -s -y $BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+ret=$?
+if [ $ret -eq 100 ]; then
+echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
+echo -e "\e[0;31mCould be a typo in a package name.\033[0m"
+echo -e "\e[0;36mExiting . . .\033[0m"
+touch /exit_
+sleep 3
+exit
+else
+echo -e "\e[0;32mAll packages checked OK, continue now to install some basic packages... \033[0m"
+sleep 3
+fi
+
 # Install some basic packages (do not edit, essential!)
 apt-get install live-boot wget menu dialog dbus apt-utils xserver-xorg-legacy gnupg --yes
 # try again if failed
@@ -624,18 +641,7 @@ echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[
 sleep 3
 # If one of the variables is empty, it will be skipped
 
-# simulate install first to check for errors, if there are, exit
-echo -e "\e[0;36mChecking packages . . .\033[0m"
-apt-get install -s -y $BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
-ret=$?
-if [ $ret -eq 100 ]; then
-echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
-echo -e "\e[0;31mCould be a typo in a package name.\033[0m"
-echo -e "\e[0;36mExiting . . .\033[0m"
-touch /exit_
-sleep 3
-exit
-fi
+
 ### Do the real installing
 apt-get install -y $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
 # try again if failed
