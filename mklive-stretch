@@ -15,7 +15,8 @@
 # 2017-08-21 detect if login-manager is installed (and make that default)
 # and make obvious in build_setup.conf which architecture the build has been made for
 # 2017-08-26 GUI only, choice of DE's at start, when run without config file
-# Bug fixed for LZ4 support 
+# Bug fixed for LZ4 support
+# 2017-09-02, added full 'Dog' build option 
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
