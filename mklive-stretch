@@ -15,7 +15,7 @@
 # 2017-08-21 detect if login-manager is installed (and make that default)
 # and make obvious in build_setup.conf which architecture the build has been made for
 # 2017-08-26 GUI only, choice of DE's at start, when run without config file
-# 2017-08-28 Bug fixed for LZ4 support 
+# Bug fixed for LZ4 support 
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -139,7 +139,7 @@ fi
 wget --no-check-certificate -P /tmp/ -r -e robots=off -N -q -nd -l1 -A "*png" https://debiandog.github.io/MakeLive/icons/ 2> /dev/null
 
 LFONT="  ***  <span size='large' >  <b>Choose Desktop Environment</b>  </span>  *** "
-CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 490 --width="810" --list --title="Choose Desktop Environment" \
+CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 540 --width="810" --list --title="Choose Desktop Environment" \
 --text=" $LFONT  \n  Select one of the options and click Ok \n Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" \
 --column ":IMG" --column Name --column Description \
 /tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel (standard)" \
@@ -148,6 +148,7 @@ CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 490 --width="8
 /tmp/mate.png "Mate" " Mate basic" \
 /tmp/lxde.png "LxDD" " LxDog with LXDE environment (32 bit only) by Peebee, many additions and configurations" \
 /tmp/fvwm-crystal.png "Fvwm-crystal" " FVWM-Crystal, eye-candy but also powerful desktop environment" \
+/tmp/dog.png "DDog" " Full DebianDog Openbox_Xfce-Jwm version" \
 --print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
 ret=$?
 
@@ -161,6 +162,7 @@ export DE_CONFIG="$CHOICE"
 [ "$DE_CONFIG" = "Mate" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/mate.conf && config=/tmp/mate.conf
 [ "$DE_CONFIG" = "LxDD" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/lxdd.conf && config=/tmp/lxdd.conf
 [ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
+[ "$DE_CONFIG" = "DDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/ddog.conf && config=/tmp/ddog.conf
 ;;
 1|252)
 exit
@@ -542,6 +544,28 @@ echo -e "\e[0;36mPlease set the password for 'root'\033[0m"
 echo -e "\e[0;33mAlso now you may want to add to or edit files in the chroot folder\033[0m" 
 passwd root
 
+# add groups fuse and wheel
+addgroup fuse
+addgroup wheel
+
+# create user puppy
+add_user_puppy () {
+echo -e "\e[0;36mPlease set the password for user 'puppy'\033[0m"
+read -p "Type password : " pass1
+read -p "Type password again : " pass2
+}
+export -f add_user_puppy
+
+add_user_puppy
+
+if [ "$pass1" != "$pass2" ]; then
+echo -e "\e[0;31mPasswords do not match, please try again\033[0m"
+add_user_puppy
+fi
+adduser puppy --gecos ",,," --disabled-password 2> /dev/null
+echo "puppy:$pass1" | chpasswd
+usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
+
 # Google chrome for 64 bit only, so remove on i386
 [ "$ARCH" = "i386" ] && rm -f /etc/apt/sources.list.d/google-chrome.list
 
@@ -554,10 +578,25 @@ sleep 1
 apt-get update # required, dog repository just added
 [ $? -ne 0 ] && apt-get update # try again if failed
 
+INSTALL="$BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE"
+
+# check gnome-mplayer version
+if [ "$(echo "$INSTALL" | grep gnome-mplayer)" ]; then
+G_MPLAYER=$(echo "$INSTALL" | tr ' ' '\n' | grep "gnome-mplayer")
+[ "$ARCH" = "i386" ] && INSTALL="$(echo "$INSTALL" | sed "s/$G_MPLAYER/gnome-mplayer-1.0.7/g")"
+[ "$ARCH" = "amd64" ] && INSTALL="$(echo "$INSTALL" | sed "s/$G_MPLAYER/gnome-mplayer-1.0.6/g")"
+fi
+
+if [ "$(echo "$INSTALL" | grep transmission)" ]; then
+T_MISSION=$(echo "$INSTALL" | tr ' ' '\n' | grep "transmission")
+[ "$ARCH" = "i386" ] && INSTALL="$(echo "$INSTALL" | sed "s/$T_MISSION/transmission-2.31/g")"
+[ "$ARCH" = "amd64" ] && INSTALL="$(echo "$INSTALL" | sed "s/$T_MISSION/transmission-2.60/g")"
+fi
+
 # simulate install first to check for errors, if there are, exit
 echo -e "\e[0;36mChecking packages . . .\033[0m"
 sleep 3
-apt-get install -s -y $BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install -s -y $INSTALL
 ret=$?
 if [ $ret -eq 100 ]; then
 echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
@@ -637,17 +676,16 @@ fi
 VERNEWKERNEL=$(grep " install " /var/log/dpkg.log | sort -r |  cut -d " " -sf4 | grep -o "^[^:]*" | grep linux-image | head -n 1 | sed -e 's/linux-image-//')
 
 ####### Start installing packages, defined on GUI #######
-echo -e "\e[0;36mInstall packages, e.g. required for network connection\033[0m"
-echo -e "\e[0;36mand e.g. openbox, synaptic, xserver-xorg, busybox, etc... \033[0m"
+echo -e "\e[0;36mInstall packages, as defined in configuration\033[0m"
+
 sleep 3
 # If one of the variables is empty, it will be skipped
 
-
 ### Do the real installing
-apt-get install -y $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install -y $INSTALL
 # try again if failed
 if [ $? -ne 0 ]; then
-apt-get install -y $BASE_INSTALL $BASE_APPS_INSTALL $BASE_DOG_APPS_INSTALL $DESK_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE
+apt-get install -y $INSTALL
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
@@ -824,13 +862,19 @@ fi
 [ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/mate/ 2> /dev/null
 [ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/lxdd/ 2> /dev/null
 [ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/fvwm-crystal/ 2> /dev/null
+if [ "$DE_CONFIG" = "DDog" ]; then
+[ "$ARCH" = "i386" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_32.squashfs"
+[ "$ARCH" = "amd64" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_64.squashfs"
+fi 
+
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
 echo "Also you can add .squashfs modules in the isodata/live folder, to be included in the ISO"
 read -sp "Press ENTER to continue . . . "
 echo
-echo -e "\e[0;33mNow we will create compressed filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip, but xz takes much longer time to compress\033[0m"
+echo -e "\e[0;33mNow we will create compressed filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip,\033[0m"
+echo -e "\e[0;33mbut xz takes much longer time to compress\033[0m"
 read -p "Type gzip or xz : " choice
 
 case "$choice" in 
