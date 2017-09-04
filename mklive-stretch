@@ -739,6 +739,7 @@ sed -i '/./,$!d' /var/lib/synaptic/preferences
 sed -i '/^$/N;/^\n$/D' /etc/apt/preferences
 sed -i '/^$/N;/^\n$/D' /var/lib/synaptic/preferences
 
+mkdir -p /etc/systemd/network 2> /dev/null   # might not exist
 ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
 
 # create new initrd with aufs and new squashfs (lz4) included
