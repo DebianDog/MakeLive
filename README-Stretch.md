@@ -3,7 +3,7 @@
 
 [Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)
 
-**Updated 2017-08-26**     
+**Updated 2017-09-03**     
 Bug fixes and improvements, info below updated               
 
 #### With aufs support and porteus-boot style included   
@@ -27,8 +27,11 @@ Works well building from Debian Jessie (bug fixed) and Stretch, not from Wheezy 
 ```   
 to show the options   
 
-**Update 2017-08-26:** Choice of Desktop Environments (GUI only), see also  [Here](http://murga-linux.com/puppy/viewtopic.php?p=965532#965532)  
-![](https://debiandog.github.io/MakeLive/screenshots/DE_config.png)  
+**Update 2017-08-26:** Choice of Desktop Environments (GUI only), see also  [Here](http://murga-linux.com/puppy/viewtopic.php?p=965532#965532)      
+```      
+./mklive-stretch -gui   
+```      
+![](https://debiandog.github.io/MakeLive/screenshots/DE_config.png)     
 
 Changes on 2017-08-18:   
 - GUI and CLI version into one, added different options: -help (no option, will show help) -gui -cli, or e.g. -cli <config_file> (use config file), -conf (create standard config file 'stretchlive.conf')    
