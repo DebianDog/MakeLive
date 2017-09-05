@@ -213,6 +213,7 @@ SETUP=`yad --borders=4 --height=680 --width=790  --center --title="MakeLive Stre
 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
 ret=$?
 [ $ret -ne 0 ] && exit
+
 export BASE_INSTALL="`echo $SETUP | cut -d "|" -f 1`"
 export BASE_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 2`"
 export BASE_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 3`"
@@ -544,27 +545,17 @@ export LC_ALL=C
 echo -e "\e[0;36mPlease set the password for 'root'\033[0m"
 echo -e "\e[0;33mAlso now you may want to add to or edit files in the chroot folder\033[0m" 
 passwd root
-
+echo
 # add groups fuse and wheel
 addgroup fuse
 addgroup wheel
-
+echo
 # create user puppy
-add_user_puppy () {
-echo -e "\e[0;36mPlease set the password for user 'puppy'\033[0m"
-read -p "Type password : " pass1
-read -p "Type password again : " pass2
-}
-export -f add_user_puppy
-
-add_user_puppy
-
-if [ "$pass1" != "$pass2" ]; then
-echo -e "\e[0;31mPasswords do not match, please try again\033[0m"
-add_user_puppy
-fi
+echo -e "\e[0;36mAdd user 'puppy'...\033[0m"
 adduser puppy --gecos ",,," --disabled-password 2> /dev/null
-echo "puppy:$pass1" | chpasswd
+echo
+echo -e "\e[0;36mPlease set the password for user 'puppy'\033[0m"
+passwd puppy 
 usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
 
 # Google chrome for 64 bit only, so remove on i386
