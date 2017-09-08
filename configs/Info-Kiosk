@@ -1,0 +1,39 @@
+
+                 *** Info Kiosk ***
+
+Restricted to browsing the internet only, no downloading is possible, porn sites blocked.
+The user (not knowing 'root' password) has no access at all to the system (cannot run applications, terminal, or file-manager, etc...)
+
+Recommended usage:
+Boot with porteus-boot changes=EXIT:/.. option (if you need to configure or install something) or without changes option (nosave)
+
+To get access to the system, to configure as administrator:
+Press Alt + F3 TWICE
+Click the "admin" button (Debian logo icon)
+After entering the 'root' password, the wbar dock wil appear, from where you can e.g. install, save session, configure firefox etc..
+
+-------------------------------------
+Firefox info:
+Firefox is running in full screen, pressing F10 or closing all tabs will restart firefox.
+Standard setup is 'Kiosk mode' through addon: "Webconverger"
+To make changes in firefox, e.g. preferences: Click: 'Firefox-safe-mode'
+Next, click 'Start in Safe Mode' 
+Firefox will then run with disabled addons (so without the restricted 'Kiosk modus' addon).
+After closing 'Firefox-safe-mode', click the 'Restart X' icon to go back to the kiosk mode again.
+-------------------------------------
+
+The keyboard shortcut to minimize firefox (escape from full screen) or other windows is: Alt + F3
+It can be changed to something more complicated (secret) if you wish, then use 'Keybinder' from wbar to change it.
+(for example something like: Shift + Ctrl + Alt + F3)
+
+The icon on the right of wbar ('Logout') is to shutdown the computer as administrator.
+If booted with the porteus-boot option EXIT:, you'll be asked to save the session or not.
+So if you made important changes, click 'Save'.
+
+The icon second on the right ('Save Session') will save during a session (in case EXIT: is used).
+
+Clicking the icon on the bottom left (panel) will show shutdown dialog, note that it will NOT show the 'Save or Not Save' dialog (even when booted with changes=EXIT:/ option) 
+
+Close wbar when you are done.
+
+08-09-2017, Fred
