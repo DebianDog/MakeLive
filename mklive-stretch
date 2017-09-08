@@ -16,7 +16,8 @@
 # and make obvious in build_setup.conf which architecture the build has been made for
 # 2017-08-26 GUI only, choice of DE's at start, when run without config file
 # Bug fixed for LZ4 support
-# 2017-09-02, added full 'Dog' build option 
+# 2017-09-02, added full 'Dog' build option
+# 2017-09-08, added 'Kiosk' option (GUI)
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -125,7 +126,7 @@ echo -e "\n *** A selection of firmware packages available (mostly for wireless)
 export -f info
 
 function de_info () {
-echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots/ \n\n *** Thunar without root warning debs (32 bit only) *** \n https://debiandog.github.io/MakeLive/thunar/ \n\n *** Firmware .squashfs module *** \n https://debiandog.github.io/MakeLive/modules/99-firmware-stretch-live.squashfs " | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=460 --width=775 --text-info --wrap --button="gtk-close:0"
+echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots/ \n\n *** Thunar without root warning debs (32 bit only) *** \n https://debiandog.github.io/MakeLive/thunar/ \n\n *** Firmware .squashfs module *** \n https://debiandog.github.io/MakeLive/modules/99-firmware-stretch-live.squashfs\n\n *** Info Kiosk *** \n https://debiandog.github.io/MakeLive/configs/Info-Kiosk" | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=460 --width=775 --text-info --wrap --button="gtk-close:0"
 }
 export -f de_info
 
@@ -140,7 +141,7 @@ fi
 wget --no-check-certificate -P /tmp/ -r -e robots=off -N -q -nd -l1 -A "*png" https://debiandog.github.io/MakeLive/icons/ 2> /dev/null
 
 LFONT="  ***  <span size='large' >  <b>Choose Desktop Environment</b>  </span>  *** "
-CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 540 --width="810" --list --title="Choose Desktop Environment" \
+CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 570 --width="810" --list --title="Choose Desktop Environment" \
 --text=" $LFONT  \n  Select one of the options and click Ok \n Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" \
 --column ":IMG" --column Name --column Description \
 /tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel (standard)" \
@@ -150,6 +151,7 @@ CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 540 --width="8
 /tmp/lxde.png "LxDD" " LxDog with LXDE environment (32 bit only) by Peebee, many additions and configurations" \
 /tmp/fvwm-crystal.png "Fvwm-crystal" " FVWM-Crystal, eye-candy but also powerful desktop environment" \
 /tmp/dog.png "DDog" " Full DebianDog Openbox_Xfce-Jwm version" \
+/tmp/kiosk.png "Kiosk" " Kiosk version, restricted to browsing the internet only" \
 --print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
 ret=$?
 
@@ -164,6 +166,7 @@ export DE_CONFIG="$CHOICE"
 [ "$DE_CONFIG" = "LxDD" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/lxdd.conf && config=/tmp/lxdd.conf
 [ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
 [ "$DE_CONFIG" = "DDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/ddog.conf && config=/tmp/ddog.conf
+[ "$DE_CONFIG" = "Kiosk" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/kiosk.conf && config=/tmp/kiosk.conf
 ;;
 1|252)
 exit
@@ -858,8 +861,8 @@ fi
 if [ "$DE_CONFIG" = "DDog" ]; then
 [ "$ARCH" = "i386" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_32.squashfs"
 [ "$ARCH" = "amd64" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_64.squashfs"
-fi 
-
+fi
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/kiosk/ 2> /dev/null 
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
