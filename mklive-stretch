@@ -18,6 +18,7 @@
 # Bug fixed for LZ4 support
 # 2017-09-02, added full 'Dog' build option
 # 2017-09-08, added 'Kiosk' option (GUI)
+# 2017-09-09, added choice of Desktop environments also for when used -cli
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -179,6 +180,58 @@ esac
 }
 export -f de_config
 
+
+de_config_cli () {
+echo -e "\e[0;36mChoose Desktop Environment\033[0m"
+echo
+echo -e "\e[0;36mPlease select one of the options \nNext you can modify the packages install list\033[0m"
+echo "1) Openbox, Openbox with pcmanfm (providing the desktop) and lxpanel (standard)"
+echo "2) Xfce4, Xfce4 with Whisker Menu"
+echo "3) Jwm, Jwm preconfigured" 
+echo "4) Mate, Mate basic"
+echo "5) LxDD, LxDog with LXDE environment (32 bit only) by Peebee, many additions and configurations"
+echo "6) Fvwm-crystal, FVWM-Crystal, eye-candy but also powerful desktop environment"
+echo "7) DDog, Full DebianDog Openbox_Xfce-Jwm version"
+echo "8) Kiosk, Kiosk version, restricted to browsing the internet only"
+echo
+echo "0) Skip this step, use default (Openbox)"
+echo 
+echo "Type the number and press Enter."
+echo
+
+read n
+case $n in
+    1)
+DE_CONFIG="Openbox" ;;
+    2) 
+DE_CONFIG="Xfce4" ;;
+    3)
+DE_CONFIG="Jwm" ;;
+    4)
+DE_CONFIG="Mate" ;;
+    5)
+DE_CONFIG="LxDD" ;;
+    6)
+DE_CONFIG="Fvwm-crystal" ;;
+    7)
+DE_CONFIG="DDog" ;;
+    8)
+DE_CONFIG="Kiosk" ;;
+    0)
+echo "Skipping DE configuration" ;;
+esac
+
+[ "$DE_CONFIG" = "Openbox" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/openbox_lx.conf && config=/tmp/openbox_lx.conf
+[ "$DE_CONFIG" = "Xfce4" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/xfce4.conf && config=/tmp/xfce4.conf
+[ "$DE_CONFIG" = "Jwm" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/jwm.conf && config=/tmp/jwm.conf
+[ "$DE_CONFIG" = "Mate" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/mate.conf && config=/tmp/mate.conf
+[ "$DE_CONFIG" = "LxDD" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/lxdd.conf && config=/tmp/lxdd.conf
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
+[ "$DE_CONFIG" = "DDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/ddog.conf && config=/tmp/ddog.conf
+[ "$DE_CONFIG" = "Kiosk" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/kiosk.conf && config=/tmp/kiosk.conf
+}
+export -f de_config_cli
+
 yad_gui () {
 if [ "$(uname -m)" = "i686" ]; then 
 SETUP=`yad --borders=4 --height=680 --width=790  --center --title="MakeLive Stretch"  --text="<b>       \tCreate a Debian 9 (Stretch) minimal live system similar to 'DebianDog' </b>\n With aufs support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " \
@@ -235,9 +288,9 @@ helptext="mklive-stretch\n
 usage: $(basename $0) [OPTION] <config_file>\n
  	Options:\n
 	-gui ( run GUI, requires yad installed )\n
-	choice of Desktop Environments (GUI only) and packages to install \n
+	choice of Desktop Environments (GUI) and packages to install \n
 	-cli ( commandline only, no GUI )\n 
-	not loading custom config file, using the standard config on top of script\n  
+	choice of Desktop Environments (CLI) and packages to install \n  
 	-gui <config_file>\n
 	load custom config file\n
 	-cli <config_file>\n
@@ -282,7 +335,16 @@ CLI="yes"
 	. $config
 	CONFIG="yes"
 	else
-	standard
+	de_config_cli
+if [ "$DE_CONFIG" ]; then
+echo -e "\e[0;36mYou can edit now: \e[1;29m$(readlink -f $config)\e[0;29m (to add packages as desired)\033[0m"
+read -sp "When done, press ENTER to continue . . . "
+echo
+. $config
+CONFIG="yes"
+else
+standard # when DE config skipped
+fi
 	fi
 			;;
 		-conf)
