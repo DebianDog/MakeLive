@@ -194,7 +194,7 @@ echo "6) Fvwm-crystal, FVWM-Crystal, eye-candy but also powerful desktop environ
 echo "7) DDog, Full DebianDog Openbox_Xfce-Jwm version"
 echo "8) Kiosk, Kiosk version, restricted to browsing the internet only"
 echo
-echo "0) Skip this step, use default (Openbox)"
+echo "0) Skip this step, use default, as defined on top of script (Openbox)"
 echo 
 echo "Type the number and press Enter."
 echo
