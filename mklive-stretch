@@ -126,7 +126,7 @@ echo -e "\n *** A selection of firmware packages available (mostly for wireless)
 export -f info
 
 function de_info () {
-echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots/ \n\n *** Thunar without root warning debs (32 bit only) *** \n https://debiandog.github.io/MakeLive/thunar/ \n\n *** Firmware .squashfs module *** \n https://debiandog.github.io/MakeLive/modules/99-firmware-stretch-live.squashfs\n\n *** Info Kiosk *** \n https://debiandog.github.io/MakeLive/configs/Info-Kiosk" | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=460 --width=775 --text-info --wrap --button="gtk-close:0"
+echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots/ \n\n *** Thunar without root warning debs (32 bit only) *** \n https://debiandog.github.io/MakeLive/thunar/ \n\n *** Firmware .squashfs module *** \n https://debiandog.github.io/MakeLive/modules/99-firmware-stretch-live.squashfs\n\n *** Info Kiosk *** \n https://debiandog.github.io/MakeLive/configs/Info-Kiosk.txt" | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=460 --width=775 --text-info --wrap --button="gtk-close:0"
 }
 export -f de_info
 
