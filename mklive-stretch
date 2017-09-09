@@ -104,20 +104,21 @@ fi
 
 if [ "`whoami`" != "root" ]; then
 echo "This script should be run as root"
-echo "Please run again, e.g. 'sudo ./mklive-stretch -gui', exiting now..."
+echo "Please run again, e.g. 'sudo ./mklive-gui', exiting now..."
 sleep 3
 exit
 fi
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
-if ping -c1 google.com 2>&1 | grep unknown; then 
+busybox ping -c1 google.com > /dev/null
+    if [ $? -ne 0 ]; then 
 echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"
 sleep 3
 exit
 else
 echo -e "\e[0;32mOK\033[0m"
 sleep 1
-fi
+    fi
 
 # Information button
 function info () {
@@ -385,14 +386,15 @@ read -sp "Press ENTER to continue . . . "
 echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
-if ping -c1 google.com 2>&1 | grep unknown; then 
+busybox ping -c1 google.com > /dev/null
+    if [ $? -ne 0 ]; then 
 echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"
 sleep 3
 exit
 else
 echo -e "\e[0;32mOK\033[0m"
 sleep 1
-fi
+    fi
 
 
 if [ -d "stretch" ]; then 
