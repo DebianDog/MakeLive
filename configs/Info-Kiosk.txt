@@ -8,7 +8,7 @@ Recommended usage:
 Boot with porteus-boot changes=EXIT:/.. option (if you need to configure or install something) or without changes option (nosave)
 
 To get access to the system, to configure as administrator:
-Press Alt + F3 TWICE
+Press Alt + F3
 Click the "admin" button (Debian logo icon)
 After entering the 'root' password, the wbar dock wil appear, from where you can e.g. install, save session, configure firefox etc..
 
