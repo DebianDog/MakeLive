@@ -19,6 +19,7 @@
 # 2017-09-02, added full 'Dog' build option
 # 2017-09-08, added 'Kiosk' option (GUI)
 # 2017-09-09, added choice of Desktop environments also for when used -cli
+# 2017-09-12, added ChromeDog and ObDog to choice of Desktop environments
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
