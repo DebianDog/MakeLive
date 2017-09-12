@@ -143,7 +143,7 @@ fi
 wget --no-check-certificate -P /tmp/ -r -e robots=off -N -q -nd -l1 -A "*png" https://debiandog.github.io/MakeLive/icons/ 2> /dev/null
 
 LFONT="  ***  <span size='large' >  <b>Choose Desktop Environment</b>  </span>  *** "
-CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 570 --width="810" --list --title="Choose Desktop Environment" \
+CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 650 --width="810" --list --title="Choose Desktop Environment" \
 --text=" $LFONT  \n  Select one of the options and click Ok \n Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" \
 --column ":IMG" --column Name --column Description \
 /tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel (standard)" \
@@ -154,6 +154,8 @@ CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 570 --width="8
 /tmp/fvwm-crystal.png "Fvwm-crystal" " FVWM-Crystal, eye-candy but also powerful desktop environment" \
 /tmp/dog.png "DDog" " Full DebianDog Openbox_Xfce-Jwm version" \
 /tmp/kiosk.png "Kiosk" " Kiosk version, restricted to browsing the internet only" \
+/tmp/obdog.png "ObDog" " Full Dog, openbox with pcmanfm, lxpanel - or Jwm, with firefox" \
+/tmp/chrome.png "ChromeDog" " Full Dog, openbox with pcmanfm, lxpanel - or Jwm, with google-chrome (64bit only)" \
 --print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
 ret=$?
 
@@ -169,6 +171,8 @@ export DE_CONFIG="$CHOICE"
 [ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
 [ "$DE_CONFIG" = "DDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/ddog.conf && config=/tmp/ddog.conf
 [ "$DE_CONFIG" = "Kiosk" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/kiosk.conf && config=/tmp/kiosk.conf
+[ "$DE_CONFIG" = "ObDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/obdog.conf && config=/tmp/obdog.conf
+[ "$DE_CONFIG" = "ChromeDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/chromedog.conf && config=/tmp/chromedog.conf
 ;;
 1|252)
 exit
@@ -193,6 +197,8 @@ echo "5) LxDD, LxDog with LXDE environment (32 bit only) by Peebee, many additio
 echo "6) Fvwm-crystal, FVWM-Crystal, eye-candy but also powerful desktop environment"
 echo "7) DDog, Full DebianDog Openbox_Xfce-Jwm version"
 echo "8) Kiosk, Kiosk version, restricted to browsing the internet only"
+echo "9) ObDog, Full Dog, openbox with pcmanfm, lxpanel - or Jwm, with firefox"
+echo "10) ChromeDog, Full Dog, openbox with pcmanfm, lxpanel - or Jwm, with google-chrome (64bit only)"
 echo
 echo "0) Skip this step, use default, as defined on top of script (Openbox)"
 echo 
@@ -217,6 +223,10 @@ DE_CONFIG="Fvwm-crystal" ;;
 DE_CONFIG="DDog" ;;
     8)
 DE_CONFIG="Kiosk" ;;
+    9)
+DE_CONFIG="ObDog" ;;
+    10)
+DE_CONFIG="ChromeDog" ;;
     0)
 echo "Skipping DE configuration" ;;
 esac
@@ -229,6 +239,8 @@ esac
 [ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
 [ "$DE_CONFIG" = "DDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/ddog.conf && config=/tmp/ddog.conf
 [ "$DE_CONFIG" = "Kiosk" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/kiosk.conf && config=/tmp/kiosk.conf
+[ "$DE_CONFIG" = "ObDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/obdog.conf && config=/tmp/obdog.conf
+[ "$DE_CONFIG" = "ChromeDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs/chromedog.conf && config=/tmp/chromedog.conf
 }
 export -f de_config_cli
 
@@ -834,11 +846,12 @@ rm -rf lib/keymaps
 rm -fr var/lib/aptitude/*
 ls var/lib/apt/lists | grep -v "lock" | grep -v "partial" | xargs -i rm var/lib/apt/lists/{} ;
 rm -f var/cache/debconf/*-old
+rm -f var/lib/dpkg/*-old
 
-find usr/share/doc -type f -exec rm -f {} \;
-find usr/share/man -type f -exec rm -f {} \;
-find usr/share/gtk-doc -type f -exec rm -f {} \;
-find usr/share/info -type f -exec rm -f {} \;
+find /usr/share/doc -type f -exec rm -f {} 2> /dev/null \;
+find usr/share/man -type f -exec rm -f {} 2> /dev/null \;
+find usr/share/gtk-doc -type f -exec rm -f {} 2> /dev/null \;
+find usr/share/info -type f -exec rm -f {} 2> /dev/null \;
     chown -R man:root usr/share/man
 
 rm -f vmlinuz* initrd* # remove symlinks on /
@@ -926,7 +939,9 @@ if [ "$DE_CONFIG" = "DDog" ]; then
 [ "$ARCH" = "i386" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_32.squashfs"
 [ "$ARCH" = "amd64" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_64.squashfs"
 fi
-[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/kiosk/ 2> /dev/null 
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/kiosk/ 2> /dev/null
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/obdog/ 2> /dev/null
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/chromedog/ 2> /dev/null 
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
@@ -974,13 +989,11 @@ exit 0
 ;;
 esac
 fi
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-echo
 
 ok_or_failed
+echo
 
 # Move back the cache to chroot
-
 mv -f ./cached/*.deb chroot/var/cache/apt/archives/
 rmdir cached 2> /dev/null
 
