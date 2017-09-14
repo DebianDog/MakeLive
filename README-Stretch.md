@@ -3,7 +3,7 @@
 
 [Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)
 
-**Updated 2017-09-09**     
+**Updated 2017-09-12**     
 Bug fixes and improvements, info below updated               
 
 #### With aufs support and porteus-boot style included   
@@ -29,6 +29,7 @@ to show the options
 
 **Update 2017-08-26:** Choice of Desktop Environments (GUI only), see also  [Here](http://murga-linux.com/puppy/viewtopic.php?p=965532#965532)   
 **Updates:** Added [DDog](http://murga-linux.com/puppy/viewtopic.php?p=966475#966475), [Kiosk](http://murga-linux.com/puppy/viewtopic.php?p=967103#967103) and [DE choice with CLI](http://murga-linux.com/puppy/viewtopic.php?p=967201#967201)   
+[And two more](http://murga-linux.com/puppy/viewtopic.php?p=967513#967513)      
       
 ```      
 ./mklive-stretch -gui   
