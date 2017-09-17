@@ -20,6 +20,7 @@
 # 2017-09-08, added 'Kiosk' option (GUI)
 # 2017-09-09, added choice of Desktop environments also for when used -cli
 # 2017-09-12, added ChromeDog and ObDog to choice of Desktop environments
+# 2017-09-17, more safe unmounting 'mount binds' and some minor changes 
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -185,7 +186,6 @@ esac
 }
 export -f de_config
 
-
 de_config_cli () {
 echo -e "\e[0;36mChoose Desktop Environment\033[0m"
 echo
@@ -295,6 +295,104 @@ export FORCE32="`echo $SETUP | cut -d "|" -f 8`"
 fi
 }
 
+# This makes sure when the script is interrupted, that all mount 'binds' will unmount 
+exitfn () {
+    trap SIGINT              # Resore signal handling for SIGINT
+echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
+#umount chroot/tmp
+umount -l $LAUNCHDIR/stretch/chroot/proc 2> /dev/null
+umount -l $LAUNCHDIR/stretch/chroot/sys 2> /dev/null
+umount -l $LAUNCHDIR/stretch/chroot/dev/pts 2> /dev/null
+umount -l $LAUNCHDIR/stretch/chroot/dev 2> /dev/null
+
+[ ! -d $LAUNCHDIR/stretch/apt ] && mv -f $LAUNCHDIR/stretch/chroot/var/cache/apt $LAUNCHDIR/stretch/
+   sleep 2
+   if mountpoint -q $LAUNCHDIR/stretch/chroot/dev; then     # just in case check dev
+   echo -e "\e[0;31mSomething went wrong, directory chroot cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
+   sleep 2
+   exit
+   else
+   rm -rf $LAUNCHDIR/stretch/chroot
+   fi
+exit
+}
+export -f exitfn
+
+trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
+
+# OK or FAILED
+ok_or_failed () {
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+}
+export -f ok_or_failed
+
+cr_build_info () {
+# Create setup info list build_setup.txt
+echo "Live system built on $(uname -m) for $ARCH on $(date)" > build_setup.txt
+echo -e "Preinstalled on top of debootstrap build:\nlive-boot wget menu dialog apt-utils dbus ca-certificates apt-transport-https xserver-xorg-legacy\n" >> build_setup.txt
+echo -e "Base Install:\n$BASE_INSTALL\n" >> build_setup.txt
+echo -e "Base Dog Packages Install:\n$BASE_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Applications Install:\n$BASE_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Desktop Environment Packages:\n$DESK_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Firmware:\n$FIRMWARE\n" >> build_setup.txt
+echo -e "Extra Dog Packages:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Remove xserver-xorg-video-vmware=$REM_AUTO_INST" >> build_setup.txt
+
+# Info architecture for build config
+[ "$ARCH" = "i386" ] && INFO_i386="Config generated for $ARCH, FORCE32 is set to TRUE (this way it works also on 64 bit)"
+##### Generate config from build #####
+echo '# Configuration for mklive-stretch, generated for architecture: '$ARCH', modify as desired
+# NOTE: Leave every commented (#) line commented as it is
+### Start configuration
+
+# Be careful with removing from this section (mostly essential)  
+BASE_INSTALL="'"$BASE_INSTALL"'"
+
+# Base Dog Packages, recommended to keep:
+# yad gtkdialog obshutdown pup-volume-monitor peasywifi
+BASE_DOG_APPS_INSTALL="'"$BASE_DOG_APPS_INSTALL"'"
+
+BASE_APPS_INSTALL="'"$BASE_APPS_INSTALL"'"
+
+DESK_APPS_INSTALL="'"$DESK_APPS_INSTALL"'"
+  
+FIRMWARE="'"$FIRMWARE"'"
+
+EXTRA_DOG_APPS_INSTALL="'"$EXTRA_DOG_APPS_INSTALL"'"
+
+REM_AUTO_INST="'"$REM_AUTO_INST"'"
+
+# Force 32 bit on 64 bit OS (set to FALSE for 64-bit build on 64-bit OS)
+# '$INFO_i386'
+FORCE32="'"$FORCE32"'"
+
+### End configuration
+
+# A selection of firmware packages available (mostly for wireless):
+# atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 
+# Some extra dog applications:
+# debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue
+# Choice of Desktop:
+# Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..
+# To change, replace what is in the DESK_APPS_INSTALL field with for example:
+# mate-core (for MATE), xfce4 (for XFCE), lxde (for LXDE)
+# No guarantee that all work as expected, might require some fixing
+# Remove automatically installed packages:
+# During installing all the packages, some are installed that you might not need, e.g.
+# xserver-xorg-video-vmware, REM_AUTO_INST=TRUE will uninstall it.
+# (possibly (large) library libllvm3.9 will then be autoremoved, depending on your other package choices)
+# To force 32 bit build on a 64 bit OS set FORCE32=TRUE
+# Locales: To keep locale files, set to KEEP_LOCALES=yes on top of the script' > build_setup.conf
+}
+export -f cr_build_info
+
+########################## End functions #####################################
+
+############# Start #############
+
+export LAUNCHDIR="$PWD"
+
 ########### Options (GUI or CLI, configuration)  ###########
 
 helptext="mklive-stretch\n
@@ -375,44 +473,6 @@ echo -e $helptext
 exit
 			;;
 		esac
-#####################################################
-
-# This makes sure when the script is interrupted, that all mount 'binds' will unmount 
-exitfn () {
-    trap SIGINT              # Resore signal handling for SIGINT
-echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
-#umount chroot/tmp
-umount chroot/proc 2> /dev/null
-umount chroot/dev/pts 2> /dev/null
-umount chroot/dev 2> /dev/null
-umount chroot/sys 2> /dev/null
-sleep 2
-mv chroot/var/cache/apt ./
-rm -rf chroot
-   if [ "$?" -ne "0" ]; then
-   echo -e "\e[0;31mSomething went wrong, directory chroot cannot be removed\033[0m"
-   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
-   sleep 2
-   exit
-   fi
-
-mkdir -p chroot/var/cache
-mv ./apt chroot/var/cache/
-find chroot -mindepth 1 ! -wholename 'chroot/*' -delete 2> /dev/null
-echo -e "\e[0;36mRemoved chroot, except the apt cache\033[0m"
-exit 1
-}
-export -f exitfn
-
-trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
-
-# OK or FAILED
-ok_or_failed () {
-[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
-}
-export -f ok_or_failed
-
-######### Start #########
 
 # export final variables defined through GUI or CLI (with or without custom config)
 export BASE_INSTALL="$BASE_INSTALL"
@@ -482,19 +542,19 @@ case "$choice" in
 echo -e "\e[0;36mUnmount mount binds and remove stretch/chroot...\033[0m"
 #umount chroot/tmp
 umount stretch/chroot/proc 2> /dev/null
+umount stretch/chroot/sys 2> /dev/null
 umount stretch/chroot/dev/pts 2> /dev/null
 umount stretch/chroot/dev 2> /dev/null
-umount stretch/chroot/sys 2> /dev/null
-sleep 2
+
 mv stretch/chroot/var/cache/apt stretch/ 2> /dev/null
-rm -rf stretch/chroot
-   if [ "$?" -ne "0" ]; then
+   if mountpoint -q stretch/chroot/dev; then      # just in case check dev
    echo -e "\e[0;31mSomething went wrong, directory stretch/chroot cannot be removed\033[0m"
    echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
    sleep 2
    exit
+   else
+   rm -rf stretch/chroot
    fi
-
 mkdir -p stretch/chroot/var/cache 2> /dev/null
 mv stretch/apt stretch/chroot/var/cache/ 2> /dev/null
 find stretch -mindepth 1 ! -wholename 'stretch/chroot/*' -delete 2> /dev/null
@@ -527,62 +587,8 @@ echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p stretch/chroot && cd stretch &&
 debootstrap --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates stretch chroot http://ftp.us.debian.org/debian/
 
-# Create setup info list build_setup.txt
-echo "Live system built on $(uname -m) for $ARCH on $(date)" > build_setup.txt
-echo -e "Preinstalled on top of debootstrap build:\nlive-boot wget menu dialog apt-utils dbus ca-certificates apt-transport-https xserver-xorg-legacy\n" >> build_setup.txt
-echo -e "Base Install:\n$BASE_INSTALL\n" >> build_setup.txt
-echo -e "Base Dog Packages Install:\n$BASE_DOG_APPS_INSTALL\n" >> build_setup.txt
-echo -e "Applications Install:\n$BASE_APPS_INSTALL\n" >> build_setup.txt
-echo -e "Desktop Environment Packages:\n$DESK_APPS_INSTALL\n" >> build_setup.txt
-echo -e "Firmware:\n$FIRMWARE\n" >> build_setup.txt
-echo -e "Extra Dog Packages:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
-echo -e "Remove xserver-xorg-video-vmware=$REM_AUTO_INST" >> build_setup.txt
-
-# Info architecture for build config
-[ "$ARCH" = "i386" ] && INFO_i386="Config generated for $ARCH, FORCE32 is set to TRUE (this way it works also on 64 bit)"
-##### Generate config from build #####
-echo '# Configuration for mklive-stretch, generated for architecture: '$ARCH', modify as desired
-# NOTE: Leave every commented (#) line commented as it is
-### Start configuration
-
-# Be careful with removing from this section (mostly essential)  
-BASE_INSTALL="'"$BASE_INSTALL"'"
-
-# Base Dog Packages, recommended to keep:
-# yad gtkdialog obshutdown pup-volume-monitor peasywifi
-BASE_DOG_APPS_INSTALL="'"$BASE_DOG_APPS_INSTALL"'"
-
-BASE_APPS_INSTALL="'"$BASE_APPS_INSTALL"'"
-
-DESK_APPS_INSTALL="'"$DESK_APPS_INSTALL"'"
-  
-FIRMWARE="'"$FIRMWARE"'"
-
-EXTRA_DOG_APPS_INSTALL="'"$EXTRA_DOG_APPS_INSTALL"'"
-
-REM_AUTO_INST="'"$REM_AUTO_INST"'"
-
-# Force 32 bit on 64 bit OS (set to FALSE for 64-bit build on 64-bit OS)
-# '$INFO_i386'
-FORCE32="'"$FORCE32"'"
-
-### End configuration
-
-# A selection of firmware packages available (mostly for wireless):
-# atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 
-# Some extra dog applications:
-# debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue
-# Choice of Desktop:
-# Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..
-# To change, replace what is in the DESK_APPS_INSTALL field with for example:
-# mate-core (for MATE), xfce4 (for XFCE), lxde (for LXDE)
-# No guarantee that all work as expected, might require some fixing
-# Remove automatically installed packages:
-# During installing all the packages, some are installed that you might not need, e.g.
-# xserver-xorg-video-vmware, REM_AUTO_INST=TRUE will uninstall it.
-# (possibly (large) library libllvm3.9 will then be autoremoved, depending on your other package choices)
-# To force 32 bit build on a 64 bit OS set FORCE32=TRUE
-# Locales: To keep locale files, set to KEEP_LOCALES=yes on top of the script' > build_setup.conf
+# create build_info.txt and build_setup.conf
+cr_build_info
 
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
 sleep 3
@@ -622,6 +628,19 @@ exit
 fi 
 export HOME=/root
 export LC_ALL=C
+
+# Google chrome for 64 bit only, so remove on i386
+[ "$ARCH" = "i386" ] && rm -f /etc/apt/sources.list.d/google-chrome.list
+
+# Setup install without install recommends
+echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
+sleep 1
+[ "$ARCH" = "i386" ] && sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
+[ "$ARCH" = "amd64" ] && sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /etc/apt/sources.list
+
+apt-get update # required, dog repository just added
+[ $? -ne 0 ] && apt-get update # try again if failed
+
 echo -e "\e[0;36mPlease set the password for 'root'\033[0m"
 echo -e "\e[0;33mAlso now you may want to add to or edit files in the chroot folder\033[0m" 
 passwd root
@@ -638,21 +657,14 @@ echo -e "\e[0;36mPlease set the password for user 'puppy'\033[0m"
 passwd puppy 
 usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
 
-# Google chrome for 64 bit only, so remove on i386
-[ "$ARCH" = "i386" ] && rm -f /etc/apt/sources.list.d/google-chrome.list
+# configure keyboard first
+echo -e "\e[0;36mInstall keyboard-configuration \033[0m"
+apt-get install dialog keyboard-configuration --yes
 
-# Install without install recommends
-echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
-sleep 1
-[ "$ARCH" = "i386" ] && sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/i386/Packages/ ./\n|' /etc/apt/sources.list
-[ "$ARCH" = "amd64" ] && sed -i '1 s|^|deb https://fredx181.github.io/StretchDog/amd64/Packages/ ./\n|' /etc/apt/sources.list
-
-apt-get update # required, dog repository just added
-[ $? -ne 0 ] && apt-get update # try again if failed
-
+# Merge all install variables into one
 INSTALL="$BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE"
 
-# check gnome-mplayer version
+# check gnome-mplayer and transmission version
 if [ "$(echo "$INSTALL" | grep gnome-mplayer)" ]; then
 G_MPLAYER=$(echo "$INSTALL" | tr ' ' '\n' | grep "gnome-mplayer")
 [ "$ARCH" = "i386" ] && INSTALL="$(echo "$INSTALL" | sed "s/$G_MPLAYER/gnome-mplayer-1.0.7/g")"
@@ -683,16 +695,17 @@ sleep 3
 fi
 
 # Install some basic packages (do not edit, essential!)
-apt-get install live-boot wget menu dialog dbus apt-utils xserver-xorg-legacy gnupg --yes
+apt-get install live-boot wget menu dbus apt-utils xserver-xorg-legacy gnupg --yes
 # try again if failed
 if [ $? -ne 0 ]; then
-apt-get install live-boot wget menu dialog dbus apt-utils xserver-xorg-legacy gnupg --yes
+apt-get install live-boot wget menu dbus apt-utils xserver-xorg-legacy gnupg --yes
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
 	exit
 	fi
 fi
+
 dbus-uuidgen > /var/lib/dbus/machine-id
 echo "live" > /etc/hostname
 echo "127.0.0.1	 localhost" > /etc/hosts
@@ -917,8 +930,8 @@ rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
 # copy build_setup.txt to chroot/root
 cp -a build_setup.txt chroot/root/
 rm -f chroot/var/cache/apt/*.bin
-mkdir cached
-mv -f chroot/var/cache/apt/archives/*.deb ./cached/
+mkdir -p apt/archives
+mv -f chroot/var/cache/apt/archives/*.deb ./apt/archives/
 
 if [ "$(cat chroot/etc/X11/default-display-manager 2> /dev/null)" ]; then
 echo -e "\e[0;36mIt looks like you have a display-manager installed\033[0m"
@@ -930,19 +943,20 @@ sleep 3
 fi
 
 # Download extra squashfs modules if DE config is set
-[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/openbox/ 2> /dev/null
-[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/xfce4/ 2> /dev/null
+echo -e "\e[0;36mIf configured, download extra .squashfs modules to isodata/live...\033[0m"
+[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/openbox/ 2> /dev/null 
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/xfce4/
 [ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/jwm/ 2> /dev/null
-[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/mate/ 2> /dev/null
-[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/lxdd/ 2> /dev/null
-[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/fvwm-crystal/ 2> /dev/null
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/mate/
+[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/lxdd/
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/fvwm-crystal/
 if [ "$DE_CONFIG" = "DDog" ]; then
 [ "$ARCH" = "i386" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_32.squashfs"
 [ "$ARCH" = "amd64" ] && wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_64.squashfs"
 fi
-[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/kiosk/ 2> /dev/null
-[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/obdog/ 2> /dev/null
-[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/chromedog/ 2> /dev/null 
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/kiosk/
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/obdog/
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/chromedog/ 
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
@@ -995,8 +1009,8 @@ ok_or_failed
 echo
 
 # Move back the cache to chroot
-mv -f ./cached/*.deb chroot/var/cache/apt/archives/
-rmdir cached 2> /dev/null
+mv -f ./apt/archives/*.deb chroot/var/cache/apt/archives/ 2> /dev/null
+rm -rf apt 2> /dev/null
 
 echo -e "\e[0;36mFinally creating ISO...\033[0m"
 NEWISO=$PWD/isodata
