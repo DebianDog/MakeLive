@@ -11,9 +11,9 @@
 |create-portable|conky-cli-dbg|debdog-advert-blocker 
 |dancing-letters|conky-cli|findnrun-doc
 |debdoginstallscripts|conky-std|findnrun-nls
-|debdogmountscripts|dillo|guessfstype
+|debdogmountscripts|dillo (32bit)|guessfstype
 |desktop-drive-icons|epdfview|httpfs2
-|desktop-editor|ffmpeg|libdconf0
+|desktop-editor|ffmpeg (32bit)|libdconf0
 |dmmediaconverter|firefox-esr|libdvdcss
 |dog-control-center|geany|libgnutls-deb0-28
 |dogradio|gmplayer|libhogweed2
@@ -23,7 +23,7 @@
 |edit-sfs-thunar|roxterm-gtk2|libnettle4
 |ffconvert|notecase-portable|libqt3-mt
 |filemnt-caja|osmo-portable|libssl1.0.0
-|filemnt-pcmanfm|xfe|libtiff4
+|filemnt-pcmanfm|xfe (32bit)|libtiff4
 |filemnt-rox|palemoon|libudev0
 |filemnt-thunar|qtweb (32bit)|libx264-132
 |findnrun|samba-tng-rcrsn-0.5-rc1-debdog|libxml2
