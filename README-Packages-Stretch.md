@@ -21,8 +21,8 @@
 |domyfile|gnome-mplayer-1.0.6 (64bit)|libjpeg8
 |edit-sfs-pcmanfm|mpv|libmusicbrainz3-6
 |edit-sfs-thunar|roxterm-gtk2|libnettle4
-|ffconvert|notecase-portable|libqt3-mt
-|filemnt-caja|osmo-portable|libssl1.0.0
+|ffconvert|notecase-portable (32bit)|libqt3-mt
+|filemnt-caja|osmo-portable (32bit)|libssl1.0.0
 |filemnt-pcmanfm|xfe (32bit)|libtiff4
 |filemnt-rox|palemoon|libudev0
 |filemnt-thunar|qtweb (32bit)|libx264-132
