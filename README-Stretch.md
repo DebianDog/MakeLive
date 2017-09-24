@@ -3,7 +3,7 @@
 
 [Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)
 
-**Updated 2017-09-12**     
+**Updated 2017-09-24**     
 Bug fixes and improvements, info below updated               
 
 #### With aufs support and porteus-boot style included   
@@ -34,7 +34,9 @@ to show the options
 ```      
 ./mklive-stretch -gui   
 ```      
-![](https://debiandog.github.io/MakeLive/screenshots/DE_config.png)     
+![](https://debiandog.github.io/MakeLive/screenshots/DE_config.png)      
+
+[Packages available from custom repository](https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Packages-Stretch.md#overview-of-packages-in-custom-dog-repositories-for-stretch-from)           
 
 Changes on 2017-08-18:   
 - GUI and CLI version into one, added different options: -help (no option, will show help) -gui -cli, or e.g. -cli <config_file> (use config file), -conf (create standard config file 'stretchlive.conf')    
