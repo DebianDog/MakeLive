@@ -20,7 +20,8 @@
 # 2017-09-08, added 'Kiosk' option (GUI)
 # 2017-09-09, added choice of Desktop environments also for when used -cli
 # 2017-09-12, added ChromeDog and ObDog to choice of Desktop environments
-# 2017-09-17, more safe unmounting 'mount binds' and some minor changes 
+# 2017-09-17, more safe unmounting 'mount binds' and some minor changes
+# 2017-09-24, small fix, remove 'stretch/apt/archives/lock' when script is interrupted
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -306,6 +307,7 @@ umount -l $LAUNCHDIR/stretch/chroot/dev/pts 2> /dev/null
 umount -l $LAUNCHDIR/stretch/chroot/dev 2> /dev/null
 
 [ ! -d $LAUNCHDIR/stretch/apt ] && mv -f $LAUNCHDIR/stretch/chroot/var/cache/apt $LAUNCHDIR/stretch/
+rm -f $LAUNCHDIR/stretch/apt/archives/lock 2> /dev/null
    sleep 2
    if mountpoint -q $LAUNCHDIR/stretch/chroot/dev; then     # just in case check dev
    echo -e "\e[0;31mSomething went wrong, directory chroot cannot be removed\033[0m"
