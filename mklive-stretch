@@ -996,7 +996,7 @@ mksquashfs chroot isodata/live/01-filesystem.squashfs
 ;;
   xz)
 echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
-mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k
+mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k -Xbcj x86
 ;;
 *)
 echo -e "\e[0;31mNot a valid choice, exiting now... \033[0m"
