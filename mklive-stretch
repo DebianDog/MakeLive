@@ -4,7 +4,7 @@
 # with aufs support and porteus-boot style included
 # 2017-08-05, fixed support for Jessie host (previously worked only from Stretch)
 # and removed install of linux-headers and aufs-dkms (build time gets shorter)
-# instead copy aufs.ko for kernel 4.9.3 to /lib/modules/<kernel_version>/kernel/fs/aufs
+# instead copy aufs.ko for kernel 4.9 to /lib/modules/<kernel_version>/kernel/fs/aufs
 # and execute "depmod <kernel_version>" and create new initrd.img-<kernel_version> in /boot
 # dancytron suggestion, separate field for Desktop related packages 
 # 2017-08-14 GUI version using yad, but should be run from terminal
@@ -22,6 +22,7 @@
 # 2017-09-12, added ChromeDog and ObDog to choice of Desktop environments
 # 2017-09-17, more safe unmounting 'mount binds' and some minor changes
 # 2017-09-24, small fix, remove 'stretch/apt/archives/lock' when script is interrupted
+# 2017-09-30, try again if passwords not match
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -137,7 +138,7 @@ export -f de_info
 
 de_config () {
 if [ -z `which yad` ]; then
-	msg="  You don't have yad installed.\nIt's a dependency of this program.\n Please install it."
+	msg=" You don't have yad installed.\nIt's a dependency of this program.\n Please install it.\n Or run with option: -cli"
 	echo $msg
 	xmessage "`echo -e $msg`"
 exit 0
@@ -321,7 +322,7 @@ exit
 }
 export -f exitfn
 
-trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
+trap "exitfn" 1 2 3 15           # Set up SIGINT trap to call function 'exitfn'
 
 # OK or FAILED
 ok_or_failed () {
@@ -646,6 +647,11 @@ apt-get update # required, dog repository just added
 echo -e "\e[0;36mPlease set the password for 'root'\033[0m"
 echo -e "\e[0;33mAlso now you may want to add to or edit files in the chroot folder\033[0m" 
 passwd root
+if [ $? -ne 0 ]; then # try again if passwords not match
+echo -e "\e[0;36mPlease try again, type password for root\033[0m"
+passwd root
+fi
+[ $? -ne 0 ] && echo -e "\e[0;31mWarning: password is not set\033[0m"; sleep 3
 echo
 # add groups fuse and wheel
 addgroup fuse
@@ -656,7 +662,12 @@ echo -e "\e[0;36mAdd user 'puppy'...\033[0m"
 adduser puppy --gecos ",,," --disabled-password 2> /dev/null
 echo
 echo -e "\e[0;36mPlease set the password for user 'puppy'\033[0m"
-passwd puppy 
+passwd puppy
+if [ $? -ne 0 ]; then # try again if passwords not match
+echo -e "\e[0;36mPlease try again, type password for puppy\033[0m"
+passwd puppy
+fi
+[ $? -ne 0 ] && echo -e "\e[0;31mWarning: password is not set\033[0m"; sleep 3 
 usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
 
 # configure keyboard first
