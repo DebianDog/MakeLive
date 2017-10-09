@@ -41,7 +41,7 @@
 |jwm-setup|greybird-theme-dd-stretch|gsu
 |grub4dosconfig|wmx|gtkdesklet
 |isotools|oxygen-icon-theme-light|gtkdialog
-|locale-conf||libgnutls26
+|locale-conf|xfce4-whiskermenu-plugin-mod|libgnutls26
 |makedebpackage||libpng12-0
 |makeswap||libssl0.9.8
 |motion-light||libxml2-dev
@@ -98,3 +98,5 @@
 |youtube-get
 |youtube-get2
 |youtube-viewer
+|azpainter   
+
