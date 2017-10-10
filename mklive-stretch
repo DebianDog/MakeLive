@@ -23,10 +23,13 @@
 # 2017-09-17, more safe unmounting 'mount binds' and some minor changes
 # 2017-09-24, small fix, remove 'stretch/apt/archives/lock' when script is interrupted
 # 2017-09-30, try again if passwords not match
+# 2017-10-10, should work now on any puppy (if debootstrap installed) and on xenialdog32 without tricks 
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
 export KEEP_LOCALES="no"
+
+export LD_LIBRARY_PATH=
 
 standard () {
 # Set the standard, (modify as desired, or run with a custom config file)
@@ -892,7 +895,13 @@ mv -f /usr/local/XTerm /etc/X11/app-defaults/
 }
 export -f chroot_in
 
-chroot chroot /bin/bash -c chroot_in
+if [ "$(which chroot)" = "/bin/chroot" ]; then
+CHROOT="/usr/sbin/chroot"
+else
+CHROOT="chroot"
+fi
+
+$CHROOT chroot /bin/bash -c chroot_in
 
 # do not continue if there were errors
 [ -f "chroot/exit_" ] && exitfn
