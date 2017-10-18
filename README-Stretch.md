@@ -3,8 +3,9 @@
 
 [Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)
 
-**Updated 2017-09-24**     
-Bug fixes and improvements, info below updated               
+**Updated 2017-10-10**     
+Bug fixes and improvements, info below updated
+[Updates and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=962754#962754)                 
 
 #### With aufs support and porteus-boot style included   
 It's required to have at least 3 GB free space and to run the script on a Linux filesystem, e.g. ext4   
