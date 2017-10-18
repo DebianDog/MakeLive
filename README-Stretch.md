@@ -21,7 +21,7 @@ The script does it **all**, except during run, 3 times user input is required:
 Choose keyboard-layout, set the 'root' passwd and choose for gzip or xz compression   
 
 Run from a Debian based system 32-bit or 64-bit (will create i686 (32-bit) or x86_64 (64-bit) live system accordingly to the architecture of the OS you are running from)
-Works well building from Debian Jessie (bug fixed) and Stretch, not from Wheezy (oldoldstable) and not from Xenial(dog), from terminal:   
+Works well building from Debian Jessie (bug fixed) and Stretch, not from Wheezy (oldoldstable), run from terminal:   
    
 ```   
 ./mklive-stretch --help
