@@ -36,15 +36,15 @@
 |frisbee|xterm|wget
 |gifdance|xvidcap|x11-xserver-utils
 |gifenc|zenity-portable|xdm
-|gifondesktop|midori (32bit)
+|gifondesktop|midori (32bit)|libxml2-dev
 |jwmconf|jwm|probepart
 |jwm-setup|greybird-theme-dd-stretch|gsu
 |grub4dosconfig|wmx|gtkdesklet
 |isotools|oxygen-icon-theme-light|gtkdialog
 |locale-conf|xfce4-whiskermenu-plugin-mod|libgnutls26
-|makedebpackage||libpng12-0
+|makedebpackage|mtpaint v3.49.12 (64bit)|libpng12-0
 |makeswap||libssl0.9.8
-|motion-light||libxml2-dev
+|motion-light
 |mount-wizard
 |mount-wizard-2
 |move-in-crypt
@@ -98,5 +98,6 @@
 |youtube-get
 |youtube-get2
 |youtube-viewer
-|azpainter   
+|azpainter
+|deadbeef-static   
 
