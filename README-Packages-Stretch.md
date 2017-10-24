@@ -43,7 +43,7 @@
 |isotools|oxygen-icon-theme-light|gtkdialog
 |locale-conf|xfce4-whiskermenu-plugin-mod|libgnutls26
 |makedebpackage|mtpaint v3.49.12 (64bit)|libpng12-0
-|makeswap||libssl0.9.8
+|makeswap|emelfm2|libssl0.9.8
 |motion-light
 |mount-wizard
 |mount-wizard-2
