@@ -100,4 +100,4 @@
 |youtube-viewer
 |azpainter
 |deadbeef-static   
-
+|sound-card-selector
