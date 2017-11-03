@@ -101,3 +101,6 @@
 |azpainter
 |deadbeef-static   
 |sound-card-selector
+|cputemp
+|peasyclock
+

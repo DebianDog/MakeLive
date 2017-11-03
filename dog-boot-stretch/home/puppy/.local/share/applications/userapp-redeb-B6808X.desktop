@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Extract .deb
+Exec=redeb %f
+Categories=Other;
+NoDisplay=true
+MimeType=application/x-deb
+Terminal=false
+Icon=debian-logo

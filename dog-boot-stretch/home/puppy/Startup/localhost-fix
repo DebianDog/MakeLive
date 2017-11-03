@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# gtkdialog-splash doesn't work without this for user account.
+# Maybe there is better fix but keeping this one for now.
+
+xhost local:

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Action
+Tooltip=Deactivate module
+Name=Deactivate module
+Profiles=profile-zero;
+Icon=application-x-xzm
+
+[X-Action-Profile profile-zero]
+MimeTypes=application/x-squashfs;
+Exec=loadmodule -d %f
+Name=Default profile

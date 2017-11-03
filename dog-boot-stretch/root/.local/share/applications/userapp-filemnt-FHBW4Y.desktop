@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=filemnt
+Exec=filemnt %f
+Categories=Other;
+NoDisplay=true
+MimeType=application/x-cd-image
+Terminal=false

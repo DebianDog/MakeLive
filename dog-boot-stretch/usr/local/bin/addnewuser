@@ -1,0 +1,68 @@
+#!/bin/bash
+
+[ "`whoami`" != "root" ] && exec gsu ${0} "$@"
+       
+function new_user(){
+    add_user=$(yad --title "Add a new user" --text "  <b>Add a new user</b> \n Recommended is to add the user (in the next step) to the most important groups:  \n sudo, audio, cdrom, video, fuse and more." --form --field "Username (use lowercase only):       : "  --field "Password:       :H" --field "Retype Password:       :H")
+ret=$?
+[[ $ret -ne 0 ]] && exit 1
+    if [ -z "$(echo $add_user | cut -d "|" -f 1)" ] || [ -z "$(echo $add_user | cut -d "|" -f 2)" ] || [ -z "$(echo $add_user | cut -d "|" -f 3)" ]; then
+        yad --title "Error" --text " You probably didn't fill in all fields, click 'OK' to try again. "
+ret=$?
+[[ $ret -ne 0 ]] && exit
+        new_user
+    elif [ "$(echo $add_user | cut -d "|" -f 2)" != "$(echo $add_user | cut -d "|" -f 3)" ]; then
+        yad --title "Error" --text " Passwords do not match, please try again"
+ret=$?
+[[ $ret -ne 0 ]] && exit
+        new_user
+    fi
+}
+    
+new_user
+    
+user="`echo $add_user | cut -d "|" -f 1`"
+pass="`echo $add_user | cut -d "|" -f 3`"
+
+ret=false
+getent passwd $user >/dev/null 2>&1 && ret=true
+
+if $ret; then
+yad --center --width=400 --title "User $user already exists" --text "  User: <b>$user</b> already exists!  " --button="gtk-close:0"
+exit 0
+fi
+
+adduser $user --gecos ",,," --disabled-password
+echo "$user:$pass" | chpasswd
+
+ADDGROUPS=$(cat /etc/group  | cut -d: -f1 | grep -vw $user | sed -e 's/^/FALSE /')
+[ "$(echo "$ADDGROUPS" |grep sudo)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE sudo/TRUE sudo/')
+[ "$(echo "$ADDGROUPS" |grep audio)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE audio/TRUE audio/')
+[ "$(echo "$ADDGROUPS" |grep video)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE video/TRUE video/')
+[ "$(echo "$ADDGROUPS" |grep plugdev)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE plugdev/TRUE plugdev/')
+[ "$(echo "$ADDGROUPS" |grep fuse)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE fuse/TRUE fuse/')
+[ "$(echo "$ADDGROUPS" |grep lpadmin)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE lpadmin/TRUE lpadmin/')
+[ "$(echo "$ADDGROUPS" |grep cdrom)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE cdrom/TRUE cdrom/')
+[ "$(echo "$ADDGROUPS" |grep disk)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE disk/TRUE disk/')
+[ "$(echo "$ADDGROUPS" |grep scanner)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE scanner/TRUE scanner/')
+[ "$(echo "$ADDGROUPS" |grep wheel)" ] && ADDGROUPS=$(echo "$ADDGROUPS" | sed -e 's/FALSE wheel/TRUE wheel/')
+
+ADDGROUPS=$(yad --borders 6 --separator=" " --center --height 700 --width="300" --list --checklist --title="Add user $user to groups" --multiple --text=" Add user $user to groups. \n Recommended are e.g.: \n <b><u>sudo</u></b>, audio, cdrom, video, fuse \n Click 'Cancel' to skip this step (not recommended)." --column Choose --column Groups $ADDGROUPS --button="gtk-cancel:1" --button="gtk-ok:0")
+ret=$?
+if [[ $ret -eq 0 ]]; then
+ADDGROUPS=$(echo "$ADDGROUPS" | awk '{print $2}' | tr '\n' ',' | sed 's/.$//')
+echo $ADDGROUPS
+fi
+	if [ "$ADDGROUPS" ]; then
+usermod -a -G $ADDGROUPS $user
+
+if [[ $? -eq 0 ]]; then
+yad --center --width=500 --title "Succes" --text "  Succesfully added user: <b>$user</b> and added <b>$user</b> to the selected groups \n  $ADDGROUPS " --button="gtk-close:0"
+else
+yad --center --width=500 --title "Succes" --text "  Succesfully added user: <b>$user</b> \n  Note: <b>$user</b> has not been added to any groups  " --button="gtk-close:0"
+fi
+	else
+yad --center --width=500 --title "Succes" --text "  Succesfully added user: <b>$user</b> \n  Note: <b>$user</b> has not been added to any groups  " --button="gtk-close:0"
+
+	fi
+exit 0

@@ -1,0 +1,14 @@
+#!/bin/sh
+set -x
+if wmctrl -m | grep "mode: ON"; then
+exec wmctrl -k off &
+disown
+
+else
+exec wmctrl -k on &
+disown
+sleep 1
+xdotool windowmap `xdotool search --classname 'conky'` &
+
+fi
+

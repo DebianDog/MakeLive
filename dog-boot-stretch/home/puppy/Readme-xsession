@@ -1,0 +1,18 @@
+In the script ~/.xession, the last line is: exec $SESSION_MANAGER
+This will run /usr/bin/x-session-manager, it can be configured with:
+update-alternatives --config x-session-manager
+
+There's a good chance this will start most Desktop environments or window-managers (when typing startx from console)
+(there are exceptions, one of them is xfce4, from console: instead of startx, type startxfce4)
+
+If nothing works you might need to install a login manager, e.g. slim or lightdm
+
+Also in ~/.xession there is: 
+/usr/local/bin/start-up &
+This will execute all scripts in folder ~/Startup at login
+If for some reason ~/.xession is not executed, the startup scripts in ~/Startup will also not run.
+Then you can try renaming ~/.config/autostart/Startup.desktop.bak to Startup.desktop, and (hopefully) "/usr/local/bin/start-up &" will run at login 
+(most Desktop environments will autostart .desktop files from ~/.config/autostart)
+
+
+  

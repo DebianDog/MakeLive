@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FILES="$@"
+printf '%s\n' "$@" > /tmp/howbig
+
+BASENAMES=$(while read f; do echo "$(basename "$f")"; done <<< "$(cat /tmp/howbig)")
+
+DIRNAME="$(dirname "$(cat /tmp/howbig | head -1)")"
+
+IFS=$'\n'
+
+cd "$DIRNAME"
+du -chs --apparent-size $BASENAMES | sort -h  | yad --title="How Big?" --width=400 --height=400 --text-info --tail --center
+rm -f /tmp/howbig
+
+exit 0

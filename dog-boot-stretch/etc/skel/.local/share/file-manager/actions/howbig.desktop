@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Action
+Tooltip=How Big?
+Name=How Big?
+Profiles=profile-zero;
+Icon=folder-saved-search
+
+[X-Action-Profile profile-zero]
+Exec=howbig %F
+Name=Default profile

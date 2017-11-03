@@ -1,0 +1,31 @@
+#!/bin/bash
+
+LIVE3="$(grep "/lib/live/mount" /proc/mounts)"
+if [ -z "$LIVE3" ]; then    # make sure we are not using live-boot v3
+HDRV="$(df -h | grep -P '/live/image' 2> /dev/null | cut -d'/' -f3 | cut -d' ' -f1)" # mcewanw
+
+	if [ "$(df -h | grep -P '(?=.*live-rw)(?=.*backing)' 2> /dev/null )" ]; then
+     BACKDRV="$(df -h | grep -P '(?=.*live-rw)(?=.*backing)' 2> /dev/null | cut -d'/' -f3 | cut -d' ' -f1)" # mcewanw
+   if [ "$BACKDRV" = "$HDRV" ]; then
+     mkdir /media/$BACKDRV 2> /dev/null
+     mount /dev/$BACKDRV /media/$BACKDRV
+   else
+     mkdir /media/$BACKDRV 2> /dev/null
+     mount /dev/$BACKDRV /media/$BACKDRV
+     mkdir /media/$HDRV 2> /dev/null
+     mount /dev/$HDRV /media/$HDRV
+   fi
+	else
+BACKDRV="$(df -h | grep -P '/live/cow' 2> /dev/null | grep -v 'tmpfs' | cut -d'/' -f3 | cut -d' ' -f1)" # mcewanw
+		if [ -n "$BACKDRV" ]; then
+  mkdir /media/$BACKDRV 2> /dev/null
+  mount /dev/$BACKDRV /media/$BACKDRV
+  mkdir /media/$HDRV 2> /dev/null
+  mount /dev/$HDRV /media/$HDRV
+                else 
+  mkdir /media/$HDRV 2> /dev/null
+  mount /dev/$HDRV /media/$HDRV
+		fi
+	fi
+fi
+exit 0

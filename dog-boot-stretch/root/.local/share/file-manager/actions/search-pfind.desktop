@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Action
+Tooltip=Pfind search files
+Name=Pfind search files
+Profiles=profile-zero;
+Icon=spacefm-find
+
+[X-Action-Profile profile-zero]
+MimeTypes=inode/directory
+Exec=pfind -d %f
+Name=Default profile

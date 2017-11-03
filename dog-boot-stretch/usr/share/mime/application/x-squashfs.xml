@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-squashfs">
+  <!--Created automatically by update-mime-database. DO NOT EDIT!-->
+  <glob pattern="*.sfs"/>
+  <sub-class-of type="application/octet-stream"/>
+  <comment>debian module</comment>
+  <glob pattern="*.squashfs"/>
+  <sub-class-of type="application/octet-stream"/>
+</mime-type>

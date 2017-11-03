@@ -23,7 +23,9 @@
 # 2017-09-17, more safe unmounting 'mount binds' and some minor changes
 # 2017-09-24, small fix, remove 'stretch/apt/archives/lock' when script is interrupted
 # 2017-09-30, try again if passwords not match
-# 2017-10-10, should work now on any puppy (if debootstrap installed) and on xenialdog32 without tricks 
+# 2017-10-10, should work on any puppy without tricks (if debootstrap installed) and on xenialdog32
+# 2017-11-03, ask at start of build process, to run Xterm at later point
+# (to run any command in the chroot, e.g. synaptic to install some more packages)
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -523,7 +525,20 @@ echo -e "\e[0;32mIf you'd like a log from the output, run again e.g:\033[0m"
 echo -e "\e[0;33m$0 -gui 2>&1 | tee mklive-stretch.log\033[0m"
 echo -e "\e[0;36mFirst setting up debootstrap, this will take a few minutes\nAfter that you will be asked to set the password for 'root'\033[0m"
 echo
-read -sp "Press ENTER to continue . . . "
+# read -sp "Press ENTER to continue . . . "
+echo -e "\e[0;33mAt the end of the install process you may want to run one or more commands\n (in the chroot) \n If so, Xterm will run and you can type e.g. synaptic, to install more packages\n Or e.g. rox or thunar (filemanager), if installed)\033[0m"
+read -p "Do you want to run Xterm just before exiting chroot ? (Enter=no) (y/N)?" choice
+
+case "$choice" in 
+  y|Y)
+echo -e "\e[0;36mOK, will run xterm later, at the end of install process\033[0m"
+export RUNXTERM=yes
+;;
+  n|N|"")
+echo -e "\e[0;36mOK, will not run xterm at the end of install process\033[0m"
+;;
+esac
+
 echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
@@ -861,6 +876,12 @@ GNOME_ICON=$(apt-cache rdepends --installed gnome-icon-theme | grep -v "gnome-ic
 # apt-get purge --yes  xserver-xorg-input-libinput # uncomment if lxinput doesn't work
 apt-get --yes autoremove
 #####################################
+mv -f /usr/local/XTerm /etc/X11/app-defaults/
+
+if [ "$RUNXTERM" = "yes" ]; then
+echo -e "\e[0;36mAs requested, running Xterm now\nDo not forget to close Xterm and all other windows, when done\033[0m"
+xterm
+fi
 
 echo "Cleaning..."
 rm -f var/lib/alsa/asound.state
@@ -891,7 +912,6 @@ rm -f /var/lib/dbus/machine-id
 #apt-get clean
 rm -rf /tmp/*
 rm /etc/resolv.conf
-mv -f /usr/local/XTerm /etc/X11/app-defaults/
 }
 export -f chroot_in
 

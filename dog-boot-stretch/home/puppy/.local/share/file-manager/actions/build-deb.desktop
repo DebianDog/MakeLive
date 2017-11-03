@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Action
+Tooltip=Build .deb
+Name=Build .deb
+Profiles=profile-zero;
+Icon=debian-logo
+
+[X-Action-Profile profile-zero]
+MimeTypes=inode/directory
+Exec=make-deb-package %f
+Name=Default profile
