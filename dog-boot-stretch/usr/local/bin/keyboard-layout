@@ -1,3 +1,0 @@
-#!/bin/bash
-
-xterm -T "Add Keyboard Layout" -si -sb -fg white -bg SkyBlue4 -geometry 80x30 -e sudo dpkg-reconfigure keyboard-configuration

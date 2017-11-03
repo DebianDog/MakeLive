@@ -1,3 +1,0 @@
-#!/bin/bash
-
-exec exec_desktopfile.awk ~/.config/autostart/lxrandr-autostart.desktop
