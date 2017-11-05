@@ -103,4 +103,5 @@
 |sound-card-selector
 |cputemp
 |peasyclock
+|tzupdate
 
