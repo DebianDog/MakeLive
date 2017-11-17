@@ -857,8 +857,10 @@ depmod $VERNEWKERNEL
     else    
 mv -f /lib/aufs32 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
 rm -rf /lib/aufs64
+rm -rf /lib/aufs-nopae
 mv -f /lib/squashfs32/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
 rm -rf /lib/squashfs32
+rm -rf /lib/squashfs-nopae
 rm -rf /lib/squashfs64
 depmod $VERNEWKERNEL
     fi
@@ -866,8 +868,10 @@ depmod $VERNEWKERNEL
 elif [ "$ARCH" = "amd64" ]; then
 mv -f /lib/aufs64 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
 rm -rf /lib/aufs32
+rm -rf /lib/aufs-nopae
 mv -f /lib/squashfs64/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
 rm -rf /lib/squashfs64
+rm -rf /lib/squashfs-nopae
 rm -rf /lib/squashfs32
 depmod $VERNEWKERNEL
 fi
