@@ -540,14 +540,14 @@ echo -e "\e[0;36mOK, will not run xterm at the end of install process\033[0m"
 esac
 
 if [ "$ARCH" = "i386" ]; then
-echo -e "\e[0;33mDo you want to install a pae or a no-pae kernel (no-pae is more suitable for older PCs)\nFor no-pae, type: y\033[0m"
-read -p "Install no-pae kernel ? (Enter = pae) (y/N)?" choice
+echo -e "\e[0;33mDo you want to install (default) pae or a no-pae kernel ?\n(no-pae is more suitable for older (with not pae capable cpu) PCs)\033[0m"
+read -p "Install no-pae kernel ? (Enter = pae, y = no-pae) (y/N)?" choice
 
 case "$choice" in 
   y|Y)
-echo -e "\e[0;36mOK, will install non-pae kernel\033[0m"
+echo -e "\e[0;36mOK, will install no-pae kernel\033[0m"
 export NOPAE="yes"
-sleep 2
+sleep 3
 ;;
   n|N|"")
 echo -e "\e[0;36mOK, will install pae kernel\033[0m"
