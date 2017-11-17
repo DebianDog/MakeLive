@@ -26,6 +26,7 @@
 # 2017-10-10, should work on any puppy without tricks (if debootstrap installed) and on xenialdog32
 # 2017-11-03, ask at start of build process, to run Xterm at later point
 # (to run any command in the chroot, e.g. synaptic to install some more packages)
+# 2017-11-17, added choice to install pae or no-pae kernel, in case of 32bit build
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
