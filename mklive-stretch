@@ -539,6 +539,22 @@ echo -e "\e[0;36mOK, will not run xterm at the end of install process\033[0m"
 ;;
 esac
 
+if [ "$ARCH" = "i386" ]; then
+echo -e "\e[0;33mDo you want to install a pae or a no-pae kernel (no-pae is more suitable for older PCs)\nFor no-pae, type: y\033[0m"
+read -p "Install no-pae kernel ? (Enter = pae) (y/N)?" choice
+
+case "$choice" in 
+  y|Y)
+echo -e "\e[0;36mOK, will install non-pae kernel\033[0m"
+export NOPAE="yes"
+sleep 2
+;;
+  n|N|"")
+echo -e "\e[0;36mOK, will install pae kernel\033[0m"
+;;
+esac
+fi
+
 echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
@@ -754,6 +770,20 @@ DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 ############ Start installing packages ############
 ### First install the kernel
 if [ "$ARCH" = "i386" ]; then
+    if [ "$NOPAE" = "yes" ]; then
+echo -e "\e[0;36mInstall linux-image-4.9.0-4-686\033[0m"
+sleep 3
+apt-get install --yes linux-image-4.9.0-4-686
+# try again if failed
+if [ $? -ne 0 ]; then
+	apt-get install --yes linux-image-4.9.0-4-686
+	if [ $? -ne 0 ]; then
+	echo -e "\e[0;31mFAILED\033[0m"
+	touch /exit_
+	exit
+	fi
+fi
+    else
 echo -e "\e[0;36mInstall linux-image-4.9.0-3-686-pae\033[0m"
 sleep 3
 apt-get install --yes linux-image-4.9.0-3-686-pae
@@ -766,6 +796,7 @@ if [ $? -ne 0 ]; then
 	exit
 	fi
 fi
+    fi
  
 elif [ "$ARCH" = "amd64" ]; then
 # Add google signing key
@@ -813,12 +844,23 @@ fi
 echo -e "\e[0;36mCopy aufs and squashfs (LZ4 support) module\033[0m"
 sleep 3
 if [ "$ARCH" = "i386" ]; then
+    if [ "$NOPAE" = "yes" ]; then
+mv -f /lib/aufs-nopae /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
+rm -rf /lib/aufs64
+mv -f /lib/squashfs-nopae/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
+rm -rf /lib/squashfs32
+rm -rf /lib/squashfs-nopae
+rm -rf /lib/squashfs64
+depmod $VERNEWKERNEL
+
+    else    
 mv -f /lib/aufs32 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
 rm -rf /lib/aufs64
 mv -f /lib/squashfs32/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
 rm -rf /lib/squashfs32
 rm -rf /lib/squashfs64
 depmod $VERNEWKERNEL
+    fi
 
 elif [ "$ARCH" = "amd64" ]; then
 mv -f /lib/aufs64 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
