@@ -104,4 +104,4 @@
 |cputemp
 |peasyclock
 |tzupdate
-
+|touchpad
