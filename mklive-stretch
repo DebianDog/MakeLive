@@ -27,6 +27,7 @@
 # 2017-11-03, ask at start of build process, to run Xterm at later point
 # (to run any command in the chroot, e.g. synaptic to install some more packages)
 # 2017-11-17, added choice to install pae or no-pae kernel, in case of 32bit build
+# 2017-11-23, changed installed kernel to 4.9.0-4 (previously was 4.9.0-3)
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -630,18 +631,18 @@ cr_build_info
 
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
 sleep 3
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch-20171123.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-stretch.tar.gz
 ok_or_failed
 
 echo -e "\e[0;36mExtracting...\033[0m"
-tar -zxf dog-boot-stretch.tar.gz
+tar -zxf dog-boot-stretch-20171123.tar.gz
 tar -zxf isodata-stretch.tar.gz
 tar -zxf initrdport-stretch.tar.gz
 ok_or_failed
 echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
-cp -af dog-boot-stretch/* chroot/
+cp -af dog-boot-stretch-20171123/* chroot/
 ok_or_failed
 
 # mount bind some required directories from host filesystem
@@ -785,12 +786,12 @@ if [ $? -ne 0 ]; then
 	fi
 fi
     else
-echo -e "\e[0;36mInstall linux-image-4.9.0-3-686-pae\033[0m"
+echo -e "\e[0;36mInstall linux-image-4.9.0-4-686-pae\033[0m"
 sleep 3
-apt-get install --yes linux-image-4.9.0-3-686-pae
+apt-get install --yes linux-image-4.9.0-4-686-pae
 # try again if failed
 if [ $? -ne 0 ]; then
-	apt-get install --yes linux-image-4.9.0-3-686-pae
+	apt-get install --yes linux-image-4.9.0-4-686-pae
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
@@ -805,12 +806,12 @@ wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
 apt-get update # required, google repository key just added to sources.list
 [ $? -ne 0 ] && apt-get update # try again
 echo
-echo -e "\e[0;36mInstall linux-image-4.9.0-3-amd64\033[0m"
+echo -e "\e[0;36mInstall linux-image-4.9.0-4-amd64\033[0m"
 sleep 3
-apt-get install --yes linux-image-4.9.0-3-amd64
+apt-get install --yes linux-image-4.9.0-4-amd64
 # try again if failed
   if [ $? -ne 0 ]; then
-	apt-get install --yes linux-image-4.9.0-3-amd64
+	apt-get install --yes linux-image-4.9.0-4-amd64
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
@@ -855,7 +856,7 @@ rm -rf /lib/squashfs-nopae
 rm -rf /lib/squashfs64
 depmod $VERNEWKERNEL
 
-    else    
+    else   
 mv -f /lib/aufs32 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
 rm -rf /lib/aufs64
 rm -rf /lib/aufs-nopae
