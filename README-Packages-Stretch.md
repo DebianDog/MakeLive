@@ -3,47 +3,54 @@
 
 | Applications     | Applications (modified or older) |    Others        |
 | :----------------| :------------------------------  |    :------       |
-|apt2sfs|adwaita-icon-theme|apulse
-|camphonetab|conky|bacon
-|ceni|conky-all|broadcom-wl-driver-k4.9.0-3-686-pae
-|conkyclock|conky-std-dbg|chpupsocket
-|conkyclock2|conky-all-dbg|cryptsetup-bin
-|create-portable|conky-cli-dbg|debdog-advert-blocker 
-|dancing-letters|conky-cli|findnrun-doc
-|debdoginstallscripts|conky-std|findnrun-nls
-|debdogmountscripts|dillo (32bit)|guessfstype
-|desktop-drive-icons|epdfview|httpfs2
-|desktop-editor|ffmpeg (32bit)|libdconf0
-|dmmediaconverter|firefox-esr|libdvdcss
-|dog-control-center|geany|libgnutls-deb0-28
-|dogradio|gmplayer|libhogweed2
-|domycommand|gnome-mplayer-1.0.7 (32bit)|libhunspell-1.3-0
-|domyfile|gnome-mplayer-1.0.6 (64bit)|libjpeg8
-|edit-sfs-pcmanfm|mpv|libmusicbrainz3-6
-|edit-sfs-thunar|roxterm-gtk2|libnettle4
-|ffconvert|notecase-portable (32bit)|libqt3-mt
-|filemnt-caja|osmo-portable (32bit)|libssl1.0.0
-|filemnt-pcmanfm|xfe (32bit)|libtiff4
-|filemnt-rox|palemoon|libudev0
-|filemnt-thunar|qtweb (32bit)|libx264-132
-|findnrun|samba-tng-rcrsn-0.5-rc1-debdog|libxml2
-|firewall-ng|slim|linux-user-chroot
-|Firewall-Puppy|rox-filer|lxinputsave
-|fixdepinstall|slimjet|lxrandr-save-fix
-|flashplayerchoice|transmission-2.31 (32bit)|realtek-wifi-drivers-k4.9.0-i386
-|flburn|transmission-2.60 (64bit)|flite-hts-engine
-|freememapplettray|xinit|squashfuse
-|frisbee|xterm|wget
-|gifdance|xvidcap|x11-xserver-utils
-|gifenc|zenity-portable|xdm
-|gifondesktop|midori (32bit)|libxml2-dev
-|jwmconf|jwm|probepart
-|jwm-setup|greybird-theme-dd-stretch|gsu
-|grub4dosconfig|wmx|gtkdesklet
-|isotools|oxygen-icon-theme-light|gtkdialog
-|locale-conf|xfce4-whiskermenu-plugin-mod|libgnutls26
-|makedebpackage|mtpaint v3.49.12 (64bit)|libpng12-0
-|makeswap|emelfm2|libssl0.9.8
+|alsamixer-tray|adwaita-icon-theme|apulse
+|apt2sfs|conky|bacon
+|azpainter|conky-all|broadcom-wl-driver-k4.9.0-3-686-pae
+|batterup|conky-all-dbg|chpupsocket
+|camphonetab|conky-cli|cryptsetup-bin
+|ceni|conky-cli-dbg|debdog-advert-blocker 
+|conkyclock|conky-std|findnrun-doc
+|conkyclock2|conky-std-dbg|findnrun-nls
+|cputemp|dillo (32bit)|flite-hts-engine
+|create-portable|emelfm2|gsu
+|dancing-letters|epdfview|gtkdesklet
+|deadbeef-static|ffmpeg (32bit)|gtkdialog
+|debdoginstallscripts|firefox-esr|guessfstype
+|debdogmountscripts|geany|httpfs2
+|desktop-drive-icons|gmplayer|libdconf0
+|desktop-editor|gnome-mplayer-1.0.6 (64bit)|libdvdcss
+|dmmediaconverter|gnome-mplayer-1.0.7 (32bit)|libgnutls26
+|dog-control-center|greybird-theme-dd-stretch|libgnutls-deb0-28
+|dogradio|jwm|libhogweed2
+|domycommand|midori (32bit)|libhunspell-1.3-0
+|domyfile|mpv|libjpeg8
+|dropboxgui|mtpaint v3.49.12 (64bit)|libmusicbrainz3-6
+|edit-sfs-pcmanfm|notecase-portable (32bit)|libnettle4
+|edit-sfs-thunar|osmo-portable (32bit)|libpng12-0
+|ffconvert|oxygen-icon-theme-light|libqt3-mt
+|filemnt-caja|palemoon|libssl0.9.8
+|filemnt-pcmanfm|qtweb (32bit)|libssl1.0.0
+|filemnt-rox|rox-filer|libtiff4
+|filemnt-thunar|roxterm-gtk2|libudev0
+|findnrun|samba-tng-rcrsn-0.5-rc1-debdog|libx264-132
+|firewall-ng|slim|libxml2
+|Firewall-Puppy|slimjet|libxml2-dev
+|fixdepinstall|transmission-2.31 (32bit)|linux-user-chroot
+|flashplayerchoice|transmission-2.60 (64bit)|lxinputsave
+|flburn|wmx|lxrandr-save-fix
+|freememapplettray|xfce4-whiskermenu-plugin-mod|probepart
+|frisbee|xfe (32bit)|realtek-wifi-drivers-k4.9.0-i386
+|gifdance|xinit|squashfuse
+|gifenc|xterm|wget
+|gifondesktop|xvidcap|x11-xserver-utils
+|googledrivegui|zenity-portable|xdm
+|grub4dosconfig
+|isotools
+|jwmconf
+|jwm-setup
+|locale-conf
+|makedebpackage
+|makeswap
 |motion-light
 |mount-wizard
 |mount-wizard-2
@@ -52,6 +59,7 @@
 |openbox-keybinder
 |pavrecord
 |pburn
+|peasyclock
 |peasy-dvd-player
 |peasyfwmon
 |peasyglue
@@ -82,7 +90,10 @@
 |sfs-get-smokey-get
 |sfsload
 |sns
+|sound-card-selector
+|touchpad
 |txt2svg
+|tzupdate
 |uextract
 |unzipper
 |upgrade-kernel
@@ -98,10 +109,4 @@
 |youtube-get
 |youtube-get2
 |youtube-viewer
-|azpainter
-|deadbeef-static   
-|sound-card-selector
-|cputemp
-|peasyclock
-|tzupdate
-|touchpad
+
