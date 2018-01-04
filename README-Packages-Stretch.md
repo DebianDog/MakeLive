@@ -27,23 +27,25 @@
 |dropboxgui|mtpaint v3.49.12 (64bit)|libmusicbrainz3-6
 |edit-sfs-pcmanfm|notecase-portable (32bit)|libnettle4
 |edit-sfs-thunar|osmo-portable (32bit)|libpng12-0
-|ffconvert|oxygen-icon-theme-light|libqt3-mt
-|filemnt-caja|palemoon|libssl0.9.8
-|filemnt-pcmanfm|qtweb (32bit)|libssl1.0.0
-|filemnt-rox|rox-filer|libtiff4
-|filemnt-thunar|roxterm-gtk2|libudev0
-|findnrun|samba-tng-rcrsn-0.5-rc1-debdog|libx264-132
-|firewall-ng|slim|libxml2
-|Firewall-Puppy|slimjet|libxml2-dev
-|fixdepinstall|transmission-2.31 (32bit)|linux-user-chroot
-|flashplayerchoice|transmission-2.60 (64bit)|lxinputsave
-|flburn|wmx|lxrandr-save-fix
-|freememapplettray|xfce4-whiskermenu-plugin-mod|probepart
-|frisbee|xfe (32bit)|realtek-wifi-drivers-k4.9.0-i386
-|gifdance|xinit|squashfuse
-|gifenc|xterm|wget
-|gifondesktop|xvidcap|x11-xserver-utils
-|googledrivegui|zenity-portable|xdm
+|f3-flash-check|oxygen-icon-theme-light|libqt3-mt
+|ffconvert|palemoon|libssl0.9.8
+|filemnt-caja|qtweb (32bit)|libssl1.0.0
+|filemnt-pcmanfm|rox-filer|libtiff4
+|filemnt-rox|roxterm-gtk2|libudev0
+|filemnt-thunar|samba-tng-rcrsn-0.5-rc1-debdog|libx264-132
+|findnrun|slim|libxml2
+|firewall-ng|slimjet|libxml2-dev
+|Firewall-Puppy|transmission-2.31 (32bit)|linux-user-chroot
+|fixdepinstall|transmission-2.60 (64bit)|lxinputsave
+|flashplayerchoice|wmx|lxrandr-save-fix
+|flburn|xfce4-whiskermenu-plugin-mod|probepart
+|freememapplettray|xfe (32bit)|realtek-wifi-drivers-k4.9.0-i386
+|frisbee|xinit|squashfuse
+|gifdance|xterm|wget
+|gifenc|xvidcap|x11-xserver-utils
+|gifondesktop|zenity-portable|xdm
+|googledrivegui
+|googledrivegui2
 |grub4dosconfig
 |isotools
 |jwmconf
@@ -89,6 +91,7 @@
 |scrox
 |sfs-get-smokey-get
 |sfsload
+|simple-python-http-server
 |sns
 |sound-card-selector
 |touchpad
@@ -109,4 +112,3 @@
 |youtube-get
 |youtube-get2
 |youtube-viewer
-
