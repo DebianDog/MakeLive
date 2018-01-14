@@ -28,7 +28,8 @@
 # (to run any command in the chroot, e.g. synaptic to install some more packages)
 # 2017-11-17, added choice to install pae or no-pae kernel, in case of 32bit build
 # 2017-11-23, changed installed kernel to 4.9.0-4 (previously was 4.9.0-3)
-# 2018-01-12, changed installed kernel to 4.9.0-5 (previously was 4.9.0-3)
+# 2018-01-12, changed installed kernel to 4.9.0-5 (previously was 4.9.0-4)
+# 2018-01-13, added xserver-xorg-video-intel to standard config (otherwise X wouldn't start on some machines) 
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -40,7 +41,7 @@ standard () {
 # Set the standard, (modify as desired, or run with a custom config file)
 
 # Be careful with removing from this section (mostly essential)
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel"
 # Base Dog Packages, recommended to keep: yad gtkdialog obshutdown pup-volume-monitor peasywifi
 BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi chpupsocket edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice peasyclock"
 # Applications
@@ -70,7 +71,7 @@ echo '# Configuration for mklive-stretch, modify as desired
 ### Start configuration
 
 # Be careful with removing from this section (mostly essential)  
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel"
 
 # Base Dog Packages, recommended to keep:
 # yad gtkdialog obshutdown pup-volume-monitor peasywifi
@@ -117,7 +118,7 @@ fi
 
 if [ "`whoami`" != "root" ]; then
 echo "This script should be run as root"
-echo "Please run again, e.g. 'sudo ./mklive-gui', exiting now..."
+echo "Please run again, e.g. 'sudo ./mklive-stretch -gui', exiting now..."
 sleep 3
 exit
 fi
