@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Add/Remove User from groups
+Comment=
+Exec=addusertogroups
+Icon=user-home
+Terminal=false
+StartupNotify=false
+Categories=System;Utility;

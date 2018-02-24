@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# freechk: Script to check when running out of space, by fredx181
+# Shows gtkdialog-splash red colored warning in that case, it disappears only when space left has been increased again (displays for a short time a green colored message then)
+# When space left is low again, it displays again the warning... and so on...
+# Needs to run constantly in the background (best to be started at login e.g. put it in  ~/Startup)
+# 2015-04-08 Changed 'rootfs' to 'aufs' for FREEMB variable to make it compatible for Jessie/Sid (df -m output has been changed) 
+
+# Set the variable for number of MB space left, there'll be warning if it's less (what is a good amount?)
+MBLEFT=30
+# Set check interval (e.g. if set to 10, there's a check every 10 seconds, which should be fine, however there's a delay up to 10 seconds until the splash message appears)
+# If set to low amount such as 1, the CPU usage of this program will be a bit higher 
+INTERVALCHK=10
+
+
+# Below commented out lines were some experiments to make it run as a daemon, didn't work out well (keeping it here just in case).
+#export XAUTHORITY=$HOME/.Xauthority
+#env
+#xauth list|grep `uname -n`
+#DISPLAY=:0.0 ; export DISPLAY
+#xhost +localhost
+#su $USER
+
+# Make sure X is started before checking
+sleep 10
+
+exitfn () {
+rm -f /tmp/gtkdialog-splash_gtkrc
+exit
+}
+trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'
+
+FREEMB=$(df -m | grep 'aufs ' | tr -s ' ' | cut -f 4 -d ' ')
+# Check if free space is low already at start 
+if [ "$FREEMB" -le $MBLEFT ]; then
+echo "Warning: Less than ${MBLEFT}MB of space left on rootfs"
+msg=$(echo -e "Warning: Less than ${MBLEFT}MB free space on rootfs\nStrongly recommend to resize your savefile or delete files")
+gtkdialog-splash -font 'Sans Bold' -fontsize 8 -align center -margin 04 -placement top -bg "dark red" -fg yellow -text "$msg" -close never &
+pdwarn=$!
+fi
+
+while [ "$FREEMB" -le $MBLEFT ]; do
+sleep $INTERVALCHK
+FREEMB=$(df -m | grep 'aufs ' | tr -s ' ' | cut -f 4 -d ' ')
+if [ "$FREEMB" -gt $MBLEFT ]; then
+kill $pdwarn
+rm -f /tmp/gtkdialog-splash_gtkrc
+sleep 4
+echo "More than ${MBLEFT}MB of space left on rootfs now (${FREEMB}MB)"
+gtkdialog-splash -align left -margin 5 -placement top -bg "dark green" -fg yellow -text "${FREEMB}MB of space left on rootfs now" -close never -timeout 6
+rm -f /tmp/gtkdialog-splash_gtkrc
+#exec "$0"
+break
+fi
+done
+
+FREEMB=$(df -m | grep 'aufs ' | tr -s ' ' | cut -f 4 -d ' ')
+while [ "$FREEMB" -gt $MBLEFT ]; do
+sleep $INTERVALCHK
+FREEMB=$(df -m | grep 'aufs ' | tr -s ' ' | cut -f 4 -d ' ')
+if [ "$FREEMB" -le $MBLEFT ]; then
+echo "Warning: Less than ${MBLEFT}MB of space left on rootfs"
+msg=$(echo -e "Warning: Less than ${MBLEFT}MB free space on rootfs\nStrongly recommend to resize your savefile or delete files!")
+gtkdialog-splash -font 'Sans Bold' -fontsize 8 -align center -margin 04 -placement top -bg "dark red" -fg yellow -text "$msg" -close never &
+pdwarn=$!
+break
+fi
+done
+
+FREEMB=$(df -m | grep 'aufs ' | tr -s ' ' | cut -f 4 -d ' ')
+while [ "$FREEMB" -le $MBLEFT ]; do
+sleep $INTERVALCHK
+FREEMB=$(df -m | grep 'aufs ' | tr -s ' ' | cut -f 4 -d ' ')
+if [ "$FREEMB" -gt $MBLEFT ]; then
+kill $pdwarn
+rm -f /tmp/gtkdialog-splash_gtkrc
+sleep 4
+echo "More than ${MBLEFT}MB of space left on rootfs now (${FREEMB}MB)"
+gtkdialog-splash -align left -margin 5 -placement top -bg "dark green" -fg yellow -text "${FREEMB}MB of space left on rootfs now" -close never -timeout 6
+rm -f /tmp/gtkdialog-splash_gtkrc
+exec "$0"
+break
+fi
+done
+exit

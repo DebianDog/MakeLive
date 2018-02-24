@@ -1,0 +1,15 @@
+#!/bin/bash
+
+keyboard_layout () {
+sudo dpkg-reconfigure keyboard-configuration
+sudo udevadm trigger --subsystem-match=input --action=change
+echo "Please wait, querying info..."
+sleep 4
+echo
+echo "Keyboard Layout:"
+setxkbmap -query
+read -s -n 1 -p "Press any key to close . . ."
+}
+export -f keyboard_layout
+
+/bin/bash -c 'xterm -T "Keyboard Layout" -si -sb -fg white -bg SkyBlue4 -geometry 80x30 -e "keyboard_layout"'

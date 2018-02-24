@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec exec_desktopfile.awk ~/.config/autostart/LXinput-setup.desktop

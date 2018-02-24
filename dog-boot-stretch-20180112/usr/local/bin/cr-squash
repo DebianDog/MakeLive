@@ -1,0 +1,123 @@
+#!/bin/bash
+set -x
+# Create .squashfs from folder.
+
+DIR=$1
+z=`echo "$1" | sed "s/\/$//"`
+
+# Check if mksquashfs version is 4.3 or higher
+check_mksquashfs_version=$(mksquashfs -version | awk 'NR==1 { print $3 }' | grep -o 4.3)
+verlte() {
+    [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+}
+
+verlt() {
+    [ "$1" = "$2" ] && return 1 || verlte $1 $2
+}
+
+if verlt $check_mksquashfs_version 4.3
+then
+SETUP=$(yad --width=500 --center --title="Choose Compression Type" --text "    <b>Choose which algorthim to compress the sfs with.</b> \n  Chosing XZ here will give you a smaller file but \n  may be slower than GZIP on very lowspec machines. " --button=" XZ :2" --button=" GZIP :0" --form --field="  Type the name of the new .squashfs:" "$(basename $z).squashfs" --buttons-layout=spread)
+
+button1=$?
+export NAME="`echo $SETUP | cut -d "|" -f 1`"
+
+if [ -f "$(dirname $DIR)/$NAME" ];then
+  yad --center --width=300 --window-icon="application-x-squashfs-image" --title="Overwrite" --text="<b>$NAME</b> already exists.\n Would you like to overwrite it?\n" \
+  --text-align="center" --borders="10" --buttons-layout="center" --button="gtk-yes:0" --button="gtk-no:1"
+  case $? in
+    0) rm -f "$(dirname $DIR)/$NAME" ;;
+    *) exit ;;
+  esac
+fi
+
+case $button1 in
+0) COMP="" ;;
+2) COMP="-comp xz -b 512k -Xbcj x86" ;;
+*) exit ;;
+esac
+
+(
+script -q -c "stty rows 40 cols 100; mksquashfs "$DIR" "$(dirname $DIR)/$NAME" $COMP" |while read -n 250 LINE ; do
+A="$(echo $LINE | grep 'Parallel mksquashfs')"
+[ -n "$A" ] && B=$A
+C="$(echo $LINE | grep 'Creating 4.0 filesystem')"
+[ -n "$C" ] && D=$(echo $C | sed 's@.*/@@')
+
+echo "XXX"
+echo "$B"
+echo "\\n"
+echo "Creating 4.0 filesystem on $D" 
+echo "\\n"
+echo "Please Wait. . ."
+echo "\\n"
+echo "Close this Window to Cancel processing."
+echo "XXX"
+echo $LINE | busybox strings |egrep '[0-9]\%'| cut -f1 -d% |awk '{print $NF}'|grep -v '\.' ;done &
+) | Xdialog --title "Building Squashfile " --gauge "Building $NAME. Please Wait... \n To cancel: Close this window" 10 100 0
+
+if [ $? -ne 0 ]; then
+SQUASHPID=$(ps -eo pid,cmd | grep -v grep | grep "mksquashfs $DIR $(dirname $DIR)/$NAME" | awk '{ print $1 }')
+kill $SQUASHPID
+yad --center --borders=10 --title="SFS creation canceled" --window-icon="application-x-squashfs-image" --width=300 --text="  SFS creation canceled " --timeout=5 --button="gtk-close:0" &
+rm -f typescript
+exit
+fi
+rm -f typescript
+
+else
+SETUP=$(yad --width=500 --center --title="Choose Compression Type" --text "    <b>Choose which algorthim to compress the sfs with.</b> \n  Chosing XZ here will give you a smaller file but \n  may be slower than GZIP on very lowspec machines \n  LZ4 is the fastest, but gives a larger file as GZIP. " --button=" XZ :4" --button=" GZIP :2" --button=" LZ4 :0" --form --field="  Type the name of the new .squashfs:" "$(basename $z).squashfs" --buttons-layout=spread)
+
+button1=$?
+export NAME="`echo $SETUP | cut -d "|" -f 1`"
+
+if [ -f "$(dirname $DIR)/$NAME" ];then
+  yad --center --width=300 --window-icon="application-x-squashfs-image" --title="Overwrite" --text="<b>$NAME</b> already exists.\n Would you like to overwrite it?\n" \
+  --text-align="center" --borders="10" --buttons-layout="center" --button="gtk-yes:0" --button="gtk-no:1"
+  case $? in
+    0) rm -f "$(dirname $DIR)/$NAME" ;;
+    *) exit ;;
+  esac
+fi
+
+ 
+# Create module.
+echo -e "\e[0;36mCreating $NAME...\033[0m"
+
+case $button1 in
+0) COMP="-comp lz4 -Xhc" ;;
+2) COMP="" ;;
+4) COMP="-comp xz -b 512k -Xbcj x86" ;;
+*) exit ;;
+esac
+
+(
+script -q -c "stty rows 40 cols 100; mksquashfs "$DIR" "$(dirname $DIR)/$NAME" $COMP" |while read -n 250 LINE ; do
+A="$(echo $LINE | grep 'Parallel mksquashfs')"
+[ -n "$A" ] && B=$A
+C="$(echo $LINE | grep 'Creating 4.0 filesystem')"
+[ -n "$C" ] && D=$(echo $C | sed 's@.*/@@')
+
+echo "XXX"
+echo "$B"
+echo "\\n"
+echo "Creating 4.0 filesystem on $D" 
+echo "\\n"
+echo "Please Wait. . ."
+echo "\\n"
+echo "Close this Window to Cancel processing."
+echo "XXX"
+echo $LINE | busybox strings |egrep '[0-9]\%'| cut -f1 -d% |awk '{print $NF}'|grep -v '\.' ;done &
+) | Xdialog --title "Building Squashfile " --gauge "Building $NAME. Please Wait... \n To cancel: Close this window" 10 100 0
+
+if [ $? -ne 0 ]; then
+SQUASHPID=$(ps -eo pid,cmd | grep -v grep | grep "mksquashfs $DIR $(dirname $DIR)/$NAME" | awk '{ print $1 }')
+kill $SQUASHPID
+yad --center --borders=10 --title="SFS creation canceled" --window-icon="application-x-squashfs-image" --width=300 --text="  SFS creation canceled " --timeout=5 --button="gtk-close:0" &
+rm -f typescript
+exit
+fi
+rm -f typescript
+fi
+
+exit 0

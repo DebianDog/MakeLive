@@ -3,7 +3,9 @@
 
 [Forum Thread](http://murga-linux.com/puppy/viewtopic.php?t=111199)
 
-**Updated 2017-10-10**     
+**See also, related:** [A Debian-Stretch-Live Starter Kit](http://murga-linux.com/puppy/viewtopic.php?t=112784)
+
+**Updated 2018-01-13**     
 Bug fixes and improvements, info below updated  
 [Updates and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=962754#962754)                 
 

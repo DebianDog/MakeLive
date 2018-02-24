@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Create Savefile
+Comment=
+Exec=mk-save.gtkdlg
+Icon=createsave
+Path=
+Terminal=false
+StartupNotify=false
+Categories=DebianDog;X-XFCE;X-Xfce-Toplevel;

@@ -44,6 +44,7 @@
 |gifdance|xterm|wget
 |gifenc|xvidcap|x11-xserver-utils
 |gifondesktop|zenity-portable|xdm
+|gopoststuff
 |googledrivegui
 |googledrivegui2
 |grub4dosconfig
@@ -57,6 +58,7 @@
 |mount-wizard
 |mount-wizard-2
 |move-in-crypt
+|ms-sys
 |obshutdown
 |openbox-keybinder
 |pavrecord
@@ -112,5 +114,5 @@
 |youtube-get
 |youtube-get2
 |youtube-viewer
-|ms-sys
+
 

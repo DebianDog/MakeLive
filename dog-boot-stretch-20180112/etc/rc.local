@@ -1,0 +1,23 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+if [ -f /mnt/live/tmp/modules ]; then
+/usr/local/bin/mountlink
+else
+/usr/local/bin/mnt-backing
+fi
+#/opt/bin/load
+cat /opt/docs/welcome </dev/console >/dev/console 2>&1
+sleep 2
+#/opt/bin/mnt-all
+/usr/local/bin/cowsave
+exit 0

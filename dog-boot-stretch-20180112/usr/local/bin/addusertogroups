@@ -1,0 +1,50 @@
+#!/bin/bash
+
+if [ -z `which gsu` ]; then
+[ "`whoami`" != "root" ] && exec gksu ${0} "$@"
+else
+[ "`whoami`" != "root" ] && exec gsu ${0} "$@"
+fi
+
+USERS=$(awk -F'[/:]' '{if ($3 >= 1000 && $3 != 65534) print $1}' /etc/passwd | tr '\n' '!')
+
+# export user=`echo $XAUTHORITY | sed -e 's,/[^/]*$,,' -e 's,.*/,,'`
+user=$(yad --center --width=400 --title="Add/Remove user from groups" --text="  Add/Remove user from groups  " --form --field=" Choose a user: :CB"  "$USERS" )
+
+[[ $? -ne 0 ]] && exit 0
+user="`echo $user | cut -d "|" -f 1`"
+echo $user
+
+if ! id "$user" >/dev/null 2>&1; then
+yad --center --width=400 --text="   User <b>$user</b> does not exist!" --button="gtk-close:0"
+exit 0
+
+elif [ "$user" = "root" ]; then
+yad --center --width=400 --text="  No use to add Super-User: <b>root</b> to any groups" --button="gtk-close:0"
+exit 0
+fi
+
+EXISTGROUPS=$(cat /etc/group | grep $user  | cut -d: -f1 | grep -v $user | sed -e 's/^/TRUE /')
+NEWGROUPS=$(cat /etc/group | grep -vw $user  | cut -d: -f1 | sed -e 's/^/FALSE /')
+ADDGROUPS=$(echo -e "$EXISTGROUPS\n$NEWGROUPS")
+ADDGROUPS=$(yad --borders 6 --separator=" " --center --height 700 --width="300" --list --checklist --title="Add/Remove user $user to/from groups" --multiple --text=" Add/Remove user $user to/from groups. \n Recommended groups are e.g.: \n <b><u>sudo</u></b>, audio, cdrom, video, fuse, wheel." --column Choose --column Groups $ADDGROUPS --button="gtk-cancel:1" --button="gtk-ok:0")
+
+ret=$?
+if [[ $ret -eq 0 ]]; then
+ADDGROUPS=$(echo "$ADDGROUPS" | awk '{print $2}' | tr '\n' ',' | sed 's/.$//')
+
+echo $ADDGROUPS
+fi
+	if [ "$ADDGROUPS" ]; then
+usermod -G "" $user # this will remove the user from all groups first... (reset to nogroups) 
+usermod -a -G $ADDGROUPS $user # add the selected groups of choice
+
+if [[ $? -eq 0 ]]; then
+yad --border=6 --center --width=500 --title "Succes" --text "  Success! now <b>$user</b> is member of selected groups \n  $ADDGROUPS " --button="gtk-close:0"
+else
+yad --center --width=500 --title "Not added to groups" --text "  User <b>$user</b> has not been added/removed to any other groups  " --button="gtk-close:0"
+fi
+	else
+yad --center --width=500 --title "Not added to groups" --text "  User <b>$user</b> has not been added/removed to any other groups  " --button="gtk-close:0"
+
+	fi

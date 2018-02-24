@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Install .deb(s)
+Exec=instdeb %F
+Categories=Other;
+NoDisplay=true
+MimeType=application/x-deb
+Terminal=false
+Icon=debian-logo

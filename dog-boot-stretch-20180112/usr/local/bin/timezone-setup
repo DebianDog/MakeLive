@@ -1,0 +1,4 @@
+#!/bin/bash
+
+xterm -T "Set Timezone" -si -sb -fg white -bg SkyBlue4 -geometry 80x20 -e sudo dpkg-reconfigure tzdata
+#xterm -T "Set Timezone" -si -sb -fg white -bg SkyBlue4 -geometry 80x20 -e sudo tzselect

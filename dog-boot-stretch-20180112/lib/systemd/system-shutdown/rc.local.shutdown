@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# /etc/rc.local.shutdown: rc.local.shutdown script.
+#
+#/etc/init.d/frisbee stop
+if [ -f /mnt/live/tmp/modules ]; then
+exec /usr/local/bin/snap </dev/console >/dev/console 2>&1
+sleep 2
+fi
+exit 0

@@ -1,0 +1,13 @@
+[Added Associations]
+text/plain=leafpad.desktop;
+application/vnd.squashfs=conv-sfs.desktop;edit-sfs.desktop;
+application/x-squashfs=userapp-filemnt-6Y7S4Y.desktop;
+application/vnd.debian.binary-package=userapp-redeb-PUEE4Y.desktop;
+application/x-cd-image=userapp-filemnt-FHBW4Y.desktop;
+
+[Default Applications]
+text/plain=leafpad.desktop
+application/x-squashfs=userapp-filemnt-6Y7S4Y.desktop
+application/x-cd-image=userapp-filemnt-FHBW4Y.desktop
+
+[Removed Associations]

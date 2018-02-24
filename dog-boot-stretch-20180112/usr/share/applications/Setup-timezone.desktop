@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Setup Timezone
+Comment=
+Exec=timezone-setup
+Icon=redhat-internet
+Path=
+Terminal=false
+StartupNotify=false
+Categories=System;

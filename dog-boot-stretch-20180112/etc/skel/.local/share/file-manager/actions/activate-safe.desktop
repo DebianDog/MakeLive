@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Action
+Tooltip=Activate module (safe mode)
+Name=Activate module (safe mode)
+Profiles=profile-zero;
+Icon=application-x-xzm
+
+[X-Action-Profile profile-zero]
+MimeTypes=application/x-squashfs;
+Exec=loadmodule -ano %f
+Name=Default profile

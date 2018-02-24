@@ -1,0 +1,12 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+    <Name>DDog Special</Name>
+    <Directory>DebianDog.directory</Directory>
+    <Include>
+        <Category>DebianDog</Category>
+    </Include>
+  </Menu> <!-- End DDog -->
+</Menu>

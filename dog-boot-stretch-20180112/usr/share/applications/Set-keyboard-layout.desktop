@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Set keyboard layout
+Comment=
+Exec=keyboard-layout
+Icon=keyboard
+Path=
+Terminal=false
+StartupNotify=false
+Categories=System;

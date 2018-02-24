@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+echo "usage: wttr <yourcity>"
+exit 0
+fi
+
+CITY=$1
+xterm -T "Weather" -geometry 136x44+0+0 -fa DejaVu:size=8 -e "curl wttr.in/~$CITY; read -s -n 1 -p 'Press any key to close . . .'"
