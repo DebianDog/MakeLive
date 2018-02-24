@@ -1,7 +1,0 @@
-[Desktop Entry]
-Name=Toggle Show Desktop
-Exec=xdotool key Alt+d
-Icon=user-desktop
-Terminal=false
-Type=Application
-NoDisplay=true
