@@ -29,7 +29,9 @@
 # 2017-11-17, added choice to install pae or no-pae kernel, in case of 32bit build
 # 2017-11-23, changed installed kernel to 4.9.0-4 (previously was 4.9.0-3)
 # 2018-01-12, changed installed kernel to 4.9.0-5 (previously was 4.9.0-4)
-# 2018-01-13, added xserver-xorg-video-intel to standard config (otherwise X wouldn't start on some machines) 
+# 2018-01-13, added xserver-xorg-video-intel to standard config (otherwise X wouldn't start on some machines)
+# 2018-02-24, changed installed kernel to 4.9.0-6 (previously was 4.9.0-5)
+# And dropped no-pae support
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -543,22 +545,6 @@ echo -e "\e[0;36mOK, will not run xterm at the end of install process\033[0m"
 ;;
 esac
 
-if [ "$ARCH" = "i386" ]; then
-echo -e "\e[0;33mDo you want to install (default) pae or a no-pae kernel ?\n(no-pae is more suitable for older (with not pae capable cpu) PCs)\033[0m"
-read -p "Install no-pae kernel ? (Enter = pae, y = no-pae) (y/N)?" choice
-
-case "$choice" in 
-  y|Y)
-echo -e "\e[0;36mOK, will install no-pae kernel\033[0m"
-export NOPAE="yes"
-sleep 3
-;;
-  n|N|"")
-echo -e "\e[0;36mOK, will install pae kernel\033[0m"
-;;
-esac
-fi
-
 echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
@@ -633,18 +619,18 @@ cr_build_info
 
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
 sleep 3
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch-20180112.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch-20180224.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-stretch.tar.gz
 ok_or_failed
 
 echo -e "\e[0;36mExtracting...\033[0m"
-tar -zxf dog-boot-stretch-20180112.tar.gz
+tar -zxf dog-boot-stretch-20180224.tar.gz
 tar -zxf isodata-stretch.tar.gz
 tar -zxf initrdport-stretch.tar.gz
 ok_or_failed
 echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
-cp -af dog-boot-stretch-20180112/* chroot/
+cp -af dog-boot-stretch-20180224/* chroot/
 ok_or_failed
 
 # mount bind some required directories from host filesystem
@@ -774,33 +760,18 @@ DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 ############ Start installing packages ############
 ### First install the kernel
 if [ "$ARCH" = "i386" ]; then
-    if [ "$NOPAE" = "yes" ]; then
-echo -e "\e[0;36mInstall linux-image-4.9.0-5-686\033[0m"
+echo -e "\e[0;36mInstall linux-image-4.9.0-6-686-pae\033[0m"
 sleep 3
-apt-get install --yes linux-image-4.9.0-5-686
+apt-get install --yes linux-image-4.9.0-6-686-pae
 # try again if failed
 if [ $? -ne 0 ]; then
-	apt-get install --yes linux-image-4.9.0-5-686
+	apt-get install --yes linux-image-4.9.0-6-686-pae
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
 	exit
 	fi
 fi
-    else
-echo -e "\e[0;36mInstall linux-image-4.9.0-5-686-pae\033[0m"
-sleep 3
-apt-get install --yes linux-image-4.9.0-5-686-pae
-# try again if failed
-if [ $? -ne 0 ]; then
-	apt-get install --yes linux-image-4.9.0-5-686-pae
-	if [ $? -ne 0 ]; then
-	echo -e "\e[0;31mFAILED\033[0m"
-	touch /exit_
-	exit
-	fi
-fi
-    fi
  
 elif [ "$ARCH" = "amd64" ]; then
 # Add google signing key
@@ -808,12 +779,12 @@ wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
 apt-get update # required, google repository key just added to sources.list
 [ $? -ne 0 ] && apt-get update # try again
 echo
-echo -e "\e[0;36mInstall linux-image-4.9.0-5-amd64\033[0m"
+echo -e "\e[0;36mInstall linux-image-4.9.0-6-amd64\033[0m"
 sleep 3
-apt-get install --yes linux-image-4.9.0-5-amd64
+apt-get install --yes linux-image-4.9.0-6-amd64
 # try again if failed
   if [ $? -ne 0 ]; then
-	apt-get install --yes linux-image-4.9.0-5-amd64
+	apt-get install --yes linux-image-4.9.0-6-amd64
 	if [ $? -ne 0 ]; then
 	echo -e "\e[0;31mFAILED\033[0m"
 	touch /exit_
