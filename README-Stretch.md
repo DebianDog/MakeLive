@@ -13,7 +13,7 @@ Bug fixes and improvements, info below updated
 It's required to have at least 3 GB free space and to run the script on a Linux filesystem, e.g. ext4   
 
 Similar to [This](README.md) (for Jessie) but this is **way** better, easier, faster!  
-Just download and run [This mklive-stretch script](https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/mklive-stretch) (right-click > Save link as)   
+Just download and run [This mklive-stretch script](https://debiandog.github.io/MakeLive/mklive-stretch)    
 Before running, make it executable:
 ```   
 chmod +x mklive-stretch
