@@ -44,7 +44,7 @@
 |gifdance|xterm|wget
 |gifenc|xvidcap|x11-xserver-utils
 |gifondesktop|zenity-portable|xdm
-|gopoststuff
+|gopoststuff|-|libnl1
 |googledrivegui
 |googledrivegui2
 |grub4dosconfig
@@ -114,5 +114,9 @@
 |youtube-get
 |youtube-get2
 |youtube-viewer
-
+|yradio
+|wlanmaker
+|my-squash-loader
+|peasy-net-player
+|inxi-gui
 
