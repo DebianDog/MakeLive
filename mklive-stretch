@@ -312,7 +312,7 @@ fi
 exitfn () {
     trap SIGINT              # Resore signal handling for SIGINT
 echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
-#umount chroot/tmp
+#umount -l chroot/tmp
 umount -l $LAUNCHDIR/stretch/chroot/proc 2> /dev/null
 umount -l $LAUNCHDIR/stretch/chroot/sys 2> /dev/null
 umount -l $LAUNCHDIR/stretch/chroot/dev/pts 2> /dev/null
@@ -567,11 +567,11 @@ case "$choice" in
   y|Y|"")
 
 echo -e "\e[0;36mUnmount mount binds and remove stretch/chroot...\033[0m"
-#umount chroot/tmp
-umount stretch/chroot/proc 2> /dev/null
-umount stretch/chroot/sys 2> /dev/null
-umount stretch/chroot/dev/pts 2> /dev/null
-umount stretch/chroot/dev 2> /dev/null
+#umount -l chroot/tmp
+umount -l stretch/chroot/proc 2> /dev/null
+umount -l stretch/chroot/sys 2> /dev/null
+umount -l stretch/chroot/dev/pts 2> /dev/null
+umount -l stretch/chroot/dev 2> /dev/null
 
 mv stretch/chroot/var/cache/apt stretch/ 2> /dev/null
    if mountpoint -q stretch/chroot/dev; then      # just in case check dev
@@ -953,11 +953,11 @@ $CHROOT chroot /bin/bash -c chroot_in
 ################################################
 
 echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
-#umount chroot/tmp
-umount chroot/proc
-umount chroot/dev/pts
-umount chroot/dev
-umount chroot/sys
+#umount -l chroot/tmp
+umount -l chroot/proc
+umount -l chroot/dev/pts
+umount -l chroot/dev
+umount -l chroot/sys
 
 echo -e "\e[0;36mStart extracting and creating new 'live' initrd files...\033[0m"
 sleep 3
