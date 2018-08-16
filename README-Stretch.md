@@ -5,7 +5,7 @@
 
 **See also, related:** [A Debian-Stretch-Live Starter Kit](http://murga-linux.com/puppy/viewtopic.php?t=112784)
 
-**Updated 2018-01-13**     
+**Updated 2018-08-15**       
 Bug fixes and improvements, info below updated  
 [Updates and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=962754#962754)                 
 
@@ -87,7 +87,7 @@ Update 2017-08-18: or by specyfying a config file or by running the GUI, run wit
 
 **Below are very basically the commands used (for 32-bit) in the 'mklive-stretch' script**     
 **Note that this is written down below just to give some insight in how the build process is done**     
-The script does much more, e.g. error checking, cleaning, e.g. remove man and doc files, locales**
+The script does much more, e.g. error checking, cleaning, e.g. remove man and doc files, locales**  
 **Update 2017-08-07: the script is now even more modified, below just for reference**           
 
 ---    
