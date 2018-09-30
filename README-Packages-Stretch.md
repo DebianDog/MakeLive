@@ -119,4 +119,6 @@
 |my-squash-loader
 |peasy-net-player
 |inxi-gui
+|redshift-gui-lite
+|xlunch
 
