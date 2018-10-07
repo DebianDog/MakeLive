@@ -121,4 +121,5 @@
 |inxi-gui
 |redshift-gui-lite
 |xlunch
+|upgrade-kernel-bpo
 
