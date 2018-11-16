@@ -122,4 +122,5 @@
 |redshift-gui-lite
 |xlunch
 |upgrade-kernel-bpo
+|qiv-slideshow
 
