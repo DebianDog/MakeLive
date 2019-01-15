@@ -5,7 +5,7 @@
 
 **See also, related:** [A Debian-Stretch-Live Starter Kit](http://murga-linux.com/puppy/viewtopic.php?t=112784)
 
-**Updated 2018-08-15**       
+**Updated 2019-01-15** (kernel install updated to 4.9.0-8)       
 Bug fixes and improvements, info below updated  
 [Updates and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=962754#962754)                 
 
