@@ -1,0 +1,6 @@
+?package(libc6):\
+	needs="X11"\
+	section="Applications/System/Administration"\
+	title="Create Save File"\
+	command="mk-save.gtkdlg"\
+	icon="/usr/share/pixmaps/createsave.png"

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ -d /lib/live/mount/medium ]; then
+mount -o remount,rw /lib/live/mount/medium
+else 
+if [ -d /live/image ]; then
+mount -o remount,rw /live/image
+fi
+fi
+exit
