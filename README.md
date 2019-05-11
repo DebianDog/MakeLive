@@ -3,7 +3,7 @@
    
 **Updated 2019-05-11**
 
-#### New! [DevuanDog 'beowulf' build system](Readme-build-devuandog-beowulf.html)          
+#### New! [DevuanDog 'beowulf' build system](https://debiandog.github.io/MakeLive/Readme-build-devuandog-beowulf.html)          
 
 #### Debian 9 (Stretch) based, much easier and faster using debootstrap, see:     
 [Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'](README-Stretch.md)         
