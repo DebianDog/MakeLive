@@ -1,10 +1,12 @@
 ## MakeLive  
----   
-**Updated 2017-09-09**      
+---
+   
+**Updated 2019-05-11**
 
-### New! Debian 9 (Stretch) based, much easier and faster using debootstrap, see:     
-[Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'](README-Stretch.md)       
----   
+#### New! [DevuanDog 'beowulf' build system](Readme-build-devuandog-beowulf.html)          
+
+#### Debian 9 (Stretch) based, much easier and faster using debootstrap, see:     
+[Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'](README-Stretch.md)         
   
 #### **How Create your own DebianLive from netinstall and also include porteus-boot style**     
  
