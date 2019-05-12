@@ -1,4 +1,0 @@
-Place folders and files in here and these will be copied to the live-system (and overwrite if already exist)
-You can make a folder structure in here and put a script in it, for example:
-usr/local/bin/<somescript>   and after booting there should be: 
-/usr/local/bin/<somescript> in the filesystem.
