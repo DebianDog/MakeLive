@@ -1,10 +1,10 @@
-## MakeLive  
----
+## MakeLive     
+---  
    
-**Updated 2019-05-11**
+**Updated 2019-05-11**  
 
-#### New! [DevuanDog 'beowulf' build system](https://debiandog.github.io/MakeLive/Readme-build-devuandog-beowulf.html)   
-[Forum thread](http://murga-linux.com/puppy/viewtopic.php?t=116116)              
+#### New! [DevuanDog 'beowulf' build system](https://debiandog.github.io/MakeLive/Readme-build-devuandog-beowulf.html)     
+[Forum thread](http://murga-linux.com/puppy/viewtopic.php?t=116116)                 
 
 #### Debian 9 (Stretch) based, much easier and faster using debootstrap, see:     
 [Create a Debian 9 (Stretch) minimal live ISO similar to 'DebianDog'](README-Stretch.md)         

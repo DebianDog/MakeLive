@@ -312,15 +312,14 @@ table tr {
 </style>
   </head>
 <body>
-<h3>DevuanDog &lsquo;beowulf&rsquo; build system</h3>
+<h4>DevuanDog ‘beowulf’ build system</h4>
 
-<p>Very similar as the &lsquo;mklive-stretch&rsquo; build system see <a href="https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md">Here</a> and <a href="http://murga-linux.com/puppy/viewtopic.php?t=111199">Forum thread</a> , but this will build from <a href="https://devuan.org/">Devuan</a> &lsquo;beowulf&rsquo; branch and has many changes and improvements.</p>
+<p>Very similar as the ‘mklive-stretch’ build system see <a href="https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md">Here</a> and <a href="http://murga-linux.com/puppy/viewtopic.php?t=111199">Forum thread</a> , but this will build from <a href="https://devuan.org/">Devuan</a> ‘beowulf’ branch and has many changes and improvements.</p>
 
-<p>Rather than just one script it&rsquo;s now packed as appimage, reason is that this way it works &lsquo;out of the box&rsquo; on most OS&rsquo;s including modern puppies.
-The appimage has included e.g. yad, debootstrap, dpkg, xorriso (for creating ISO), so nothing extra is required to install. Tested on Tahrpup, Xenialpup, Dpup-Stretch, DebianDog, Fatdog (but on the latter I needed to install &lsquo;perl&rsquo; first from gslapt).</p>
+<p>Rather than just one script it’s now packed as appimage, reason is that this way it works ‘out of the box’ on most OS’s including modern puppies. The appimage has included e.g. yad, debootstrap, dpkg, xorriso (for creating ISO), so nothing extra is required to install. Tested on Tahrpup, Xenialpup, Dpup-Stretch, DebianDog, Fatdog (but on the latter I needed to install ‘perl’ first from gslapt).</p>
 
-<p>Note that this doesn&rsquo;t build a Puppy such as when using Woof-CE, but a puppy-like &lsquo;Dog&rsquo; system (see more: <a href="https://debiandog.github.io/doglinux/">Dog Linux website</a>) <br/>
-See more info also here: <a href="http://murga-linux.com/puppy/viewtopic.php?t=115124">DevuanDog &lsquo;Beowulf&rsquo;</a></p>
+<p>Note that this doesn’t build a Puppy such as when using Woof-CE, but a puppy-like ‘Dog’ system (see more: <a href="https://debiandog.github.io/doglinux/">Dog Linux website</a>)<br/>
+See more info also here: <a href="http://murga-linux.com/puppy/viewtopic.php?t=115124">DevuanDog ‘Beowulf’</a></p>
 
 <p><strong>Download:</strong><br/>
 For 32-bit: <a href="https://debiandog.github.io/MakeLive/mklive-beowulf32">mklive-beowulf32</a><br/>
@@ -329,16 +328,18 @@ For 64-bit: <a href="https://debiandog.github.io/MakeLive/mklive-beowulf64">mkli
 <p>Make executable, e.g:<br/>
 <code>chmod +x mklive-beowulf32</code><br/>
 Running without arguments it will show usage help, to run with GUI, e.g.:<br/>
-<code>./mklive-beowulf32 -gui</code></p>
+<code>./mklive-beowulf32 -gui</code><br/>
+It requires root permissions to run, so when logged in as unprivileged user, use sudo, e.g.   <br/>
+<code>sudo ./mklive-beowulf32 -gui</code></p>
 
-<p><strong>Run on a Linux filesystem (ext2 ext3 ext4) </strong>not<strong> on FAT or NTFS , with at least 3GB free space</strong></p>
+<p><strong>Run the build on a Linux filesystem (ext2 ext3 ext4)</strong> not <strong>on FAT or NTFS , with at least 3GB free space</strong></p>
 
 <p>Simple demo .gif image using GUI option (clicking on the below will probably show it in browser):<br/>
 <a href="https://debiandog.github.io/MakeLive/build-beowulf-demo.gif">Demo .gif image</a></p>
 
-<p>Here&rsquo;s also a single script that should work OOTB on DebianDog, DevuanDog, StretchDog (requirements/dependencies will be downloaded), to use it on Puppy you need to have yad, debootstrap, dpkg, xorriso installed first.<br/>
+<p>Here’s also a single script that should work OOTB on DebianDog, DevuanDog, StretchDog (requirements/dependencies will be downloaded), to use it on Puppy you need to have yad, debootstrap, dpkg, xorriso installed first.<br/>
 <a href="https://debiandog.github.io/MakeLive/mklive-beowulf">mklive-beowulf</a></p>
 
-<p>Just to mention, synaptic has version 0.84.5 (synaptic=0.84.5) in the configs,  the newest is 0.84.6 (at this time) but it has more dependencies (zenity, which takes a lot of space !)</p>
+<p>Just to mention, synaptic has version 0.84.5 (synaptic=0.84.5) in the configs, the newest is 0.84.6 (at this time) but it has more dependencies (zenity, which takes a lot of space !)</p>
 </body>
 </html>
