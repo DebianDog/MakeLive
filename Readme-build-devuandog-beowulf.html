@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Build DevuanDog Beowulf</title>
+    <title>out</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <style>
@@ -316,20 +316,27 @@ table tr {
 
 <p>Very similar as the ‘mklive-stretch’ build system see <a href="https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md">Here</a> and <a href="http://murga-linux.com/puppy/viewtopic.php?t=111199">Forum thread</a> , but this will build from <a href="https://devuan.org/">Devuan</a> ‘beowulf’ branch and has many changes and improvements.</p>
 
+<p><strong>Update:</strong> New! <strong>mklive-ceres</strong>. The unstable branch of Devuan named &ldquo;ceres&rdquo; is the systemd-free version of Debian Sid. <br/>
+See for download links below.</p>
+
 <p>Rather than just one script it’s now packed as appimage, reason is that this way it works ‘out of the box’ on most OS’s including modern puppies. The appimage has included e.g. yad, debootstrap, dpkg, xorriso (for creating ISO), so nothing extra is required to install. Tested on Tahrpup, Xenialpup, Dpup-Stretch, DebianDog, Fatdog (but on the latter I needed to install ‘perl’ first from gslapt).</p>
 
 <p>Note that this doesn’t build a Puppy such as when using Woof-CE, but a puppy-like ‘Dog’ system (see more: <a href="https://debiandog.github.io/doglinux/">Dog Linux website</a>)<br/>
 See more info also here: <a href="http://murga-linux.com/puppy/viewtopic.php?t=115124">DevuanDog ‘Beowulf’</a></p>
 
-<p><strong>Download:</strong><br/>
+<p><strong>Download mklive-beowulf:</strong><br/>
 For 32-bit: <a href="https://debiandog.github.io/MakeLive/mklive-beowulf32">mklive-beowulf32</a><br/>
 For 64-bit: <a href="https://debiandog.github.io/MakeLive/mklive-beowulf64">mklive-beowulf64</a></p>
+
+<p><strong>Download mklive-ceres:</strong>  <br/>
+For 32-bit: <a href="https://debiandog.github.io/MakeLive/mklive-ceres32">mklive-ceres32</a><br/>
+For 64-bit: <a href="https://debiandog.github.io/MakeLive/mklive-ceres64">mklive-ceres64</a></p>
 
 <p>Make executable, e.g:<br/>
 <code>chmod +x mklive-beowulf32</code><br/>
 Running without arguments it will show usage help, to run with GUI, e.g.:<br/>
 <code>./mklive-beowulf32 -gui</code><br/>
-It requires root permissions to run, so when logged in as unprivileged user, use sudo, e.g.   <br/>
+It requires root permissions to run, so when logged in as unprivileged user, use sudo, e.g.<br/>
 <code>sudo ./mklive-beowulf32 -gui</code></p>
 
 <p><strong>Run the build on a Linux filesystem (ext2 ext3 ext4)</strong> not <strong>on FAT or NTFS , with at least 3GB free space</strong></p>
