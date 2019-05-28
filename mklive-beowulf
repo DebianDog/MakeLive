@@ -638,7 +638,7 @@ fi
 echo -e "\e[0;36mSetting up debootstrap in beowulf/chroot\033[0m"
 echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p beowulf/chroot && cd beowulf &&
-debootstrap --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates beowulf chroot https://pkgmaster.devuan.org/merged/
+debootstrap --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates beowulf chroot http://deb.devuan.org/merged
 
 # create build_info.txt and build_setup.conf
 cr_build_info
@@ -692,30 +692,30 @@ sleep 1
 
 [ "$ARCH" = "i386" ] && echo 'deb https://fred181.gitlab.io/devuandog/i386/Packages/ ./
 ## package repositories
-deb http://pkgmaster.devuan.org/merged beowulf main contrib non-free  
-deb http://pkgmaster.devuan.org/merged beowulf-updates main contrib non-free  
-deb http://pkgmaster.devuan.org/merged beowulf-security main contrib non-free  
-#deb http://pkgmaster.devuan.org/merged beowulf-backports main  
+deb http://deb.devuan.org/merged beowulf main contrib non-free  
+deb http://deb.devuan.org/merged beowulf-updates main contrib non-free  
+deb http://deb.devuan.org/merged beowulf-security main contrib non-free  
+#deb http://deb.devuan.org/merged beowulf-backports main  
 
 ## source repositories
-#deb-src http://pkgmaster.devuan.org/merged beowulf main  
-#deb-src http://pkgmaster.devuan.org/merged beowulf-updates main  
-#deb-src http://pkgmaster.devuan.org/merged beowulf-security main  
-#deb-src http://pkgmaster.devuan.org/merged beowulf-backports main
+#deb-src http://deb.devuan.org/merged beowulf main  
+#deb-src http://deb.devuan.org/merged beowulf-updates main  
+#deb-src http://deb.devuan.org/merged beowulf-security main  
+#deb-src http://deb.devuan.org/merged beowulf-backports main
 ' > /etc/apt/sources.list
 
 [ "$ARCH" = "amd64" ] && echo 'deb https://fred181.gitlab.io/devuandog/amd64/Packages/ ./
 ## package repositories
-deb http://pkgmaster.devuan.org/merged beowulf main contrib non-free  
-deb http://pkgmaster.devuan.org/merged beowulf-updates main contrib non-free  
-deb http://pkgmaster.devuan.org/merged beowulf-security main contrib non-free  
-#deb http://pkgmaster.devuan.org/merged beowulf-backports main  
+deb http://deb.devuan.org/merged beowulf main contrib non-free  
+deb http://deb.devuan.org/merged beowulf-updates main contrib non-free  
+deb http://deb.devuan.org/merged beowulf-security main contrib non-free  
+#deb http://deb.devuan.org/merged beowulf-backports main  
 
 ## source repositories
-#deb-src http://pkgmaster.devuan.org/merged beowulf main  
-#deb-src http://pkgmaster.devuan.org/merged beowulf-updates main  
-#deb-src http://pkgmaster.devuan.org/merged beowulf-security main  
-#deb-src http://pkgmaster.devuan.org/merged beowulf-backports main
+#deb-src http://deb.devuan.org/merged beowulf main  
+#deb-src http://deb.devuan.org/merged beowulf-updates main  
+#deb-src http://deb.devuan.org/merged beowulf-security main  
+#deb-src http://deb.devuan.org/merged beowulf-backports main
 ' > /etc/apt/sources.list 
 
 apt-get update # required, repositories just added
@@ -837,85 +837,6 @@ apt-get install -y $INSTALL
 fi
 ############ End of installing packages ############
 
-### Install the kernel
-
-if [ "$ARCH" = "i386" ]; then
-export VERNEWKERNEL=4.19.0-4-686-pae
-echo -e "\e[0;36mDownload linux-image-$VERNEWKERNEL\033[0m"
-sleep 3
-mkdir /tmp/tmpapt
-apt-get -o dir::cache::archives="/tmp/tmpapt" install -d linux-image-$VERNEWKERNEL -y
-#apt-get install --yes linux-image-4.19.0-4-686-pae
-# try again if failed
-if [ $? -ne 0 ]; then
-apt-get -o dir::cache::archives="/tmp/tmpapt" install -d linux-image-$VERNEWKERNEL -y
-#	apt-get install --yes linux-image-4.19.0-4-686-pae
-	if [ $? -ne 0 ]; then
-	echo -e "\e[0;31mFAILED\033[0m"
-	touch /exit_
-	exit
-	fi
-fi
- 
-elif [ "$ARCH" = "amd64" ]; then
-export VERNEWKERNEL=4.19.0-4-amd64
-
-echo
-echo -e "\e[0;36mDownload linux-image-$VERNEWKERNEL\033[0m"
-sleep 3
-mkdir /tmp/tmpapt
-apt-get -o dir::cache::archives="/tmp/tmpapt" install -d linux-image-$VERNEWKERNEL -y
-#apt-get install --yes linux-image-4.19.0-4-amd64
-# try again if failed
-  if [ $? -ne 0 ]; then
-apt-get -o dir::cache::archives="/tmp/tmpapt" install -d linux-image-$VERNEWKERNEL -y
-#	apt-get install --yes linux-image-4.19.0-4-amd64
-	if [ $? -ne 0 ]; then
-	echo -e "\e[0;31mFAILED\033[0m"
-	touch /exit_
-	exit
-	fi
-  fi 
-fi
-dpkg-deb -x /tmp/tmpapt/linux-image-* /
-rm -fr /tmp/tmpapt
-### End installing kernel
-
-echo -e "\e[0;36mCopy aufs module\033[0m"
-sleep 3
-if [ "$ARCH" = "i386" ]; then
-    if [ "$NOPAE" = "yes" ]; then
-mv -f /lib/aufs-nopae /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
-rm -rf /lib/aufs64
-rm -rf /lib/aufs32
-#mv -f /lib/squashfs-nopae/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
-#rm -rf /lib/squashfs32
-#rm -rf /lib/squashfs-nopae
-#rm -rf /lib/squashfs64
-depmod $VERNEWKERNEL
-
-    else   
-mv -f /lib/aufs32 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
-rm -rf /lib/aufs64
-rm -rf /lib/aufs-nopae
-#mv -f /lib/squashfs32/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
-#rm -rf /lib/squashfs32
-#rm -rf /lib/squashfs-nopae
-#rm -rf /lib/squashfs64
-depmod $VERNEWKERNEL
-    fi
-
-elif [ "$ARCH" = "amd64" ]; then
-mv -f /lib/aufs64 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
-rm -rf /lib/aufs32
-rm -rf /lib/aufs-nopae
-#mv -f /lib/squashfs64/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
-#rm -rf /lib/squashfs64
-#rm -rf /lib/squashfs-nopae
-#rm -rf /lib/squashfs32
-depmod $VERNEWKERNEL
-fi
-
 mkdir -p /etc/systemd/network 2> /dev/null   # might not exist
 ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
 
@@ -923,37 +844,6 @@ ln -s /dev/null /etc/systemd/network/99-default.link # traditional network inter
 if [ "$CRYPTSETUP" = "" ]; then
 echo "CRYPTSETUP=y" >> /etc/cryptsetup-initramfs/conf-hook
 fi
-
-echo -e "\e[0;36mGenerating initramfs: initrd.img for $VERNEWKERNEL . . .\033[0m"
-rm -fr /var/tmp/mkinitramfs*
-mkinitramfs -c xz -k -o /usr/local/initrd.img $VERNEWKERNEL
-
-
-INITRAMFS=//usr/local/initramfs-$RANDOM
-mkdir $INITRAMFS
-cp -a /usr/local/cr-initrd/initramfs/* $INITRAMFS
-
-cp -a /var/tmp/mkinitramfs_*/lib/modules/* $INITRAMFS/lib/modules/
-
-echo -e "\e[0;36mCreating initrd1.xz . . .\033[0m"
-cd $INITRAMFS
-find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > /usr/local/initrd1.xz
-#echo "Creating initrd.img . . ."
-#cd /var/tmp/mkinitramfs_*
-#find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > /usr/local/initrd.img
-rm -fr /var/tmp/mkinitramfs*
-rm -fr $INITRAMFS
-
-# copy vmlinuz and config from boot to /tmp
-mv -f /boot/vmlinuz-* /usr/local/
-
-# move kernel
-echo -e "\e[0;36mMove contents of /lib/modules to /00-kernel/lib/modules/\033[0m"
-echo -e "\e[0;36mTo create 00-kernel.squashfs later\033[0m"
-mkdir -p /00-kernel/lib/modules/
-mkdir -p /00-kernel/boot/
-mv -f /lib/modules/* /00-kernel/lib/modules/
-mv -f /boot/config-* /00-kernel/boot/
 
 
 ##### Extra apt-get remove #####
@@ -1036,22 +926,8 @@ umount -l chroot/sys
 
 cd "$LAUNCHDIR/beowulf/"
 
-echo -e "\e[0;36mCopy initrd.img, initrd1.xz to isodata/live...\033[0m"
-mv -f chroot/usr/local/initrd.img isodata/live/
-mv -f chroot/usr/local/initrd1.xz isodata/live/
-#rm -rf chroot/usr/local/cr-initrd
-ok_or_failed
-echo -e "\e[0;36mMove vmlinuz to isodata/live/vmlinuz1 ...\033[0m"
-mv -f chroot/usr/local/vmlinuz-* isodata/live/vmlinuz1
-ok_or_failed
-
-rm -f chroot/boot/System.map*
-rm -f chroot/boot/initrd.img*
 rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
 
-echo -e "\e[0;36mCreating isodata/live/00-kernel.squashfs...\033[0m"
-mksquashfs chroot/00-kernel isodata/live/00-kernel.squashfs -comp xz -b 512k
-rm -fr chroot/00-kernel
 
 # copy build_setup.txt to chroot/root
 cp -a build_setup.txt chroot/root/
@@ -1081,7 +957,19 @@ wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLiv
 fi
 [ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/kiosk/
 [ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/obdog/
-[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/chromedog/ 
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/chromedog/
+
+# download and extract kernel.squashfs vmlinuz initrd etc..
+echo -e "\e[0;36mdownload and extract kernel.squashfs vmlinuz initrd etc..\033[0m"
+
+if [ "$ARCH" = "i386" ]; then
+wget --no-check-certificate https://debiandog.github.io/MakeLive/kernel-ceres-i386-pae.tar.gz
+tar -zxf kernel-ceres-i386-pae.tar.gz -C isodata/live
+elif [ "$ARCH" = "amd64" ]; then
+wget --no-check-certificate https://debiandog.github.io/MakeLive/kernel-ceres-amd64.tar.gz
+tar -zxf kernel-ceres-amd64.tar.gz -C isodata/live
+fi
+ 
 
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
