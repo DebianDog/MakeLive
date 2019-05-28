@@ -1,6 +1,8 @@
 #### DevuanDog ‘beowulf’ build system
 
-Very similar as the ‘mklive-stretch’ build system see [Here](https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md) and [Forum thread](http://murga-linux.com/puppy/viewtopic.php?t=111199) , but this will build from [Devuan](https://devuan.org/) ‘beowulf’ branch and has many changes and improvements.   
+Very similar as the ‘mklive-stretch’ build system see [Here](https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md) and [Forum thread](http://murga-linux.com/puppy/viewtopic.php?t=111199) , but this will build from [Devuan](https://devuan.org/) ‘beowulf’ branch and has many changes and improvements.
+
+**Updated 2019-05-28:** See: [Changes and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=1027840#1027840)     
 
 **Update:** New! **mklive-ceres**. The unstable branch of Devuan named "ceres" is the systemd-free version of Debian Sid.   
 See for download links below.  
