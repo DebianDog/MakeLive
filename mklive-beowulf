@@ -136,15 +136,11 @@ exit
 fi
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
-busybox ping -c1 debiandog.github.io > /dev/null
-    if [ $? -ne 0 ]; then 
-echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"
-sleep 3
-exit
-else
-echo -e "\e[0;32mOK\033[0m"
-sleep 1
-    fi
+# check network
+ case "$(curl -s --max-time 2 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+  [23]) echo -e "\e[0;32mOK\033[0m" ;;
+  *) echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"; exit ;;
+ esac
 
 # Information button
 function info () {
@@ -556,16 +552,11 @@ esac
 echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
-busybox ping -c1 debiandog.github.io > /dev/null
-    if [ $? -ne 0 ]; then 
-echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"
-sleep 3
-exit
-else
-echo -e "\e[0;32mOK\033[0m"
-sleep 1
-    fi
-
+# check network
+ case "$(curl -s --max-time 2 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+  [23]) echo -e "\e[0;32mOK\033[0m" ;;
+  *) echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"; exit ;;
+ esac
 
 if [ -d "beowulf" ]; then 
 echo -e "\e[0;33m Working directory 'beowulf' already exists \n To be able to continue, contents need to be removed first\n All files inside will be deleted, except the apt cache in chroot\033[0m"

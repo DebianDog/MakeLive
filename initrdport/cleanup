@@ -1,0 +1,97 @@
+#!/bin/sh
+# Script will be called instead of final reboot/shutdown
+# to safely switch back to initrd root and unmount everything possible.
+# Mainly needed if you use changes= boot parameter in order to correctly
+# unmount the changes device/file.
+
+export PATH=.:/mnt/live:/usr/sbin:/usr/bin:/sbin:/bin
+
+# This script needs to be re-executed to free up any shell
+# from the union which may be used (eg. /union/bin/bash)
+if [ ! "$RE_EXEC_CLEANUP" ]; then
+   export RE_EXEC_CLEANUP=1
+   pivot_root . union
+   exec chroot . /cleanup "$@" <dev/console >dev/console 2>&1
+   echo "Something was wrong because we should never be here!"
+fi
+
+# Send TERM signal to processes which can be killed:
+PID=`ps | sed -n '/PID/,/{cleanup}/p' | egrep -v "\[.*\]" | egrep -v 'PID|cleanup|mount.ntfs' | sed -r "s/^ *([0-9]+).*/\\1/" | tr "\n" " "`
+kill -SIGTERM `echo $PID` >/dev/null 2>&1
+
+# Will need cryptsetup for closing encrypted container:
+[ -b /dev/mapper/crypt ] && cp /memory/images/000-kernel.xzm/sbin/cryptsetup /bin
+
+# Determine if we booted from CD and copy 'eject' utility:
+CD=`grep /dev/sr /proc/mounts | cut -d" " -f1 | uniq`
+[ -b "$CD" ] && cp -f /union/usr/bin/eject /bin
+
+# Remove doubled ntfs mount entries from mtab:
+sed -i "/ fuseblk /d" /etc/mtab
+
+if [ -e /tmp/changes-exit ]; then
+    echo -e "Your session will be saved in [1;33m10[0m seconds.\nPress space/enter to start doing it now or any other key to skip."; x=10
+    while [ $x -gt 0 ]; do read -s -t1 -n1 ans && break || sleep 1; let x=x-1; done
+    if [ "$ans" = "" ]; then
+	DEST=`cat /tmp/changes-exit`; NAME=`basename $DEST`; MNAME=/memory/images/changes-exit; FOLDERS=`grep '^/' /union/etc/changes-exit.conf | sed s/^.//g`
+	echo "saving changes to $NAME - do not power off the PC"
+	cd /memory/changes; rm -rf var/lock/subsys/* var/run/laptop-mode-tools/* `grep '^!' /union/etc/changes-exit.conf | sed s/^..//g | tr "\n" " "`
+find $FOLDERS  -name ".wh.*" 2>/dev/null  | sed s/.wh.//g | while IFS= read -r NAME; do test -e "$MNAME/$NAME" && rm -rf "$MNAME/$NAME"; done
+find $MNAME -name ".wh.*" 2>/dev/null | while IFS= read -r NAME; do wh=`echo "$NAME" | sed -e 's^$MNAME^^g' -e 's/.wh.//g'`; test -e "$wh" && rm -rf "$NAME"; done
+
+cp -a $FOLDERS $MNAME 2>/dev/null
+
+cd $MNAME
+find $FOLDERS  -name ".wh.*" 2>/dev/null | grep -v '.wh..wh..opq' | while IFS= read -r NAME; do rm -rf "$NAME"; done
+    fi
+elif ! grep -q memory /var/log/livedbg; then
+    sleep 2
+fi
+
+# SIGKILL:
+kill -SIGKILL `echo $PID` >/dev/null 2>&1
+sync
+
+echo "unmounting union"
+umount -nl `grep /union/ /proc/mounts | cut -d" " -f2 | tr "\n" " "` 2>/dev/null
+umount /union 2>/dev/null
+if [ $? -ne 0 ]; then
+    x=9; free=no
+    while [ $x -gt 0 -a $free = no ]; do
+	usleep 300000; sync; let x=x-1
+	umount /union 2>/dev/null && { echo "union unmounted successfully"; free=yes; }
+    done
+    if [ $? -ne 0 ]; then
+	echo "remounting union as read-only"
+	echo -e "please use '[1;33mfsck[0m' cheatcode during next boot\nto make sure that all your filesystems are consistent..."
+	sleep 3; umount -r /union 2>/dev/null
+    fi
+fi
+
+echo "unmounting everything else"
+umount -a 2>/dev/null
+if [ $? -ne 0 ]; then
+    # Close encrypted container:
+    if [ -b /dev/mapper/crypt ]; then
+        cryptsetup luksClose crypt
+        losetup -d /dev/loop2
+    fi
+    umount -ar 2>/dev/null
+fi
+
+# Eject cdrom device:
+if [ -z "`egrep -o " noeject( |\$)" /proc/cmdline`" -a -b "$CD" ]; then
+    echo "ejecting $CD..."; eject $CD 2>/dev/null; x=6
+    while [ $x -gt 0 ]; do
+	echo -en "CD tray will be closed in [1;33m$x[0m seconds - hit enter to do it now.\r"
+	read -s -t1 && break || sleep 1
+	let x=x-1
+    done
+    eject -t $CD 2>/dev/null
+fi
+
+# $1 = action, eg. poweroff or reboot:
+if [ "$1" = "" ]; then reboot -f; fi
+if [ "$1" = "halt" ]; then poweroff -f; else $1 -f; fi
+
+echo "Something was wrong because we should never be here!"
