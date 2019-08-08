@@ -36,6 +36,7 @@
 # And dropped no-pae support
 #####################################################################################
 # 2019-05-10, MODIFIED FOR DEVUAN BEOWULF
+# 2019-08-07, changed the way checking for network connection (use curl instead of ping)
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -137,7 +138,7 @@ fi
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
 # check network
- case "$(curl -s --max-time 2 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+ case "$(curl -s --max-time 5 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
   [23]) echo -e "\e[0;32mOK\033[0m" ;;
   *) echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"; exit ;;
  esac
@@ -182,15 +183,15 @@ case $ret in
 0)
 [ -z "$CHOICE" ] && yad --title="Nothing Selected" --center --text "  Please select one of the options            " --button="gtk-close:0" && exec $0 -gui
 export DE_CONFIG="$CHOICE"
-[ "$DE_CONFIG" = "Openbox" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/openbox_lx.conf && config=/tmp/openbox_lx.conf
-[ "$DE_CONFIG" = "Xfce4" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/xfce4.conf && config=/tmp/xfce4.conf
-[ "$DE_CONFIG" = "Jwm" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/jwm.conf && config=/tmp/jwm.conf
-[ "$DE_CONFIG" = "Mate" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/mate.conf && config=/tmp/mate.conf
-[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
-[ "$DE_CONFIG" = "DDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/ddog.conf && config=/tmp/ddog.conf
-[ "$DE_CONFIG" = "Kiosk" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/kiosk.conf && config=/tmp/kiosk.conf
-[ "$DE_CONFIG" = "ObDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/obdog.conf && config=/tmp/obdog.conf
-[ "$DE_CONFIG" = "ChromeDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/chromedog.conf && config=/tmp/chromedog.conf
+[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/openbox_lx.conf -O /tmp/openbox_lx.conf && config=/tmp/openbox_lx.conf
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/xfce4.conf -O /tmp/xfce4.conf && config=/tmp/xfce4.conf
+[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/jwm.conf -O /tmp/jwm.conf && config=/tmp/jwm.conf
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/mate.conf -O /tmp/mate.conf && config=/tmp/mate.conf
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/fvwm-crystal.conf -O /tmp/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
+[ "$DE_CONFIG" = "DDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/ddog.conf -O /tmp/ddog.conf && config=/tmp/ddog.conf
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/kiosk.conf -O /tmp/kiosk.conf && config=/tmp/kiosk.conf
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/obdog.conf -O /tmp/obdog.conf && config=/tmp/obdog.conf
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/chromedog.conf -O /tmp/chromedog.conf && config=/tmp/chromedog.conf
 ;;
 1|252)
 exit
@@ -242,16 +243,15 @@ DE_CONFIG="ChromeDog" ;;
 echo "Skipping DE configuration" ;;
 esac
 
-[ "$DE_CONFIG" = "Openbox" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/openbox_lx.conf && config=/tmp/openbox_lx.conf
-[ "$DE_CONFIG" = "Xfce4" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/xfce4.conf && config=/tmp/xfce4.conf
-[ "$DE_CONFIG" = "Jwm" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/jwm.conf && config=/tmp/jwm.conf
-[ "$DE_CONFIG" = "Mate" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/mate.conf && config=/tmp/mate.conf
-[ "$DE_CONFIG" = "LxDD" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/lxdd.conf && config=/tmp/lxdd.conf
-[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
-[ "$DE_CONFIG" = "DDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/ddog.conf && config=/tmp/ddog.conf
-[ "$DE_CONFIG" = "Kiosk" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/kiosk.conf && config=/tmp/kiosk.conf
-[ "$DE_CONFIG" = "ObDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/obdog.conf && config=/tmp/obdog.conf
-[ "$DE_CONFIG" = "ChromeDog" ] && wget -P /tmp/ --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/chromedog.conf && config=/tmp/chromedog.conf
+[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/openbox_lx.conf -O /tmp/openbox_lx.conf && config=/tmp/openbox_lx.conf
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/xfce4.conf -O /tmp/xfce4.conf && config=/tmp/xfce4.conf
+[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/jwm.conf -O /tmp/jwm.conf && config=/tmp/jwm.conf
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/mate.conf -O /tmp/mate.conf && config=/tmp/mate.conf
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/fvwm-crystal.conf -O /tmp/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
+[ "$DE_CONFIG" = "DDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/ddog.conf -O /tmp/ddog.conf && config=/tmp/ddog.conf
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/kiosk.conf -O /tmp/kiosk.conf && config=/tmp/kiosk.conf
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/obdog.conf -O /tmp/obdog.conf && config=/tmp/obdog.conf
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-devuan/chromedog.conf -O /tmp/chromedog.conf && config=/tmp/chromedog.conf
 }
 export -f de_config_cli
 
@@ -553,7 +553,7 @@ echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
 # check network
- case "$(curl -s --max-time 2 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+ case "$(curl -s --max-time 5 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
   [23]) echo -e "\e[0;32mOK\033[0m" ;;
   *) echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"; exit ;;
  esac
@@ -630,6 +630,13 @@ echo -e "\e[0;36mSetting up debootstrap in beowulf/chroot\033[0m"
 echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p beowulf/chroot && cd beowulf &&
 debootstrap --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates beowulf chroot http://deb.devuan.org/merged
+ret=$?
+echo $ret
+if [ $ret -ne 0 ]; then
+echo -e "\e[0;31mFailed to install the base system\033[0m"
+echo -e "\e[0;32mThis can happen sometimes, please try again, exiting now...\033[0m"
+exit
+fi
 
 # create build_info.txt and build_setup.conf
 cr_build_info
