@@ -943,19 +943,20 @@ sleep 3
 fi
 
 # Download extra squashfs modules if DE config is set
-echo -e "\e[0;36mIf configured, download extra .squashfs modules to isodata/live...\033[0m"
-[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/openbox/ 2> /dev/null 
-[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/xfce4/
-[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/jwm/ 2> /dev/null
-[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/mate/
-[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/lxdd/
-[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/fvwm-crystal/
+echo -e "\e[0;36mIf configured, download extra .squashfs modules to squash...\033[0m"
+mkdir squash
+#[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/openbox/ 2> /dev/null 
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/xfce4/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash 
+[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/jwm/ 2> /dev/null && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/mate/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/lxdd/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/fvwm-crystal/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
 if [ "$DE_CONFIG" = "DDog" ]; then
-wget --no-check-certificate -P isodata/live "https://debiandog.github.io/MakeLive/modules-beowulf/ddog/zz_openbox_xfce-jwm.squashfs"
+wget --no-check-certificate -P squash "https://debiandog.github.io/MakeLive/modules-beowulf/ddog/zz_openbox_xfce-jwm.squashfs"  && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
 fi
-[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/kiosk/
-[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/obdog/
-[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/chromedog/
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/kiosk/  && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/obdog/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-beowulf/chromedog/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
 
 # download and extract kernel.squashfs vmlinuz initrd etc..
 echo -e "\e[0;36mdownload and extract kernel.squashfs vmlinuz initrd etc..\033[0m"
