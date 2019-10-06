@@ -123,4 +123,5 @@
 |xlunch
 |upgrade-kernel-bpo
 |qiv-slideshow
+|trans-tray
 

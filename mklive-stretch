@@ -621,18 +621,18 @@ cr_build_info
 
 echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
 sleep 3
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch-20190601.tar.gz
-wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-stretch.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-stretch-20191005.tar.gz
+#wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-stretch.tar.gz
 wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-stretch.tar.gz
 ok_or_failed
 
 echo -e "\e[0;36mExtracting...\033[0m"
-tar -zxf dog-boot-stretch-20190601.tar.gz
+tar -zxf dog-boot-stretch-20191005.tar.gz
 tar -zxf isodata-stretch.tar.gz
-tar -zxf initrdport-stretch.tar.gz
+#tar -zxf initrdport-stretch.tar.gz
 ok_or_failed
 echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
-cp -af dog-boot-stretch-20190601/* chroot/
+cp -af dog-boot-stretch-20191005/* chroot/
 ok_or_failed
 
 # mount bind some required directories from host filesystem
@@ -760,44 +760,7 @@ echo "dash dash/sh boolean false" | debconf-set-selections
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
 ############ Start installing packages ############
-### First install the kernel
-if [ "$ARCH" = "i386" ]; then
-echo -e "\e[0;36mInstall linux-image-4.9.0-9-686-pae\033[0m"
-sleep 3
-apt-get install --yes linux-image-4.9.0-9-686-pae
-# try again if failed
-if [ $? -ne 0 ]; then
-	apt-get install --yes linux-image-4.9.0-9-686-pae
-	if [ $? -ne 0 ]; then
-	echo -e "\e[0;31mFAILED\033[0m"
-	touch /exit_
-	exit
-	fi
-fi
- 
-elif [ "$ARCH" = "amd64" ]; then
-# Add google signing key
-wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
-apt-get update # required, google repository key just added to sources.list
-[ $? -ne 0 ] && apt-get update # try again
-echo
-echo -e "\e[0;36mInstall linux-image-4.9.0-9-amd64\033[0m"
-sleep 3
-apt-get install --yes linux-image-4.9.0-9-amd64
-# try again if failed
-  if [ $? -ne 0 ]; then
-	apt-get install --yes linux-image-4.9.0-9-amd64
-	if [ $? -ne 0 ]; then
-	echo -e "\e[0;31mFAILED\033[0m"
-	touch /exit_
-	exit
-	fi
-  fi 
-fi
-### End installing kernel
 
-# check kernel version just installed in chroot, output of VERNEWKERNEL will be used later 
-VERNEWKERNEL=$(grep " install " /var/log/dpkg.log | sort -r |  cut -d " " -sf4 | grep -o "^[^:]*" | grep linux-image | head -n 1 | sed -e 's/linux-image-//')
 
 ####### Start installing packages, defined on GUI #######
 echo -e "\e[0;36mInstall packages, as defined in configuration\033[0m"
@@ -818,71 +781,14 @@ apt-get install -y $INSTALL
 fi
 ############ End of installing packages ############
 
-echo -e "\e[0;36mCopy aufs and squashfs (LZ4 support) module\033[0m"
-sleep 3
-if [ "$ARCH" = "i386" ]; then
-    if [ "$NOPAE" = "yes" ]; then
-mv -f /lib/aufs-nopae /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
-rm -rf /lib/aufs64
-rm -rf /lib/aufs32
-mv -f /lib/squashfs-nopae/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
-rm -rf /lib/squashfs32
-rm -rf /lib/squashfs-nopae
-rm -rf /lib/squashfs64
-depmod $VERNEWKERNEL
-
-    else   
-mv -f /lib/aufs32 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
-rm -rf /lib/aufs64
-rm -rf /lib/aufs-nopae
-mv -f /lib/squashfs32/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
-rm -rf /lib/squashfs32
-rm -rf /lib/squashfs-nopae
-rm -rf /lib/squashfs64
-depmod $VERNEWKERNEL
-    fi
-
-elif [ "$ARCH" = "amd64" ]; then
-mv -f /lib/aufs64 /lib/modules/$VERNEWKERNEL/kernel/fs/aufs
-rm -rf /lib/aufs32
-rm -rf /lib/aufs-nopae
-mv -f /lib/squashfs64/* /lib/modules/$VERNEWKERNEL/kernel/fs/squashfs/
-rm -rf /lib/squashfs64
-rm -rf /lib/squashfs-nopae
-rm -rf /lib/squashfs32
-depmod $VERNEWKERNEL
-fi
-
-# Pin the kernel version
-echo "Adding new entry (pin) of package linux-image-$VERNEWKERNEL in preferences files..."
-VERSION=$(dpkg -s linux-image-$VERNEWKERNEL | grep "Version:" | awk '{ print $2 }')
-echo '
-
-Package: linux-image-'$VERNEWKERNEL'
-Pin: version '$VERSION'
-Pin-Priority: 1001
-' >> /etc/apt/preferences
-
-echo '
-
-Package: linux-image-'$VERNEWKERNEL'
-Pin: version '$VERSION'
-Pin-Priority: 1001
-' >> /var/lib/synaptic/preferences
-
-echo "Fixing preferences files... (e.g. remove first empty line(s) )"
-# no empty lines allowed at top of preferences files, delete them
-sed -i '/./,$!d' /etc/apt/preferences 
-sed -i '/./,$!d' /var/lib/synaptic/preferences
-# replace multiple empty lines by one
-sed -i '/^$/N;/^\n$/D' /etc/apt/preferences
-sed -i '/^$/N;/^\n$/D' /var/lib/synaptic/preferences
-
 mkdir -p /etc/systemd/network 2> /dev/null   # might not exist
 ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
 
-# create new initrd with aufs and new squashfs (lz4) included
-CRYPTSETUP=Y update-initramfs -t -c -k $VERNEWKERNEL
+. /etc/cryptsetup-initramfs/conf-hook
+if [ "$CRYPTSETUP" = "" ]; then
+echo "CRYPTSETUP=y" >> /etc/cryptsetup-initramfs/conf-hook
+fi
+
 
 ##### Extra apt-get remove #####
 # Remove xserver-xorg-video-vmware ? 
@@ -961,34 +867,6 @@ umount -l chroot/dev/pts
 umount -l chroot/dev
 umount -l chroot/sys
 
-echo -e "\e[0;36mStart extracting and creating new 'live' initrd files...\033[0m"
-sleep 3
-mkdir initrdlive
-mv -f chroot/boot/initrd.img-* initrdlive/initrd.img
-ok_or_failed
-cd initrdlive
-zcat initrd.img | cpio -i -d
-rm -f initrd.img
-echo -e "\e[0;36mCreating initrd.img, please wait...\033[0m"
-find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd.img
-ok_or_failed
-cd ..
-echo -e "\e[0;36mCopy kernel modules, contents of lib/modules, from extracted 'live-boot' initrd\n to extracted 'porteus-boot' initrd skeleton, initrdport/lib/modules/ ...\033[0m"
-sleep 2 
-cp -a initrdlive/lib/modules/* initrdport/lib/modules/
-ok_or_failed
-echo -e "\e[0;36mCreating initrd1.xz, please wait...\033[0m"
-cd initrdport
-find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd1.xz
-ok_or_failed
-cd ..
-echo -e "\e[0;36mCopy initrd.img, initrd1.xz to isodata/live...\033[0m"
-mv -f initrd.img isodata/live/
-mv -f initrd1.xz isodata/live/
-ok_or_failed
-echo -e "\e[0;36mMove vmlinuz, from chroot/boot/, to isodata/live/vmlinuz1 ...\033[0m"
-mv -f chroot/boot/vmlinuz-* isodata/live/vmlinuz1
-ok_or_failed
 
 rm -f chroot/boot/System.map*
 rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
@@ -1023,8 +901,19 @@ if [ "$DE_CONFIG" = "DDog" ]; then
 fi
 [ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/kiosk/  && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
 [ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/obdog/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
-[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/chromedog/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash 
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/chromedog/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
 
+# download and extract kernel.squashfs vmlinuz initrd etc..
+echo -e "\e[0;36mdownload and extract kernel.squashfs vmlinuz initrd etc..\033[0m"
+
+if [ "$ARCH" = "i386" ]; then
+wget --no-check-certificate https://debiandog.github.io/MakeLive/kernel-stretch-i386-pae.tar.gz
+tar -zxf kernel-stretch-i386-pae.tar.gz -C isodata/live
+elif [ "$ARCH" = "amd64" ]; then
+wget --no-check-certificate https://debiandog.github.io/MakeLive/kernel-stretch-amd64.tar.gz
+tar -zxf kernel-stretch-amd64.tar.gz -C isodata/live
+fi
+  
 # Allow the user to makes changes in chroot just before creating filesystem.squashfs 
 echo "At this point you may want to add/edit files in chroot folder"
 echo "Also you can add .squashfs modules in the isodata/live folder, to be included in the ISO"
