@@ -7,7 +7,7 @@
 
 
 **Update 2019-06-09** [New! mklive-stretch appimages](http://murga-linux.com/puppy/viewtopic.php?p=1030055#1030055)     
-**Updated 2019-06-01** (kernel install updated to 4.9.0-9)         
+**Updated 2019-10-06** (kernel install updated to 4.9.0-11)         
 Bug fixes and improvements, info below updated  
 [Updates and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=962754#962754)                 
 
