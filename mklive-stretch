@@ -48,7 +48,7 @@ standard () {
 # Set the standard, (modify as desired, or run with a custom config file)
 
 # Be careful with removing from this section (mostly essential)
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel curl gettext-base"
 # Base Dog Packages, recommended to keep: yad gtkdialog obshutdown pup-volume-monitor peasywifi
 BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi chpupsocket edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice peasyclock"
 # Applications
@@ -78,7 +78,7 @@ echo '# Configuration for mklive-stretch, modify as desired
 ### Start configuration
 
 # Be careful with removing from this section (mostly essential)  
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel curl gettext-base"
 
 # Base Dog Packages, recommended to keep:
 # yad gtkdialog obshutdown pup-volume-monitor peasywifi
@@ -894,7 +894,8 @@ mkdir squash
 [ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/xfce4/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash 
 [ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/jwm/ 2> /dev/null && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
 [ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/mate/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
-[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/lxdd/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/lxdd/
+
 [ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules/fvwm-crystal/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
 if [ "$DE_CONFIG" = "DDog" ]; then
 [ "$ARCH" = "i386" ] && wget --no-check-certificate -P squash "https://debiandog.github.io/MakeLive/modules/ddog/zz_openbox_xfce-jwm_32.squashfs" && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash

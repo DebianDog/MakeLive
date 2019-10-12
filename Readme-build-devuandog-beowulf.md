@@ -3,7 +3,7 @@
 
 Very similar as the ‘mklive-stretch’ build system see [Here](https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md) and [Forum thread](http://murga-linux.com/puppy/viewtopic.php?t=111199) , but this will build from [Devuan](https://devuan.org/) ‘beowulf’ branch and has many changes and improvements.
 
-**Updated 2019-05-28:** See: [Changes and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=1027840#1027840)     
+**Updated 2019-10-12:** See: [Changes and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=1027840#1027840)     
 
 Rather than just one script it’s now packed as appimage, reason is that this way it works ‘out of the box’ on most OS’s including modern puppies. The appimage has included e.g. yad, debootstrap, dpkg, xorriso (for creating ISO), so nothing extra is required to install. Tested on Tahrpup, Xenialpup, Dpup-Stretch, DebianDog, Fatdog (but on the latter I needed to install ‘perl’ first from gslapt).
 

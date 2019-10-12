@@ -37,6 +37,7 @@
 #####################################################################################
 # 2019-05-10, MODIFIED FOR DEVUAN BEOWULF
 # 2019-08-07, changed the way checking for network connection (use curl instead of ping)
+# 2019-10-09, Changed the install GUI and removed Kiosk DE choice
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -54,7 +55,7 @@ standard () {
 # Set the standard, (modify as desired, or run with a custom config file)
 
 # Be careful with removing from this section (mostly essential)
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel curl gettext-base"
 # Base Dog Packages, recommended to keep: yad gtkdialog obshutdown pup-volume-monitor peasywifi
 BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi chpupsocket edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage flashplayerchoice peasyclock"
 # Applications
@@ -65,7 +66,7 @@ FIRMWARE="firmware-linux-free"   # see below for choices
 EXTRA_DOG_APPS_INSTALL=""
 # Remove automatically installed packages: during installing, some are installed that you might not need, e.g.
 # xserver-xorg-video-vmware, REM_AUTO_INST=TRUE will uninstall it.
-REM_AUTO_INST="TRUE"
+REM_AUTO_INST="FALSE"
 # To force 32 bit build on a 64 bit OS, set to TRUE
 FORCE32="FALSE"
 }
@@ -84,7 +85,7 @@ echo '# Configuration for mklive-devuan, modify as desired
 ### Start configuration
 
 # Be careful with removing from this section (mostly essential)  
-BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel"
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools volumeicon-alsa alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel curl gettext-base"
 
 # Base Dog Packages, recommended to keep:
 # yad gtkdialog obshutdown pup-volume-monitor peasywifi
@@ -98,7 +99,7 @@ FIRMWARE="firmware-linux-free"
 
 EXTRA_DOG_APPS_INSTALL=""
 
-REM_AUTO_INST="TRUE"
+REM_AUTO_INST="FALSE"
 # Force 32 bit on 64 bit OS (set to FALSE for 64-bit build on 64-bit OS)
 FORCE32="FALSE"
 
@@ -138,7 +139,7 @@ fi
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
 # check network
- case "$(curl -s --max-time 5 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+ case "$(curl -s --retry-delay 3 --retry 3 --max-time 10 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
   [23]) echo -e "\e[0;32mOK\033[0m" ;;
   *) echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"; exit ;;
  esac
@@ -150,7 +151,7 @@ echo -e "\n *** A selection of firmware packages available (mostly for wireless)
 export -f info
 
 function de_info () {
-echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules-beowulf/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs-devuan/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots/ \n\n *** Firmware .squashfs module *** \n https://debiandog.github.io/MakeLive/modules-beowulf/99-firmware-beowulf-live.squashfs\n\n *** Info Kiosk *** \n https://debiandog.github.io/MakeLive/configs/Info-Kiosk.txt" | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=460 --width=775 --text-info --wrap --button="gtk-close:0"
+echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules-beowulf/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs-devuan/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots/ \n\n *** Firmware .squashfs module *** \n https://debiandog.github.io/MakeLive/modules-beowulf/99-firmware-beowulf-live.squashfs\n " | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=400 --width=775 --text-info --wrap --button="gtk-close:0"
 }
 export -f de_info
 
@@ -165,7 +166,7 @@ fi
 wget --no-check-certificate -P /tmp/ -r -e robots=off -N -q -nd -l1 -A "*png" https://debiandog.github.io/MakeLive/icons/ 2> /dev/null
 
 LFONT="  ***  <span size='medium' >  <b>Choose Desktop Environment</b>  </span>  *** "
-CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 570 --width="790" --list --title="Choose Desktop Environment" \
+CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 500 --width="790" --list --title="Choose Desktop Environment" \
 --text=" $LFONT  \n  Select one of the options and click Ok. Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" \
 --column ":IMG" --column Name --column Description \
 /tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel, minimal" \
@@ -175,7 +176,6 @@ CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 570 --width="7
 /tmp/obdog.png "ObDog" " DevuanDog Full, openbox with pcmanfm, lxpanel - or Jwm, with firefox" \
 /tmp/chrome.png "ChromeDog" " DevuanDog Full, openbox with pcmanfm, lxpanel - or Jwm, with google-chrome (64bit only)" \
 /tmp/fvwm-crystal.png "Fvwm-crystal" " FVWM-Crystal, eye-candy but also powerful desktop environment" \
-/tmp/kiosk.png "Kiosk" " Kiosk version, restricted to browsing the internet only" \
 --print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
 ret=$?
 
@@ -212,9 +212,8 @@ echo "2) Xfce4, Xfce4 with Whisker Menu, minimal"
 echo "3) Jwm, Jwm preconfigured, minimal" 
 echo "4) Fvwm-crystal, FVWM-Crystal, eye-candy but also powerful desktop environment"
 echo "5) DDog, DevuanDog Full Openbox_Xfce-Jwm version"
-echo "6) Kiosk, Kiosk version, restricted to browsing the internet only"
-echo "7) ObDog, DevuanDog Full, openbox with pcmanfm, lxpanel - or Jwm, with firefox"
-echo "8) ChromeDog, DevuanDog Full, openbox with pcmanfm, lxpanel - or Jwm, with google-chrome (64bit only)"
+echo "6) ObDog, DevuanDog Full, openbox with pcmanfm, lxpanel - or Jwm, with firefox"
+echo "7) ChromeDog, DevuanDog Full, openbox with pcmanfm, lxpanel - or Jwm, with google-chrome (64bit only)"
 echo
 echo "0) Skip this step, use default, as defined on top of script (Openbox)"
 echo 
@@ -234,10 +233,8 @@ DE_CONFIG="Fvwm-crystal" ;;
     5)
 DE_CONFIG="DDog" ;;
     6)
-DE_CONFIG="Kiosk" ;;
-    7)
 DE_CONFIG="ObDog" ;;
-    8)
+    7)
 DE_CONFIG="ChromeDog" ;;
     0)
 echo "Skipping DE configuration" ;;
@@ -256,55 +253,78 @@ esac
 export -f de_config_cli
 
 yad_gui () {
+res1="/tmp/res1.$RANDOM"
+res2="/tmp/res2.$RANDOM"
+res3="/tmp/res3.$RANDOM"
+touch $res1 $res2 $res3
+
+fkey=$(($RANDOM * $$))
+
 if [ "$(uname -m)" = "i686" ]; then 
-SETUP=`yad --borders=4 --height=480 --width=790  --center --title="Create a Devuan Beowulf live system similar to 'DebianDog'"  --text="       \tWith aufs support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " \
---window-icon="preferences-system" --form --columns=1 \
---field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
---field="Base Dog Packages Install:  (recommended to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi):TXT" "$BASE_DOG_APPS_INSTALL" \
---field="Applications Install::TXT" "$BASE_APPS_INSTALL" \
---field="Desktop :: " "$DESK_APPS_INSTALL" \
---field="Firmware:: " "$FIRMWARE" \
---field="Extra Dog Packages:: " "$EXTRA_DOG_APPS_INSTALL" \
---field="Remove some automatically installed packages (these may take much space, see Information):CHK" "$REM_AUTO_INST" \
---button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
+yad --plug=$fkey --tabnum=1 --text=" <b>Create a Devuan Beowulf live system.</b>  With aufs support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " --form \
+--field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" > $res1 & \
+yad --plug=$fkey --tabnum=2 --text=" <b>Base Install 2.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Base Dog Packages Install:  (suggested to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi/frisbee):TXT" "$BASE_DOG_APPS_INSTALL" \
+--field="Applications Install (applications such as browser, text-editor, file-manager etc...) :TXT" "$BASE_APPS_INSTALL"  > $res2 & \
+yad --plug=$fkey --tabnum=3 --text=" <b>Extra Install.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Desktop:TXT" "$DESK_APPS_INSTALL" \
+--field="Firmware:TXT" "$FIRMWARE" \
+--field="Extra Dog Packages:TXT" "$EXTRA_DOG_APPS_INSTALL" > $res3 & \
+yad --notebook --tab-borders=2 --key=$fkey --center --title="Create a Devuan Beowulf live system similar to 'DebianDog'" --tab="Base Install 1" --tab="Base Install 2"  --tab="Extra Install" --width=790 --height=580 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"
 ret=$?
-[ $ret -ne 0 ] && exit
-export BASE_INSTALL="`echo $SETUP | cut -d "|" -f 1`"
-export BASE_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 2`"
-export BASE_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 3`"
-export DESK_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 4`"
-export FIRMWARE="`echo $SETUP | cut -d "|" -f 5`"
-export EXTRA_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 6`"
-export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 7`"
-export FORCE32="TRUE"
-
-elif [ "$(uname -m)" = "x86_64" ]; then
-[ "$FORCE32" = "TRUE" ] && CONF32="Build configuration loaded <b>possibly suitable only for  i686</b> (32 bit) uncheck bottom checkbox for a 64-bit build \n"  
-SETUP=`yad --borders=4 --height=480 --width=790  --center --title="Create a Devuan Beowulf live system similar to 'DebianDog'"  --text="   \tWith aufs support and porteus-boot style included\n $CONF32 It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " \
---window-icon="preferences-system" --form --columns=1 \
---field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
---field="Base Dog Packages Install:  (recommended to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi):TXT" "$BASE_DOG_APPS_INSTALL" \
---field="Applications Install::TXT" "$BASE_APPS_INSTALL" \
---field="Desktop :: " "$DESK_APPS_INSTALL" \
---field="Firmware:: " "$FIRMWARE" \
---field="Extra Dog Packages:: " "$EXTRA_DOG_APPS_INSTALL" \
---field="Remove some automatically installed packages (these may take much space, see Information):CHK" "$REM_AUTO_INST" \
---field="Force a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "$FORCE32" \
---button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"`
-ret=$?
-[ $ret -ne 0 ] && exit
-
-export BASE_INSTALL="`echo $SETUP | cut -d "|" -f 1`"
-export BASE_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 2`"
-export BASE_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 3`"
-export DESK_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 4`"
-export FIRMWARE="`echo $SETUP | cut -d "|" -f 5`"
-export EXTRA_DOG_APPS_INSTALL="`echo $SETUP | cut -d "|" -f 6`"
-export REM_AUTO_INST="`echo $SETUP | cut -d "|" -f 7`"
-export FORCE32="`echo $SETUP | cut -d "|" -f 8`"
+if [ $ret -ne 0 ]; then
+rm -f $res1 $res2 $res3
+exit
 fi
 
-if [ -n "$(echo $SETUP | tr "|" " " | grep "google-chrome" 2> /dev/null)" ] && [ "$FORCE32" = "TRUE" ]; then
+export BASE_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res1 | cut -d "|" -f 1)")"
+
+export BASE_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 1)")"
+export BASE_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 2)")"
+
+export DESK_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 1)")"
+export FIRMWARE="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 2)")"
+export EXTRA_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 3)")"
+
+export FORCE32="TRUE"
+
+rm -f $res1 $res2 $res3
+
+elif [ "$(uname -m)" = "x86_64" ]; then
+[ "$FORCE32" = "TRUE" ] && CONF32="Build configuration loaded <b>possibly suitable only for  i686</b> (32 bit) uncheck bottom checkbox for a 64-bit build \n"
+yad --plug=$fkey --tabnum=1 --text=" <b>Create a Devuan Beowulf live system.</b>  With aufs support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " --form \
+--field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
+--field="Force a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "$FORCE32" > $res1 & \
+yad --plug=$fkey --tabnum=2 --text=" <b>Base Install 2.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Base Dog Packages Install:  (suggested to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi/frisbee):TXT" "$BASE_DOG_APPS_INSTALL" \
+--field="Applications Install (applications such as browser, text-editor, file-manager etc...) :TXT" "$BASE_APPS_INSTALL"  > $res2 & \
+yad --plug=$fkey --tabnum=3 --text=" <b>Extra Install.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Desktop:TXT" "$DESK_APPS_INSTALL" \
+--field="Firmware:TXT" "$FIRMWARE" \
+--field="Extra Dog Packages:TXT" "$EXTRA_DOG_APPS_INSTALL" > $res3 & \
+yad --notebook --tab-borders=2 --key=$fkey --center --title="Create a Devuan Beowulf live system similar to 'DebianDog'" --tab="Base Install 1" --tab="Base Install 2"  --tab="Extra Install" --width=790 --height=580 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"
+ret=$?
+if [ $ret -ne 0 ]; then
+rm -f $res1 $res2 $res3
+exit
+fi
+
+export BASE_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res1 | cut -d "|" -f 1)")"
+
+export BASE_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 1)")"
+export BASE_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 2)")"
+
+export DESK_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 1)")"
+export FIRMWARE="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 2)")"
+export EXTRA_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 3)")"
+
+export FORCE32="`cat $res1 | cut -d "|" -f 2`"
+
+rm -f $res1 $res2 $res3
+fi
+
+INSTALL="$BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE"
+if [ -n "$(echo "$INSTALL" | grep "google-chrome" 2> /dev/null)" ] && [ "$FORCE32" = "TRUE" ]; then
 	msg=" You did specify google-chrome, installing on 32-bit system is not possible \n Exiting..."
 	echo -e $msg
 	yad --center --width=500 --title "google-chrome on 32-bit system is not possible" --text "`echo -e $msg`" --borders 8 --button="gtk-close:0"
@@ -553,7 +573,7 @@ echo
 
 echo -e "\e[0;36mChecking network connection...\033[0m"
 # check network
- case "$(curl -s --max-time 5 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+ case "$(curl -s --retry-delay 3 --retry 3 --max-time 10 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
   [23]) echo -e "\e[0;32mOK\033[0m" ;;
   *) echo -e "\e[0;33mThere is no network connection. Cannot continue, exiting...\033[0m"; exit ;;
  esac
