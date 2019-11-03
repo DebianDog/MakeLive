@@ -722,7 +722,7 @@ body {
 
 <hr />
 
-<p>Very similar as the ‘mklive-stretch’ build system see <a href="https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md">Here</a> and <a href="http://murga-linux.com/puppy/viewtopic.php?t=111199">Forum thread</a> , but this will build from &lsquo;Buster&rsquo; branch and has many changes and improvements.</p>
+<p>Very similar as the ‘mklive-stretch’ build system see <a href="https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md">Here</a> and <a href="http://murga-linux.com/puppy/viewtopic.php?t=111199">Forum thread</a> , but this will build from ‘Buster’ branch and has many changes and improvements.</p>
 
 <p>Rather than just one script it’s now packed as appimage, reason is that this way it works ‘out of the box’ on most OS’s including modern puppies. The appimage has included e.g. yad, debootstrap, dpkg, xorriso (for creating ISO), so nothing extra is required to install. Tested on Tahrpup, Xenialpup, Dpup-Stretch, DebianDog, Fatdog (but on the latter I needed to install ‘perl’ first from gslapt).</p>
 
@@ -740,13 +740,14 @@ Running without arguments it will show usage help, to run with GUI, e.g.:<br/>
 It requires root permissions to run, so when logged in as unprivileged user, use sudo, e.g.<br/>
 <code>sudo ./mklive-buster32 -gui</code></p>
 
+<p>Here’s also a single script that should work OOTB on DebianDog, BusterDog, StretchDog:<br/>
+<a href="https://debiandog.github.io/MakeLive/mklive-buster">mklive-buster</a><br/>
+(requirements/dependencies will be downloaded), to use it on Puppy you need to have yad, debootstrap, dpkg, xorriso installed first.</p>
+
 <p><strong>Run the build on a Linux filesystem (ext2 ext3 ext4)</strong> not <strong>on FAT or NTFS , with at least 3GB free space</strong></p>
 
-<p>Simple demo .gif image using GUI option (clicking on the below will probably show it in browser):<br/>
+<p>Simple demo .gif image using GUI option (clicking on link below will probably show it in browser):<br/>
 <a href="https://debiandog.github.io/MakeLive/build-beowulf-demo.gif">Demo .gif image</a></p>
-
-<p>Here’s also a single script that should work OOTB on DebianDog, BusterDog, StretchDog (requirements/dependencies will be downloaded), to use it on Puppy you need to have yad, debootstrap, dpkg, xorriso installed first.<br/>
-<a href="https://debiandog.github.io/MakeLive/mklive-buster">mklive-buster</a></p>
     </article>
   </body>
 </html>
