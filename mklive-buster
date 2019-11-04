@@ -762,7 +762,7 @@ usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
 
 # configure keyboard first
 echo -e "\e[0;36mInstall keyboard-configuration and more required packages\033[0m"
-apt-get install dialog keyboard-configuration elogind xz-utils cryptsetup cryptsetup-bin gnupg dirmngr apt-utils wget elogind libelogind0 libpam-elogind libpam-elogind-compat udev porteusbootscripts --yes
+apt-get install dialog keyboard-configuration elogind xz-utils cryptsetup cryptsetup-bin gnupg dirmngr apt-utils wget elogind libelogind0 libpam-elogind libpam-elogind-compat udev --yes
 
 if [ "$ARCH" = "amd64" ]; then
 # Add google signing key
@@ -850,7 +850,7 @@ apt-get install -y $INSTALL
 fi
 
 # in case udev installed, replace with eudev
-apt-get install -y eudev
+apt-get install -y eudev porteusbootscripts
 
 ############ End of installing packages ############
 
