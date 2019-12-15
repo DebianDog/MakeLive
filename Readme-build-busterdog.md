@@ -20,7 +20,7 @@ Running without arguments it will show usage help, to run with GUI, e.g.:
 It requires root permissions to run, so when logged in as unprivileged user, use sudo, e.g.  
 `sudo ./mklive-buster32 -gui`
 
-**Update 2019-12-15,** fixed bug in mklive-buster script
+**Update 2019-12-15,** fixed bug in mklive-buster script, see: [forum post](http://murga-linux.com/puppy/viewtopic.php?p=1044686#1044686)      
 Here’s also a single script that should work OOTB on DebianDog, BusterDog, StretchDog:      
 [mklive-buster](https://debiandog.github.io/MakeLive/mklive-buster)    
 (requirements/dependencies will be downloaded), to use it on Puppy you need to have yad, debootstrap, dpkg, xorriso installed first.     
