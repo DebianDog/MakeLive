@@ -628,9 +628,9 @@ if [ $(command -v apt-get 2>/dev/null) ];then
  ok_or_failed
 fi
 
-# download and install devuan debootstrap deb
-wget --no-check-certificate https://pkgmaster.devuan.org/devuan/pool/main/d/debootstrap/debootstrap_1.0.89-devuan2.1_all.deb -O debootstrap_1.0.89-devuan2.1_all.deb
-dpkg -i debootstrap_1.0.89-devuan2.1_all.deb
+# download and install v1.0.89 debootstrap deb
+wget --no-check-certificate http://ftp.de.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.89_all.deb -O debootstrap_1.0.89_all.deb
+dpkg -i debootstrap_1.0.89_all.deb
 
 if [ -z `which debootstrap` ] || [ ! -e /usr/share/debootstrap/scripts/buster ]; then
 	msg=" You don't have debootstrap installed.\nIt's a dependency of this program.\n Please install it."
