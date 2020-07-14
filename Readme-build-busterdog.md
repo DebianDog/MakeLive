@@ -2,7 +2,7 @@
 
 * * *
 
-Very similar as the ‘mklive-stretch’ build system see [Here](https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md) and [Forum thread](http://murga-linux.com/puppy/viewtopic.php?t=111199) , but this will build from ‘Buster’ branch and has many changes and improvements.
+Very similar as the ‘mklive-stretch’ build system see [Here](https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md) and [Forum thread](https://puppylinux.rockedge.org/viewtopic.php?f=46&t=87) , but this will build from ‘Buster’ branch and has many changes and improvements.
 
 Rather than just one script it’s now packed as appimage, reason is that this way it works ‘out of the box’ on most OS’s including modern puppies. The appimage has included e.g. yad, debootstrap, dpkg, xorriso (for creating ISO), so nothing extra is required to install. Tested on Tahrpup, Xenialpup, Dpup-Stretch, DebianDog, Fatdog (but on the latter I needed to install ‘perl’ first from gslapt).
 
@@ -19,8 +19,7 @@ Running without arguments it will show usage help, to run with GUI, e.g.:
 `./mklive-buster32 -gui`  
 It requires root permissions to run, so when logged in as unprivileged user, use sudo, e.g.  
 `sudo ./mklive-buster32 -gui`
-
-**Update 2019-12-15,** fixed bug in mklive-buster script, see: [forum post](http://murga-linux.com/puppy/viewtopic.php?p=1044686#1044686)      
+     
 Here’s also a single script that should work OOTB on DebianDog, BusterDog, StretchDog:      
 [mklive-buster](https://debiandog.github.io/MakeLive/mklive-buster)    
 (requirements/dependencies will be downloaded), to use it on Puppy you need to have yad, debootstrap, dpkg, xorriso installed first.     
