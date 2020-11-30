@@ -1,5 +1,5 @@
 
-DebianDog is very small Debian Live CD with kernel 3.16.0-4-686 (PAE)
+BusterDog is very small Debian Live CD
 It is not based on Debian but pure Debian Live linux.
 It is made to be small and look like Puppy linux with similar tools and options,
 without changing anything in Debian structure.
@@ -7,9 +7,9 @@ We use 2 different initrd files to boot the system. This makes the different sav
 
 Two boot methods available:
 
-1. DebianDog 'boot style Porteus' - porteus initrd1.xz made for debian kernel and firmware. + encrypted save file option.
+1. BusterDog 'boot style Porteus' - porteus initrd1.xz made for debian kernel and firmware. + encrypted save file option.
 (recommended if you are familiar with puppy or porteus boot options)
-2. DebianDog live-boot-3x - debian initrd.img created with initramfs-tools-v3.x. + encrypted save file/partition option.
+2. BusterDog live-boot-3x - debian initrd.img created with initramfs-tools-v3.x. + encrypted save file/partition option.
 
 Make your boot choice and you can delete one initrd file to save space from the iso size.
 
@@ -19,10 +19,10 @@ Boot code examples (grub(4dos) after extracting /live folder from the iso on top
 
 ==========================================================================================
 
-1. DebianDog 'boot style Porteus' (recommended if you are familiar with puppy or porteus boot options)
+1. BusterDog 'boot style Porteus' (recommended if you are familiar with puppy or porteus boot options)
 
-Debian Live CD using porteus boot method (very similar to Puppy linux boot and save options).
-The initrd1.xz file is edited from Fred for use only with DebianDog.
+Buster Live CD using porteus boot method (very similar to Puppy linux boot and save options).
+The initrd1.xz file is edited from Fred for use only with BusterDog.
 It is not the exact Porteus boot method since it uses .squashfs modules extention instead .xzm
 and /live instead /porteus folder, but the save file options are the same as in Porteus.
 You can skip from=/ in the kernel boot line but it is better to keep it this way.
@@ -31,7 +31,7 @@ For example if folder /live is inside folder /deb you need to use from=/deb/
 This will create automatically /live/changes folder for changes: 
 
 Code:
-title Debian-PorteusDog (sda1) 
+title Buster-PorteusDog (sda1) 
 root (hd0,0) 
 kernel (hd0,0)/live/vmlinuz1 noauto from=/ changes=/live/
 initrd (hd0,0)/live/initrd1.xz
@@ -40,7 +40,7 @@ initrd (hd0,0)/live/initrd1.xz
 This need to be created "changes.dat" (or whatever custom name) savefile first for saving changes: 
 
 Code:
-title PorteusDog (sda1) 
+title Buster-PorteusDog (sda1) 
 root (hd0,0) 
 kernel (hd0,0)/live/vmlinuz1 noauto from=/ changes=/live/changes.dat 
 initrd (hd0,0)/live/initrd1.xz
@@ -49,7 +49,7 @@ initrd (hd0,0)/live/initrd1.xz
 This way of saving changes is equivalent of "pupmode=13" in puppy , saving changes only at shutdown: 
 
 Code:
-title PorteusDog (sda1) 
+title Buster-PorteusDog (sda1) 
 root (hd0,0) 
 kernel (hd0,0)/live/vmlinuz1 noauto from=/ changes=EXIT:/live/changes.dat 
 initrd (hd0,0)/live/initrd1.xz
@@ -60,16 +60,16 @@ Note for last example: there will be prompt for save or not to save. Also for pr
 Like the previous one saving changes only at shutdown but in folder changes:
 
 Code:
-title PorteusDog (sda1) 
+title Buster-PorteusDog (sda1) 
 root (hd0,0)
 kernel (hd0,0)/live/vmlinuz1 noauto from=/ changes=EXIT:/live/
 initrd (hd0,0)/live/initrd1.xz
 
 Porteus-boot code does not need anything special added for encrypted save file.
 
-2. DebianDog live-boot-3x
+2. BusterDog live-boot-3x
 
-Debian Live CD using live-boot version 3.x. Debian (Wheezy, Jessie, SID) boot method.
+Buster Live CD using live-boot version 3.x. Debian (Wheezy, Jessie, SID) boot method.
 To save changes you need to create save file persistence or ext partition with label persistence
 + adding persistence.conf file inside.
 Read more about live-boot-3x code options here:
@@ -78,18 +78,18 @@ http://live-systems.org/manpages/stable/en/html/live-boot.7.html
 You need to have persistence in kernel boot line otherwise no save file will be used.
 
 Code:
-title DebianDog live-boot-3x (sda1)
+title BusterDog live-boot-3x (sda1)
 root=(hd0,0) 
-kernel /live/vmlinuz1 boot=live config persistence swapon quickreboot noeject showmounts
+kernel /live/vmlinuz1 boot=live config persistence swapon quickreboot noeject showmounts union=aufs
 initrd /live/initrd.img 
 boot
 
 Encrypted save file boot code example:
 
 Code:
-title DebianDog live-boot-3x  (sda1)- encrypted save file inside /live
+title BusterDog live-boot-3x  (sda1)- encrypted save file inside /live
 root=(hd0,0) 
-kernel /live/vmlinuz1 boot=live config swapon quickreboot noeject showmounts persistence persistence-path=/live/ persistence-encryption=none,luks 
+kernel /live/vmlinuz1 boot=live config swapon quickreboot noeject showmounts persistence persistence-path=/live/ persistence-encryption=none,luks union=aufs 
 initrd /live/initrd.img 
 boot
 
