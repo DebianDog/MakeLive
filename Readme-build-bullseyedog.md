@@ -9,7 +9,7 @@ e.g.
 and [Forum thread
 Buster](https://puppylinux.rockedge.org/viewtopic.php?f=46&t=87) , but
 this will build from ‘Bullseye’ branch and has many changes and
-improvements. [Bullseye build script](https://forum.puppylinux.com/viewtopic.php?p=14736#p14736)   
+improvements. [Bullseye build script](https://puppylinux.rockedge.org/viewtopic.php?p=14736#p14736)   
 
 Rather than just one script it’s now also packed as appimage, reason is
 that this way it works ‘out of the box’ on most OS’s including modern
@@ -39,7 +39,7 @@ user, use sudo, e.g.
 
 **Here’s also a single script that should work OOTB on DebianDog,
 BusterDog, StretchDog:**    
- Attachment and more info here: [Bullseye build script](https://forum.puppylinux.com/viewtopic.php?p=14736#p14736) 
+ Attachment and more info here: [Bullseye build script](https://puppylinux.rockedge.org/viewtopic.php?p=14736#p14736) 
  (requirements/dependencies will be downloaded), to use it on Puppy you
 need to have yad, debootstrap, dpkg, xorriso installed first.
 
