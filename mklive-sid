@@ -1,0 +1,1175 @@
+#!/bin/bash
+
+#####################################################################################
+# mklive-sid 'MakeLive' for Debian Sid
+#####################################################################################
+# fredx181 2017-07-31, 'MakeLive' for Stretch (Debian 9), creates a minimal live system
+# started as above, mklive-stretch, followed by mklive-buster, now:
+# 2021-03-20, mklive-sid MODIFIED FOR Debian Sid
+#####################################################################################
+
+# set to yes if you want to keep the locale files in /usr/share/locale
+#export KEEP_LOCALES="no" ### 2021-02-10 is checkbox or variable in config now
+
+export LD_LIBRARY_PATH=
+
+if [ -z $(which gxmessage) ]; then
+MESSAGE=xmessage
+else
+MESSAGE=gxmessage
+fi
+
+standard () {
+# Set the standard, (modify as desired, or run with a custom config file)
+
+# Be careful with removing from this section (mostly essential)
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel curl gettext-base fdisk mtools"
+# Base Dog Packages, recommended to keep: yad gtkdialog obshutdown pup-volume-monitor peasywifi
+BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi chpupsocket edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage peasyclock alsamixer-tray"
+# Applications
+BASE_APPS_INSTALL="leafpad gparted parted synaptic viewnior firefox-esr pfind conky"
+# Desktop environment related
+DESK_APPS_INSTALL="openbox=3.6.1-4.3 obconf pcmanfm lxpanel lxrandr lxinput lxappearance"  
+FIRMWARE="firmware-linux-free"   # see below for choices
+EXTRA_DOG_APPS_INSTALL=""
+# Remove automatically installed packages: during installing, some are installed that you might not need, e.g.
+# cpp, REM_AUTO_INST=TRUE will uninstall it.
+REM_AUTO_INST="TRUE"
+# To force 32 bit build on a 64 bit OS, set to TRUE
+FORCE32="FALSE"
+KEEPLOCALES="FALSE"
+KEEPMANDOC="FALSE"
+}
+
+##### Below a selection of firmware packages available (mostly for wireless) #####  
+##### atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211
+
+##### Some extra dog applications: debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue
+
+# repos for 64-bit
+export REPOS64='deb https://github.com/doglinux/sidog/raw/master/amd64/ ./
+## package repositories
+deb http://deb.debian.org/debian sid main contrib non-free
+#deb-src http://deb.debian.org/debian sid main contrib non-free
+
+'
+
+# repos for 32-bit
+export REPOS32='deb https://github.com/doglinux/sidog/raw/master/i386/ ./
+## package repositories
+deb http://deb.debian.org/debian sid main contrib non-free
+#deb-src http://deb.debian.org/debian sid main contrib non-free
+
+'
+
+create_conf () {     # option -conf
+##### Generate standard config file sidlive.conf #####
+echo '# Configuration for mklive-sid, modify as desired
+# NOTE: Leave every commented (#) line commented as it is
+# See at the bottom commented out for info
+
+### Start configuration
+
+# Be careful with removing from this section (mostly essential)  
+BASE_INSTALL="wget net-tools ifupdown wireless-tools sysvinit-core xserver-xorg-core xserver-xorg psmisc fuse x11-utils x11-xserver-utils dbus-x11 busybox sudo mawk xinit xterm pciutils usbutils file rsync dosfstools alsa-utils pm-utils xdotool wmctrl desktop-file-utils mime-support cryptsetup-bin squashfs-tools fakeroot xserver-xorg-input-evdev pv xserver-xorg-input-synaptics ntfs-3g nano xserver-xorg-video-intel curl gettext-base fdisk mtools"
+
+# Base Dog Packages, recommended to keep:
+# yad gtkdialog obshutdown pup-volume-monitor peasywifi
+BASE_DOG_APPS_INSTALL="yad gtkdialog obshutdown pup-volume-monitor peasywifi chpupsocket edit-sfs-pcmanfm filemnt-pcmanfm remaster-scripts quick-remaster apt2sfs sfsload fixdepinstall greybird-theme-dd-stretch makedebpackage peasyclock alsamixer-tray"
+
+BASE_APPS_INSTALL="leafpad gparted parted synaptic viewnior firefox-esr pfind conky"
+
+DESK_APPS_INSTALL="openbox=3.6.1-4.3 obconf pcmanfm lxpanel lxrandr lxinput lxappearance"
+  
+FIRMWARE="firmware-linux-free"
+
+EXTRA_DOG_APPS_INSTALL=""
+
+REM_AUTO_INST="TRUE"
+# Force 32 bit on 64 bit OS (set to FALSE for 64-bit build on 64-bit OS)
+FORCE32="FALSE"
+KEEPLOCALES="FALSE"
+KEEPMANDOC="FALSE"
+
+### End configuration
+
+# A selection of firmware packages available (mostly for wireless):
+# atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 
+# Some extra dog applications:
+# debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue
+# Choice of Desktop:
+# Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..
+# To change, replace what is in the DESK_APPS_INSTALL field with for example:
+# mate-core (for MATE), xfce4 (for XFCE), lxde (for LXDE)
+# No guarantee that all work as expected, might require some fixing
+# Remove automatically installed packages:
+# During installing all the packages, some are installed that you might not need, e.g.
+# cpp, REM_AUTO_INST=TRUE will uninstall it.
+# (dependencies will then be autoremoved, depending on your other package choices)
+# To force 32 bit build on a 64 bit OS set FORCE32=TRUE' > sidlive.conf
+}
+
+# Not running from terminal ?
+tty -s;
+if [ $? -ne 0 ]; then
+	msg=" Please run this program from terminal"
+	$MESSAGE "`echo -e $msg`"
+	exit 0
+fi
+
+if [ "`whoami`" != "root" ]; then
+echo "This script should be run as root"
+echo "Please run again, e.g. 'sudo ./mklive-sid -gui', exiting now..."
+sleep 3
+exit
+fi
+
+echo -e "\e[0;36mChecking network connection...\033[0m"
+# check network
+ case "$(curl -k -s --retry-delay 3 --retry 3 --max-time 10 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+  [23]) echo -e "\e[0;32mOK\033[0m" ;;
+  *) echo -e "\e[0;33mThere seems to be no network connection.\nPress Ctrl+C to exit and run this script again after it has been fixed.\033[0m";
+echo "But if you are absolutely sure that there is a network connection ..."
+read -sp "   ... then press ENTER to continue"
+ esac
+
+# Information button
+function info () {
+echo -e "\n *** A selection of firmware packages available (mostly for wireless) *** \n atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 \n\n *** Some extra dog applications *** \n debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshift-gui-lite mpv peasymount peasyscale peasyxorburn peasyglue \n\n *** Choice of Desktop *** \n Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..\n To change, replace what's in the 'Desktop Apps' field with for example: \n xfce4 (for XFCE), lxde (for LXDE)\n No guarantee that all work as expected, might require some fixing \n\n *** Locales, man and doc files ***\nTo keep locale files and/or man and doc files, tick 'Keep locale files' and/or 'Keep man and doc files' at the packages install GUI  " | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information about Firmware and More" --fontname="MonoSpace Bold 12" --back=#ffffff --height=660 --width=775 --text-info --wrap --button="gtk-close:0"
+}
+export -f info
+
+function de_info () {
+echo -e "\n *** Extra modules *** \n https://debiandog.github.io/MakeLive/modules-bullseye/ \n\n *** Config files *** \n https://debiandog.github.io/MakeLive/configs-bullseye/ \n\n *** Screenshots *** \n https://debiandog.github.io/MakeLive/screenshots-bullseye/ \n\n *** Firmware .squashfs module *** \n https://debiandog.github.io/MakeLive/modules-bullseye/99-firmware-bullseye-live.squashfs\n " | yad --margins 7 --window-icon "icons/audio-x-generic.png" --title="Information" --show-uri --fontname="MonoSpace Bold 12" --back=#ffffff --height=400 --width=775 --text-info --wrap --button="gtk-close:0"
+}
+export -f de_info
+
+de_config () {
+if [ -z `which yad` ]; then
+	msg=" You don't have yad installed.\nIt's a dependency of this program.\n Please install it.\n Or run with option: -cli"
+	echo $msg
+	$MESSAGE "`echo -e $msg`"
+exit 0
+fi
+
+wget --no-check-certificate -P /tmp/ -r -e robots=off -N -q -nd -l1 -A "*png" https://debiandog.github.io/MakeLive/icons/ 2> /dev/null
+
+LFONT="  ***  <span size='medium' >  <b>Choose Desktop Environment</b>  </span>  *** "
+CHOICE=$(yad --borders=6 --window-icon="gtk-ok" --center --height 500 --width="790" --list --title="Choose Desktop Environment" \
+--text=" $LFONT  \n  Select one of the options and click Ok. Next you can modify the packages install list, but: \n <b>Note:</b> Recommended to not remove packages, only add packages, specially for the 'Desktop' field \n Click 'Skip' for no preconfigured DE, the standard packages list (openbox) will appear then. " --separator="" \
+--column ":IMG" --column Name --column Description \
+/tmp/openbox.png "Openbox" " Openbox with pcmanfm (providing the desktop) and lxpanel, minimal" \
+/tmp/xfce4.png "Xfce4" " Xfce4 with Whisker Menu, minimal" \
+/tmp/jwm.png "Jwm" " Jwm preconfigured, minimal" \
+/tmp/dog.png "DDog" " DebianDog Full Openbox_Xfce-Jwm version" \
+/tmp/obdog.png "ObDog" " DebianDog Full, openbox with pcmanfm, lxpanel - or Jwm, with firefox" \
+/tmp/chrome.png "ChromeDog" " DebianDog Full, openbox with pcmanfm, lxpanel - or Jwm, with google-chrome (64bit only)" \
+/tmp/tint2.png "Tint2" " DebianDog Full, openbox with tint2, pcmanfm - or Jwm, with firefox" \
+--print-column 2 --buttons-layout=spread --button="gtk-info:bash -c de_info" --button="Skip:2" --button="gtk-quit:1" --button="gtk-ok:0")
+ret=$?
+
+case $ret in
+0)
+[ -z "$CHOICE" ] && yad --title="Nothing Selected" --center --text "  Please select one of the options            " --button="gtk-close:0" && exec $0 -gui
+export DE_CONFIG="$CHOICE"
+[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/openbox_lx.conf -O /tmp/openbox_lx.conf && config=/tmp/openbox_lx.conf
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/xfce4.conf -O /tmp/xfce4.conf && config=/tmp/xfce4.conf
+[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/jwm.conf -O /tmp/jwm.conf && config=/tmp/jwm.conf
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/mate.conf -O /tmp/mate.conf && config=/tmp/mate.conf
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/fvwm-crystal.conf -O /tmp/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
+[ "$DE_CONFIG" = "DDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/ddog.conf -O /tmp/ddog.conf && config=/tmp/ddog.conf
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/kiosk.conf -O /tmp/kiosk.conf && config=/tmp/kiosk.conf
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/obdog.conf -O /tmp/obdog.conf && config=/tmp/obdog.conf
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/chromedog.conf -O /tmp/chromedog.conf && config=/tmp/chromedog.conf
+[ "$DE_CONFIG" = "Tint2" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/tint2.conf -O /tmp/tint2.conf && config=/tmp/tint2.conf
+;;
+1|252)
+exit
+;;
+2)
+echo "Skipping DE configuration"
+;;
+esac
+}
+export -f de_config
+
+de_config_cli () {
+echo -e "\e[0;36mChoose Desktop Environment\033[0m"
+echo
+echo -e "\e[0;36mPlease select one of the options \nNext you can modify the packages install list\033[0m"
+echo "1) Openbox, Openbox with pcmanfm (providing the desktop) and lxpanel, minimal"
+echo "2) Xfce4, Xfce4 with Whisker Menu, minimal"
+echo "3) Jwm, Jwm preconfigured, minimal" 
+echo "4) DDog, DebianDog Full Openbox_Xfce-Jwm version"
+echo "5) ObDog, DebianDog Full, openbox with pcmanfm, lxpanel - or Jwm, with firefox"
+echo "6) ChromeDog, DebianDog Full, openbox with pcmanfm, lxpanel - or Jwm, with google-chrome (64bit only)"
+echo "7) Tint2, DebianDog Full, openbox with tint2, pcmanfm - or Jwm, with firefox"
+echo
+echo "0) Skip this step, use default, as defined on top of script (Openbox minimal)"
+echo 
+echo "Type the number and press Enter."
+echo
+
+read n
+case $n in
+    1)
+DE_CONFIG="Openbox" ;;
+    2) 
+DE_CONFIG="Xfce4" ;;
+    3)
+DE_CONFIG="Jwm" ;;
+    4)
+DE_CONFIG="DDog" ;;
+    5)
+DE_CONFIG="ObDog" ;;
+    6)
+DE_CONFIG="ChromeDog" ;;
+    7)
+DE_CONFIG="Tint2" ;;
+    0)
+echo "Skipping DE configuration" ;;
+esac
+
+[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/openbox_lx.conf -O /tmp/openbox_lx.conf && config=/tmp/openbox_lx.conf
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/xfce4.conf -O /tmp/xfce4.conf && config=/tmp/xfce4.conf
+[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/jwm.conf -O /tmp/jwm.conf && config=/tmp/jwm.conf
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/mate.conf -O /tmp/mate.conf && config=/tmp/mate.conf
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/fvwm-crystal.conf -O /tmp/fvwm-crystal.conf && config=/tmp/fvwm-crystal.conf
+[ "$DE_CONFIG" = "DDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/ddog.conf -O /tmp/ddog.conf && config=/tmp/ddog.conf
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/kiosk.conf -O /tmp/kiosk.conf && config=/tmp/kiosk.conf
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/obdog.conf -O /tmp/obdog.conf && config=/tmp/obdog.conf
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/chromedog.conf -O /tmp/chromedog.conf && config=/tmp/chromedog.conf
+[ "$DE_CONFIG" = "Tint2" ] && wget --no-check-certificate https://debiandog.github.io/MakeLive/configs-bullseye/tint2.conf -O /tmp/tint2.conf && config=/tmp/tint2.conf
+}
+export -f de_config_cli
+
+yad_gui () {
+res1="/tmp/res1.$RANDOM"
+res2="/tmp/res2.$RANDOM"
+res3="/tmp/res3.$RANDOM"
+touch $res1 $res2 $res3
+
+fkey=$(($RANDOM * $$))
+
+if [ "$(uname -m)" = "i686" ]; then 
+yad --plug=$fkey --tabnum=1 --text=" <b>Create a Debian Bullseye live system.</b>  With overlay support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " --form \
+--field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
+--field="Keep locale files and configure default locale:CHK" "$KEEPLOCALES" \
+--field="Keep man and doc files:CHK" "$KEEPMANDOC" > $res1 & \
+yad --plug=$fkey --tabnum=2 --text=" <b>Base Install 2.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Base Dog Packages Install:  (suggested to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi/frisbee):TXT" "$BASE_DOG_APPS_INSTALL" \
+--field="Applications Install (applications such as browser, text-editor, file-manager etc...) :TXT" "$BASE_APPS_INSTALL"  > $res2 & \
+yad --plug=$fkey --tabnum=3 --text=" <b>Extra Install.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Desktop:TXT" "$DESK_APPS_INSTALL" \
+--field="Firmware:TXT" "$FIRMWARE" \
+--field="Extra Dog Packages:TXT" "$EXTRA_DOG_APPS_INSTALL" > $res3 & \
+yad --notebook --tab-borders=2 --key=$fkey --center --title="Create a Debian Bullseye live system similar to 'DebianDog'" --tab="Base Install 1" --tab="Base Install 2"  --tab="Extra Install" --width=790 --height=580 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"
+ret=$?
+if [ $ret -ne 0 ]; then
+rm -f $res1 $res2 $res3
+exit
+fi
+
+export BASE_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res1 | cut -d "|" -f 1)")"
+
+export BASE_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 1)")"
+export BASE_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 2)")"
+
+export DESK_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 1)")"
+export FIRMWARE="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 2)")"
+export EXTRA_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 3)")"
+
+export FORCE32="TRUE"
+export KEEPLOCALES="`cat $res1 | cut -d "|" -f 2`"
+export KEEPMANDOC="`cat $res1 | cut -d "|" -f 3`"
+
+rm -f $res1 $res2 $res3
+
+elif [ "$(uname -m)" = "x86_64" ]; then
+[ "$FORCE32" = "TRUE" ] && CONF32="Build configuration loaded <b>possibly suitable only for  i686</b> (32 bit) uncheck bottom checkbox for a 64-bit build \n"
+yad --plug=$fkey --tabnum=1 --text=" <b>Create a Debian Bullseye live system.</b>  With overlay support and porteus-boot style included\n It's required to have at least 3 GB free space, and to run this script on a Linux filesystem, e.g. ext4 \n Add or remove packages as desired, although be careful with removing too much " --form \
+--field="Base Install (most are essential, recommended not to remove packages from this list): :TXT" "$BASE_INSTALL" \
+--field="Force a 32 bit build (unchecked will build according to host system being 32 or 64 bit):CHK" "$FORCE32" \
+--field="Keep locale files and configure default locale:CHK" "$KEEPLOCALES" \
+--field="Keep man and doc files:CHK" "$KEEPMANDOC" > $res1 & \
+yad --plug=$fkey --tabnum=2 --text=" <b>Base Install 2.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Base Dog Packages Install:  (suggested to keep:  yad gtkdialog obshutdown pup-volume-monitor peasywifi/frisbee):TXT" "$BASE_DOG_APPS_INSTALL" \
+--field="Applications Install (applications such as browser, text-editor, file-manager etc...) :TXT" "$BASE_APPS_INSTALL"  > $res2 & \
+yad --plug=$fkey --tabnum=3 --text=" <b>Extra Install.</b>  Note, the separate sections below are just to give better overview of the application types \n It makes no difference where you add or remove, separate the package names by a space or new line " --form \
+--field="Desktop:TXT" "$DESK_APPS_INSTALL" \
+--field="Firmware:TXT" "$FIRMWARE" \
+--field="Extra Dog Packages:TXT" "$EXTRA_DOG_APPS_INSTALL" > $res3 & \
+yad --notebook --tab-borders=2 --key=$fkey --center --title="Create a Debian Bullseye live system similar to 'DebianDog'" --tab="Base Install 1" --tab="Base Install 2"  --tab="Extra Install" --width=790 --height=580 --button="gtk-info:bash -c info" --button="gtk-quit:1" --button="gtk-ok:0"
+ret=$?
+if [ $ret -ne 0 ]; then
+rm -f $res1 $res2 $res3
+exit
+fi
+
+export BASE_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res1 | cut -d "|" -f 1)")"
+
+export BASE_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 1)")"
+export BASE_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res2 | cut -d "|" -f 2)")"
+
+export DESK_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 1)")"
+export FIRMWARE="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 2)")"
+export EXTRA_DOG_APPS_INSTALL="$(sed 's/\\n/ /g' <<<"$(cat $res3 | cut -d "|" -f 3)")"
+
+export FORCE32="`cat $res1 | cut -d "|" -f 2`"
+export KEEPLOCALES="`cat $res1 | cut -d "|" -f 3`"
+export KEEPMANDOC="`cat $res1 | cut -d "|" -f 4`"
+rm -f $res1 $res2 $res3
+fi
+
+INSTALL="$BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE"
+if [ -n "$(echo "$INSTALL" | grep "google-chrome" 2> /dev/null)" ] && [ "$FORCE32" = "TRUE" ]; then
+	msg=" You did specify google-chrome, installing on 32-bit system is not possible \n Exiting..."
+	echo -e $msg
+	yad --center --width=500 --title "google-chrome on 32-bit system is not possible" --text "`echo -e $msg`" --borders 8 --button="gtk-close:0"
+exit
+fi
+}
+
+# This makes sure when the script is interrupted, that all mount 'binds' will unmount 
+exitfn () {
+    trap SIGINT              # Resore signal handling for SIGINT
+echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
+#umount -l chroot/tmp
+umount -l $LAUNCHDIR/sid/chroot/proc 2> /dev/null
+umount -l $LAUNCHDIR/sid/chroot/sys 2> /dev/null
+umount -l $LAUNCHDIR/sid/chroot/dev/pts 2> /dev/null
+umount -l $LAUNCHDIR/sid/chroot/dev 2> /dev/null
+
+[ ! -d $LAUNCHDIR/sid/apt ] && mv -f $LAUNCHDIR/sid/chroot/var/cache/apt $LAUNCHDIR/sid/
+rm -f $LAUNCHDIR/sid/apt/archives/lock 2> /dev/null
+   sleep 2
+   if mountpoint -q $LAUNCHDIR/sid/chroot/dev; then     # just in case check dev
+   echo -e "\e[0;31mSomething went wrong, directory chroot cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
+   sleep 2
+   exit
+   else
+   rm -rf $LAUNCHDIR/sid/chroot
+   fi
+exit
+}
+export -f exitfn
+
+trap "exitfn" 1 2 3 15           # Set up SIGINT trap to call function 'exitfn'
+
+# OK or FAILED
+ok_or_failed () {
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+}
+export -f ok_or_failed
+
+cr_build_info () {
+# Create setup info list build_setup.txt
+echo "Live system built on $(uname -m) for $ARCH on $(date)" > build_setup.txt
+echo -e "Preinstalled on top of debootstrap build:\nlive-boot wget menu dialog apt-utils dbus ca-certificates apt-transport-https xserver-xorg-legacy\n" >> build_setup.txt
+echo -e "Base Install:\n$BASE_INSTALL\n" >> build_setup.txt
+echo -e "Base Dog Packages Install:\n$BASE_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Applications Install:\n$BASE_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Desktop Environment Packages:\n$DESK_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Firmware:\n$FIRMWARE\n" >> build_setup.txt
+echo -e "Extra Dog Packages:\n$EXTRA_DOG_APPS_INSTALL\n" >> build_setup.txt
+echo -e "Remove cpp=$REM_AUTO_INST" >> build_setup.txt
+
+# Info architecture for build config
+[ "$ARCH" = "i386" ] && INFO_i386="Config generated for $ARCH, FORCE32 is set to TRUE (this way it works also on 64 bit)"
+##### Generate config from build #####
+echo '# Configuration for mklive-sid, generated for architecture: '$ARCH', modify as desired
+# NOTE: Leave every commented (#) line commented as it is
+### Start configuration
+
+# Be careful with removing from this section (mostly essential)  
+BASE_INSTALL="'"$BASE_INSTALL"'"
+
+# Base Dog Packages, recommended to keep:
+# yad gtkdialog obshutdown pup-volume-monitor peasywifi
+BASE_DOG_APPS_INSTALL="'"$BASE_DOG_APPS_INSTALL"'"
+
+BASE_APPS_INSTALL="'"$BASE_APPS_INSTALL"'"
+
+DESK_APPS_INSTALL="'"$DESK_APPS_INSTALL"'"
+  
+FIRMWARE="'"$FIRMWARE"'"
+
+EXTRA_DOG_APPS_INSTALL="'"$EXTRA_DOG_APPS_INSTALL"'"
+
+REM_AUTO_INST="'"$REM_AUTO_INST"'"
+
+# Force 32 bit on 64 bit OS (set to FALSE for 64-bit build on 64-bit OS)
+# '$INFO_i386'
+FORCE32="'"$FORCE32"'"
+KEEPLOCALES="'"$KEEPLOCALES"'"
+KEEPMANDOC="'"$KEEPMANDOC"'"
+
+### End configuration
+
+# A selection of firmware packages available (mostly for wireless):
+# atmel-firmware firmware-realtek bluez-firmware firmware-atheros firmware-linux-free firmware-linux-nonfree firmware-netxen firmware-ti-connectivity firmware-b43legacy-installer firmware-iwlwifi firmware-ipw2x00 firmware-libertas firmware-intelwimax firmware-brcm80211 firmware-b43-installer firmware-qlogic firmware-bnx2 firmware-misc-nonfree firmware-bnx2x firmware-zd1211 
+# Some extra dog applications:
+# debdoginstallscripts dogradio youtube-get2 youtube-viewer peasyfwmon gifondesktop upgrade-kernel conkyclock redshiftgui mpv peasymount peasyscale peasyxorburn peasyglue
+# Choice of Desktop:
+# Default is openbox with pcmanmfm providing the desktop, lxpanel, etc..
+# To change, replace what is in the DESK_APPS_INSTALL field with for example:
+# mate-core (for MATE), xfce4 (for XFCE), lxde (for LXDE)
+# No guarantee that all work as expected, might require some fixing
+# Remove automatically installed packages:
+# During installing all the packages, some are installed that you might not need, e.g.
+# cpp, REM_AUTO_INST=TRUE will uninstall it.
+# (cpp dependencies then be autoremoved, but depending on your other package choices)
+# To force 32 bit build on a 64 bit OS set FORCE32=TRUE' > build_setup.conf
+}
+export -f cr_build_info
+
+########################## End functions #####################################
+
+############# Start #############
+
+export LAUNCHDIR="$PWD"
+
+########### Options (GUI or CLI, configuration)  ###########
+
+helptext="mklive-sid\n
+usage: $(basename $0) [OPTION] <config_file>\n
+ 	Options:\n
+	-gui ( run GUI, requires yad installed )\n
+	choice of Desktop Environments (GUI) and packages to install \n
+	-cli ( commandline only, no GUI )\n 
+	choice of Desktop Environments (CLI) and packages to install \n  
+	-gui <config_file>\n
+	load custom config file\n
+	-cli <config_file>\n
+	load custom config file \n
+	-conf ( create 'sidlive.conf' ) \n
+	create a standard config file in same directory as running this script from\n
+	( to modify and load as custom configuration )\n 
+	-help show this help\n
+	Example using custom config file: \n
+	mklive-sid -cli mycustom.conf \n"
+
+params=$@
+	
+if [ ${#params} -eq 0 ]; then	# no options, so print info/help...
+	echo -e $helptext
+	exit
+fi
+
+arg=$1
+config=$2
+		case $arg in
+		-gui)
+	if [ $2 ]; then
+	. $config
+	CONFIG="yes"
+	yad_gui
+	else
+	de_config
+		if [ "$DE_CONFIG" ]; then
+		. $config
+		CONFIG="yes"
+		yad_gui
+		else
+		standard # when DE config skipped
+		yad_gui
+		fi
+	fi
+			;;
+		-cli)
+CLI="yes"
+	if [ $2 ]; then
+	. $config
+	CONFIG="yes"
+	else
+	de_config_cli
+if [ "$DE_CONFIG" ]; then
+echo -e "\e[0;36mYou can edit now: \e[1;29m$(readlink -f $config)\e[0;29m (to add packages as desired)\033[0m"
+read -sp "When done, press ENTER to continue . . . "
+echo
+. $config
+CONFIG="yes"
+else
+standard # when DE config skipped
+fi
+	fi
+			;;
+		-conf)
+echo -e "\e[0;32mCreating $PWD/sidlive.conf\033[0m"
+create_conf
+exit
+			;;
+		-help|--help)
+echo -e $helptext
+exit
+			;;
+		*)
+echo -e "\e[0;31mNot a valid parameter\033[0m"
+echo -e $helptext
+exit
+			;;
+		esac
+
+# export final variables defined through GUI or CLI (with or without custom config)
+export BASE_INSTALL="$BASE_INSTALL"
+export BASE_DOG_APPS_INSTALL="$BASE_DOG_APPS_INSTALL"
+export BASE_APPS_INSTALL="$BASE_APPS_INSTALL"
+export DESK_APPS_INSTALL="$DESK_APPS_INSTALL"
+export FIRMWARE="$FIRMWARE"
+export EXTRA_DOG_APPS_INSTALL="$EXTRA_DOG_APPS_INSTALL"
+export REM_AUTO_INST="$REM_AUTO_INST"
+export FORCE32="$FORCE32"
+export KEEPLOCALES="$KEEPLOCALES"
+export KEEPMANDOC="$KEEPMANDOC"
+
+if [ "$(uname -m)" = "i686" ]; then
+echo
+echo -e "\e[0;32mOK, running 32-bit OS, building live system for 32-bit: $(uname -m)\033[0m"
+export ARCH="i386"
+export FORCE32="TRUE"
+elif [ "$(uname -m)" = "x86_64" ]; then
+echo
+	if [ "$FORCE32" = "TRUE" ]; then
+	echo -e "\e[0;32mOK, running 64-bit OS, building live system for 32-bit: i686\033[0m"
+	export ARCH="i386"
+	else
+	echo -e "\e[0;32mOK, running 64-bit OS, building live system for 64-bit: $(uname -m)\033[0m"
+	export ARCH="amd64"
+	fi
+fi
+echo -e "\e[0;33mCreate a Debian Bullseye minimal live system similar to 'DebianDog'\nWith overlay support and porteus-boot style included\n\nIt's required to have at least 3 GB free space\nand to run this script on a Linux filesystem, e.g. ext4\033[0m"
+echo -e "\e[0;32mBuilding will be done in: $PWD/sid\033[0m"
+if [ "$CONFIG" = "yes" ]; then
+	if [ -z "$BASE_INSTALL" ]; then
+	echo -e "\e[0;31mThis config file cannot be used, sorry, exiting...\033[0m"
+	exit
+	else
+echo -e "\e[0;36mRunning with configuration: \e[1;29m$(readlink -f $config)\e[0;29m\033[0m"
+	fi
+else
+echo -e "\e[0;36mNo custom config in use\033[0m"
+echo -e "\e[0;36mUsing standard configuration defined on top of script\033[0m"
+fi
+echo -e "\e[0;33mBuild setup info can be found in: $PWD/sid/build_setup.txt\033[0m"
+echo -e "\e[0;32mIf you'd like a log from the output, run again e.g:\033[0m"
+echo -e "\e[0;33m$0 -gui 2>&1 | tee mklive-sid.log\033[0m"
+echo -e "\e[0;36mFirst setting up debootstrap, this will take a few minutes\nAfter that you will be asked to set the password for 'root'\033[0m"
+echo
+# read -sp "Press ENTER to continue . . . "
+echo -e "\e[0;33mAt the end of the install process you may want to run one or more commands\n (in the chroot) \n If so, Xterm will run and you can type e.g. synaptic, to install more packages\n Or e.g. rox or thunar (filemanager), if installed)\033[0m"
+read -p "Do you want to run Xterm just before exiting chroot ? (Enter=no) (y/N)?" choice
+
+case "$choice" in 
+  y|Y)
+echo -e "\e[0;36mOK, will run xterm later, at the end of install process\033[0m"
+export RUNXTERM=yes
+;;
+  n|N|"")
+echo -e "\e[0;36mOK, will not run xterm at the end of install process\033[0m"
+;;
+esac
+
+echo
+
+echo -e "\e[0;36mChecking network connection...\033[0m"
+# check network
+ case "$(curl -k -s --retry-delay 3 --retry 3 --max-time 10 -I https://debiandog.github.io/MakeLive | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+  [23]) echo -e "\e[0;32mOK\033[0m" ;;
+  *) echo -e "\e[0;33mThere seems to be no network connection.\nPress Ctrl+C to exit and run this script again after it has been fixed\033[0m";
+echo "But if you are absolutely sure that there is a network connection ..."
+read -sp "   ... then press ENTER to continue"
+ esac
+
+if [ -d "sid" ]; then 
+echo -e "\e[0;33m Working directory 'sid' already exists \n To be able to continue, contents need to be removed first\n All files in sid will be deleted, except the apt cache in chroot\033[0m"
+read -p "Are you sure to delete contents of directory sid? (Enter=yes) (Y/n)?" choice
+
+case "$choice" in 
+  y|Y|"")
+
+echo -e "\e[0;36mUnmount mount binds and remove sid/chroot...\033[0m"
+#umount -l chroot/tmp
+umount -l sid/chroot/proc 2> /dev/null
+umount -l sid/chroot/sys 2> /dev/null
+umount -l sid/chroot/dev/pts 2> /dev/null
+umount -l sid/chroot/dev 2> /dev/null
+
+mv sid/chroot/var/cache/apt sid/ 2> /dev/null
+   if mountpoint -q sid/chroot/dev; then      # just in case check dev
+   echo -e "\e[0;31mSomething went wrong, directory sid/chroot cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
+   sleep 2
+   exit
+   else
+   rm -rf sid/chroot
+   fi
+mkdir -p sid/chroot/var/cache 2> /dev/null
+mv sid/apt sid/chroot/var/cache/ 2> /dev/null
+find sid -mindepth 1 ! -wholename 'sid/chroot/*' -delete 2> /dev/null
+echo -e "\e[0;32mOK, continue...\033[0m"
+;;
+  n|N)
+echo "Exiting..."
+sleep 3
+exit 0
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, exiting....\033[0m"
+sleep 3
+exit 0
+;;
+esac
+fi
+
+echo -e "\e[0;33mAt the end of the install process the initrd file(s) will be created\nThe  initrd1.xz for porteus-boot will be created anyway, but an initrd for 'live-boot' can be created also (initrd.img)\033[0m"
+read -p "Do you want to create initrd.img (for live-boot) ? (Enter=no) (y/N)?" choice
+
+case "$choice" in 
+  y|Y)
+echo -e "\e[0;36mOK, will create initrd.img\033[0m"
+export LBINITRD=yes
+;;
+  n|N|"")
+echo -e "\e[0;36mOK, will not create initrd.img, only initrd1.xz\033[0m"
+export LBINITRD=no
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, will create both initrd.img and initrd1.xz\033[0m"
+export LBINITRD=yes
+;;
+esac
+
+echo -e "\e[0;33mAt the end an ISO will be created\nType Y or y (or ENTER) if you want an ISO with UEFI support \n(ISO size will be larger)\033[0m" 
+echo -e "\e[0;33mIf not, type n\033[0m"
+read -p "Do you want to create ISO with UEFI support ? (Enter=yes) (Y/n)?" choice
+
+case "$choice" in 
+  y|Y|"")
+echo -e "\e[0;36mOK, will create ISO with UEFI support\033[0m"
+export ISOUEFI=yes
+;;
+  n|N)
+echo -e "\e[0;36mOK, will create ISO without UEFI support\033[0m"
+export ISOUEFI=no
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, will create ISO without UEFI support\033[0m"
+export ISOUEFI=no
+;;
+esac
+
+if [ $(command -v apt-get 2>/dev/null) ];then
+ echo -e "\e[0;36mUpdate the package lists...\033[0m"
+ apt-get update
+ echo -e "\e[0;36mInstall some required packages, e.g. xz-utils, wget, squashfs-tools, etc...\033[0m"
+ apt-get install wget xz-utils squashfs-tools cpio xorriso isolinux -y
+ ok_or_failed
+fi
+
+# download and install v1.0.89 debootstrap deb
+wget --no-check-certificate http://ftp.de.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.89_all.deb -O debootstrap_1.0.89_all.deb
+dpkg -i debootstrap_1.0.89_all.deb
+
+if [ -z `which debootstrap` ] || [ ! -e /usr/share/debootstrap/scripts/sid ]; then
+	msg=" You don't have debootstrap installed.\nIt's a dependency of this program.\n Please install it."
+	echo $msg
+	$MESSAGE "`echo -e $msg`"
+exit 0
+fi
+
+if [ -z $(which dpkg) ] || [ -L $(which dpkg) ]; then
+	msg=" You don't have the (full) package dpkg installed.\nIt's a dependency of this program.\n Please install it."
+	echo $msg
+	$MESSAGE "`echo -e $msg`"
+exit 0
+fi
+
+########## Set up debootstrap ##########
+echo -e "\e[0;36mSetting up debootstrap in sid/chroot\033[0m"
+echo -e "\e[0;36mThis may take a while...\033[0m"
+mkdir -p sid/chroot && cd sid &&
+debootstrap --no-merged-usr --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates sid chroot http://deb.debian.org/debian/
+ret=$?
+echo $ret
+if [ $ret -ne 0 ]; then
+echo -e "\e[0;31mFailed to install the base system\033[0m"
+echo -e "\e[0;32mThis can happen sometimes, please try again, exiting now...\033[0m"
+exit
+fi
+
+# create build_info.txt and build_setup.conf
+cr_build_info
+
+echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
+sleep 2
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot-sid-20210320.tar.gz
+
+[ "$ISOUEFI" = "yes" ] && wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-sid-uefi.tar.gz || wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata-sid.tar.gz
+
+### download and extract porteus-boot skeleton for to create initrd1.xz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport-bullseye.tar.gz
+ok_or_failed
+
+echo -e "\e[0;36mExtracting...\033[0m"
+tar -zxf dog-boot-sid-20210320.tar.gz
+[ "$ISOUEFI" = "yes" ] && tar -zxf isodata-sid-uefi.tar.gz || tar -zxf isodata-sid.tar.gz 
+tar -zxf initrdport-bullseye.tar.gz
+ok_or_failed
+echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the chroot...\033[0m"
+cp -af dog-boot-sid-20210320/* chroot/
+cp -af initrdport-bullseye chroot/tmp/
+ok_or_failed
+
+# mount bind some required directories from host filesystem
+mount --bind /proc chroot/proc
+#mount --bind /tmp chroot/tmp
+mount --bind /dev chroot/dev
+mount --bind /sys chroot/sys
+mount -t devpts devpts chroot/dev/pts
+# provide a network connection in chroot
+echo -en "`cat /etc/resolv.conf`" > chroot/etc/resolv.conf
+#cp -a ../libudev0_175-7.3_i386.deb chroot/
+
+#################################################
+############ Start running in chroot ############
+#################################################
+chroot_in () {
+if [ -z $(which apt-get) ]; then
+echo -e "\e[0;31mSorry, apt-get not found, cannot continue\033[0m"
+echo -e "\e[0;36mExiting . . .\033[0m"
+touch /exit_
+sleep 3
+exit
+fi 
+export HOME=/root
+export LC_ALL=C
+
+# Google chrome for 64 bit only, so remove on i386
+[ "$ARCH" = "i386" ] && rm -f /etc/apt/sources.list.d/google-chrome.list
+
+# Setup install without install recommends
+echo "APT::Install-Recommends "false"; APT::Install-Suggests "false";" > /etc/apt/apt.conf
+echo "Acquire::Check-Valid-Until "0";" >> /etc/apt/apt.conf
+
+[ "$ARCH" = "i386" ] && echo "$REPOS32" > /etc/apt/sources.list
+
+[ "$ARCH" = "amd64" ] && echo "$REPOS64" > /etc/apt/sources.list 
+
+apt-get update # required, repositories just added
+[ $? -ne 0 ] && apt-get update # try again if failed
+
+echo -e "\e[0;36mPlease set the password for 'root'\033[0m"
+echo -e "\e[0;33mAlso now you may want to add to or edit files in sid/chroot\033[0m" 
+passwd root
+if [ $? -ne 0 ]; then # try again if passwords not match
+echo -e "\e[0;36mPlease try again, type password for root\033[0m"
+passwd root
+fi
+[ $? -ne 0 ] && echo -e "\e[0;31mWarning: password is not set\033[0m"; sleep 3
+echo
+# add groups fuse and wheel
+addgroup fuse
+addgroup wheel
+echo
+# create user puppy
+echo -e "\e[0;36mAdd user 'puppy'...\033[0m"
+adduser puppy --gecos ",,," --disabled-password 2> /dev/null
+echo
+echo -e "\e[0;36mPlease set the password for user 'puppy'\033[0m"
+passwd puppy
+if [ $? -ne 0 ]; then # try again if passwords not match
+echo -e "\e[0;36mPlease try again, type password for puppy\033[0m"
+passwd puppy
+fi
+[ $? -ne 0 ] && echo -e "\e[0;31mWarning: password is not set\033[0m"; sleep 3 
+usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
+
+# configure keyboard first
+echo -e "\e[0;36mInstall keyboard-configuration and more required packages\033[0m"
+apt-get install dialog keyboard-configuration elogind xz-utils cryptsetup cryptsetup-bin gnupg dirmngr apt-utils wget elogind libelogind0 libpam-elogind udev --yes
+
+if [ "$ARCH" = "amd64" ]; then
+# Add google signing key
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+apt-get update # required, google repository key just added
+[ $? -ne 0 ] && apt-get update # try again
+fi
+
+# Merge all install variables into one
+INSTALL="$BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE"
+
+# check gnome-mplayer and transmission version
+if [ "$(echo "$INSTALL" | grep gnome-mplayer)" ]; then
+G_MPLAYER=$(echo "$INSTALL" | tr ' ' '\n' | grep "gnome-mplayer")
+[ "$ARCH" = "i386" ] && INSTALL="$(echo "$INSTALL" | sed "s/$G_MPLAYER/gnome-mplayer-1.0.7/g")"
+[ "$ARCH" = "amd64" ] && INSTALL="$(echo "$INSTALL" | sed "s/$G_MPLAYER/gnome-mplayer-1.0.6/g")"
+fi
+
+
+# simulate install first to check for errors, if there are, exit
+echo -e "\e[0;36mChecking packages . . .\033[0m"
+sleep 3
+apt-get install -s -y $INSTALL
+ret=$?
+if [ $ret -eq 100 ]; then
+echo -e "\e[0;31mSorry, there are one or more errors, see above.\033[0m"
+echo -e "\e[0;31mCould be a typo in a package name.\033[0m"
+echo -e "\e[0;36mExiting . . .\033[0m"
+touch /exit_
+sleep 3
+exit
+else
+echo -e "\e[0;32mAll packages checked OK, continue now to install some basic packages... \033[0m"
+sleep 3
+fi
+
+# Install some basic packages (do not edit, essential!)
+apt-get install live-boot cryptsetup-initramfs menu dbus xserver-xorg-legacy --yes
+# try again if failed
+if [ $? -ne 0 ]; then
+apt-get install live-boot cryptsetup-initramfs menu dbus xserver-xorg-legacy --yes
+	if [ $? -ne 0 ]; then
+	echo -e "\e[0;31mFAILED\033[0m"
+	touch /exit_
+	exit
+	fi
+fi
+
+dbus-uuidgen > /var/lib/dbus/machine-id
+echo "live" > /etc/hostname
+echo "127.0.0.1	 localhost" > /etc/hosts
+echo "127.0.1.1	 live" >> /etc/hosts
+mkdir /live
+mkdir -p /opt/bin
+
+update-rc.d snapexit defaults
+
+# make /bin/sh symlink to bash instead of dash:
+echo -e "\e[0;36mmake /bin/sh symlink to bash instead of default dash\033[0m"
+echo "dash dash/sh boolean false" | debconf-set-selections
+DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+
+############ Start installing packages ############
+
+# check kernel version just installed in chroot, output of VERNEWKERNEL will be used later 
+#VERNEWKERNEL=$(grep " install " /var/log/dpkg.log | sort -r |  cut -d " " -sf4 | grep -o "^[^:]*" | grep linux-image | head -n 1 | sed -e 's/linux-image-//')
+
+####### Start installing packages, defined on GUI #######
+echo -e "\e[0;36mInstall packages, as defined in configuration\033[0m"
+
+sleep 3
+# If one of the variables is empty, it will be skipped
+
+### Do the real installing
+apt-get install -y $INSTALL
+# try again if failed
+if [ $? -ne 0 ]; then
+apt-get install -y $INSTALL
+	if [ $? -ne 0 ]; then
+	echo -e "\e[0;31mFAILED\033[0m"
+	touch /exit_
+	exit
+	fi
+fi
+
+# in case udev installed, replace with eudev
+apt-get install -y eudev porteusbootscripts
+
+### install the kernel
+echo -e "\e[0;36mInstall the kernel, download and extract\033[0m"
+mkdir -p /tmp/tmpapt
+[ "$ARCH" = "i386" ] && apt-get -o dir::cache::archives="/tmp/tmpapt" install -d linux-image-686-pae -y
+[ "$ARCH" = "amd64" ] && apt-get -o dir::cache::archives="/tmp/tmpapt" install -d linux-image-amd64 -y
+
+L_IMG=$(ls -S /tmp/tmpapt | head -1)
+dpkg-deb -x /tmp/tmpapt/$L_IMG /tmp/tmpapt
+kernel=$(ls /tmp/tmpapt/lib/modules/)
+cp -a /tmp/tmpapt/lib/ /
+depmod $kernel
+
+############ End of installing packages ############
+
+mkdir -p /etc/systemd/network 2> /dev/null   # might not exist
+ln -s /dev/null /etc/systemd/network/99-default.link # traditional network interface names
+
+##### Extra apt-get remove #####
+# Remove cpp ? 
+# Takes a lot of space due to (large) dependency libllvm3.9 package
+if [ "$REM_AUTO_INST" = "TRUE" ] || [ "$REM_AUTO_INST" = "" ]; then
+echo -e "\e[0;36mRemoving cpp, if installed . . .\033[0m"
+apt-get purge -y cpp
+fi
+
+### Uninstall gnome-icon-theme
+GNOME_ICON=$(apt-cache rdepends --installed gnome-icon-theme | grep -v "gnome-icon-theme\|Reverse Depends" | grep -v "|")  # check for reverse dependencies, remove only if none
+[ -z "$GNOME_ICON" ] && apt-get purge --yes gnome-icon-theme    # in case installed
+
+# if "xserver-xorg-input-evdev" is installed:
+# apt-get purge --yes  xserver-xorg-input-libinput # uncomment if lxinput doesn't work
+apt-get --yes autoremove
+#####################################
+mv -f /usr/local/XTerm /etc/X11/app-defaults/
+
+. /etc/cryptsetup-initramfs/conf-hook
+if [ "$CRYPTSETUP" = "" ]; then
+echo "CRYPTSETUP=y" >> /etc/cryptsetup-initramfs/conf-hook
+fi
+echo
+if [ $LBINITRD = yes ]; then
+echo -e "\e[0;36mGenerate initrd.img . . .\033[0m"
+mkinitramfs -c xz -k -o /tmp/tmpapt/boot/initrd.img  $kernel
+else
+echo -e "\e[0;36mAs chosen, not creating initrd.img, only initrd1.xz\033[0m"
+mkinitramfs -k -o /dev/null $kernel
+fi
+
+# copy lib/modules from /var/tmp/mkinitramfs_* to /tmp/initrdport-bullseye/
+cp -a /var/tmp/mkinitramfs_*/lib/modules/* /tmp/initrdport-bullseye/lib/modules/
+
+echo -e "\e[0;36mGenerating porteus-boot initrd1.xz . . .\033[0m"
+mv -f /tmp/initrdport-bullseye/modlist /tmp/initrdport-bullseye/modlist.tmp 2> /dev/null
+
+## Create modlist in /tmp/initrdport-bullseye (then modprobe only existing modules at boot, faster)
+for m in $(cat /tmp/initrdport-bullseye/modlist.tmp 2> /dev/null); do
+modprobe -S $kernel -d /tmp/initrdport-bullseye/ -Dq $m | grep -v builtin > /dev/null 2> /dev/null
+[ $? -eq 0 ] && echo -n "$m "  >> /tmp/initrdport-bullseye/modlist
+done
+rm /tmp/initrdport-bullseye/modlist.tmp
+
+cd /tmp/initrdport-bullseye/
+find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd1.xz
+cd /
+
+if [ "$RUNXTERM" = "yes" ]; then
+echo -e "\e[0;36mAs requested, running Xterm now\nDo not forget to close Xterm and all other windows, when done\033[0m"
+xterm
+fi
+
+if [ "$KEEPLOCALES" = "FALSE" ]; then
+rm -fr usr/share/locale/*
+else
+echo -e "\e[0;36mAs requested, keep locale files and configure default locale\033[0m"
+apt install locales -y
+dpkg-reconfigure locales
+fi
+
+echo "Cleaning..."
+rm -f var/lib/alsa/asound.state
+rm -f root/.bash_history
+rm -f root/.xsession-errors
+rm -rf root/.cache
+rm -rf root/.thumbnails
+rm -f etc/blkid-cache
+rm -f var/lib/dhcp/dhclient.eth0.leases
+rm -f var/lib/dhcpcd/*.lease
+rm -rf lib/consolefonts
+rm -rf lib/keymaps
+rm -fr var/lib/aptitude/* 2> /dev/null
+ls var/lib/apt/lists | grep -v "lock" | grep -v "partial" | xargs -i rm -r var/lib/apt/lists/{} ;
+rm -f var/cache/debconf/*-old
+rm -f var/lib/dpkg/*-old
+
+if [ "$KEEPMANDOC" = "FALSE" ]; then
+find /usr/share/doc -type f -exec rm -f {} 2> /dev/null \;
+find usr/share/man -type f -exec rm -f {} 2> /dev/null \;
+find usr/share/gtk-doc -type f -exec rm -f {} 2> /dev/null \;
+find usr/share/info -type f -exec rm -f {} 2> /dev/null \;
+    chown -R man:root usr/share/man
+fi
+
+rm -f vmlinuz* initrd* 2> /dev/null # remove symlinks on /
+#[ "$KEEP_LOCALES" = "no" ] && rm -fr usr/share/locale/*
+
+rm -f /var/lib/dbus/machine-id
+#apt-get clean
+#rm -rf /tmp/*
+rm /etc/resolv.conf
+}
+export -f chroot_in
+
+if [ "$(which chroot)" = "/bin/chroot" ]; then
+CHROOT="/usr/sbin/chroot"
+else
+CHROOT="chroot"
+fi
+
+$CHROOT chroot /bin/bash -c chroot_in
+
+# do not continue if there were errors
+[ -f "chroot/exit_" ] && exitfn
+
+################################################
+############ End running in chroot #############
+################################################
+
+echo -e "\e[0;36mUnmounting mount binds in chroot\033[0m"
+#umount -l chroot/tmp
+umount -l chroot/proc
+umount -l chroot/dev/pts
+umount -l chroot/dev
+umount -l chroot/sys
+
+cd "$LAUNCHDIR/sid/"
+
+rm -f isodata/live/01-filesystem.squashfs # just in case it exists remove first
+
+
+# copy build_setup.txt to chroot/root
+cp -a build_setup.txt chroot/root/
+rm -f chroot/var/cache/apt/*.bin
+mkdir -p apt/archives
+mv -f chroot/var/cache/apt/archives/*.deb ./apt/archives/
+
+if [ "$(cat chroot/etc/X11/default-display-manager 2> /dev/null)" ]; then
+echo -e "\e[0;36mIt looks like you have a display-manager installed\033[0m"
+cat chroot/etc/X11/default-display-manager
+echo -e "\e[0;36mThis probably will conflict with the default login method (through /etc/inittab)\033[0m"
+cp -af chroot/etc/inittab-noauto chroot/etc/inittab
+echo -e "\e[0;32mDisabled autologin through /etc/inittab, using display-manager for login\033[0m"
+sleep 3
+fi
+
+rm -fr chroot/var/tmp/*
+[ $LBINITRD = yes ] && mv -f  chroot/tmp/tmpapt/boot/initrd.img isodata/live/
+mv -f  chroot/tmp/initrd1.xz isodata/live/
+mv -f chroot/tmp/tmpapt/boot/vmlinuz-* isodata/live/vmlinuz1
+kernel=$(ls chroot/lib/modules/)
+
+mkdir -p $kernel/lib/modules
+mkdir -p $kernel/boot
+
+mv chroot/lib/modules/* $kernel/lib/modules/
+mv chroot/tmp/tmpapt/boot/config-* $kernel/boot/
+rm -fr chroot/tmp/*
+echo
+
+# Download extra squashfs modules if DE config is set
+echo -e "\e[0;36mIf configured, download and extract extra .squashfs modules to squash...\033[0m"
+mkdir squash
+#[ "$DE_CONFIG" = "Openbox" ] && wget --no-check-certificate -P isodata/live -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/openbox/ 2> /dev/null 
+[ "$DE_CONFIG" = "Xfce4" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/xfce4/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash 
+[ "$DE_CONFIG" = "Jwm" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/jwm/ 2> /dev/null && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "Mate" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/mate/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "LxDD" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/lxdd/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "Fvwm-crystal" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/fvwm-crystal/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+if [ "$DE_CONFIG" = "DDog" ]; then
+wget --no-check-certificate -P squash "https://debiandog.github.io/MakeLive/modules-bullseye/ddog/zz_openbox_xfce-jwm.squashfs"  && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+fi
+[ "$DE_CONFIG" = "Kiosk" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/kiosk/  && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "ObDog" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/obdog/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "ChromeDog" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/chromedog/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+[ "$DE_CONFIG" = "Tint2" ] && wget --no-check-certificate -P squash -r -e robots=off -nd -l1 -A "*squashfs" https://debiandog.github.io/MakeLive/modules-bullseye/tint2/ && unsquashfs -f -d chroot squash/*.squashfs; rm -rf squash
+
+# download and extract kernel.squashfs vmlinuz initrd etc..
+#echo -e "\e[0;36mdownload and extract kernel.squashfs vmlinuz initrd etc..\033[0m"
+
+#if [ "$ARCH" = "i386" ]; then
+#wget --no-check-certificate https://debiandog.github.io/MakeLive/kernel-sid-i386-pae.tar.gz
+#tar -zxf kernel-sid-i386-pae.tar.gz -C isodata/live
+#elif [ "$ARCH" = "amd64" ]; then
+#wget --no-check-certificate https://debiandog.github.io/MakeLive/kernel-sid-amd64.tar.gz
+#tar -zxf kernel-sid-amd64.tar.gz -C isodata/live
+#fi
+ 
+
+# Allow the user to makes changes in chroot just before creating filesystem.squashfs 
+echo "At this point you may want to add/edit files in chroot folder"
+echo "Also you can add .squashfs modules in the isodata/live folder, to be included in the ISO"
+read -sp "Press ENTER to continue . . . "
+echo
+echo -e "\e[0;33mNow we will create compressed kernel: k-$kernel.squashfs and filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip,\033[0m"
+echo -e "\e[0;33mbut xz takes much longer time to compress\033[0m"
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
+echo -e "\e[0;36mCreating kernel .squashfs isodata/live/k-$kernel.squashfs . . .\033[0m"
+mksquashfs $kernel isodata/live/k-$kernel.squashfs
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs
+;;
+  xz)
+echo -e "\e[0;36mCreating kernel .squashfs isodata/live/k-$kernel.squashfs . . .\033[0m"
+mksquashfs $kernel isodata/live/k-$kernel.squashfs -comp xz -b 512k -Xbcj x86
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k -Xbcj x86
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, please try again, type: gzip or xz \033[0m"
+sleep 1
+TRYAGAIN=yes
+;;
+esac
+
+if [ "$TRYAGAIN" = "yes" ]; then
+### Second chance in case having made a typo
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
+echo -e "\e[0;36mCreating kernel .squashfs isodata/live/k-$kernel.squashfs . . .\033[0m"
+mksquashfs $kernel isodata/live/k-$kernel.squashfs
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs
+;;
+  xz)
+echo -e "\e[0;36mCreating kernel .squashfs isodata/live/k-$kernel.squashfs . . .\033[0m"
+mksquashfs $kernel isodata/live/k-$kernel.squashfs -comp xz -b 512k -Xbcj x86
+echo -e "\e[0;36mCreating isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs chroot isodata/live/01-filesystem.squashfs -comp xz -b 512k -Xbcj x86
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, exiting now... \033[0m"
+sleep 1
+
+exit 0
+;;
+esac
+fi
+ok_or_failed
+
+rm -fr $kernel
+
+echo
+
+# Move back the cache to chroot
+mv -f ./apt/archives/*.deb chroot/var/cache/apt/archives/ 2> /dev/null
+rm -rf apt 2> /dev/null
+
+echo -e "\e[0;36mFinally creating ISO...\033[0m"
+
+if [ "$ISOUEFI" = "yes" ]; then
+xorriso -dev DebLive_sid-$ARCH-UEFI.iso \
+-compliance "iso_9660_level=3:iso_9660_1999" \
+-map isodata / \
+-boot_image isolinux dir=/isolinux  \
+-boot_image isolinux system_area=/usr/lib/ISOLINUX/isohdpfx.bin \
+-boot_image isolinux partition_table=on \
+-boot_image isolinux next \
+-boot_image any efi_path=efiboot.img \
+-boot_image isolinux partition_entry=gpt_basdat
+ok_or_failed
+echo
+echo -e "\e[0;32mFinished! If all went well, DebLive_sid-$ARCH-UEFI.iso has been created. \nAlso the required files for a frugal install are in isodata 'live' folder \n\nHave a good day!\033[0m"
+else
+
+NEWISO=$PWD/isodata
+LABEL=deblive
+NAME=../DebLive_sid-$ARCH.iso
+
+cd "$NEWISO"
+
+xorriso -as mkisofs -r -J -joliet-long -l -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -partition_offset 16 -V "$LABEL" -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ${NAME} "$NEWISO"
+ok_or_failed
+echo
+echo -e "\e[0;32mFinished! If all went well, DebLive_sid-$ARCH.iso has been created. \nAlso the required files for a frugal install are in isodata 'live' folder \n\nHave a good day!\033[0m"
+cd ..
+echo
+fi
+
+# read -s -n 1 -p "Press any key to close . . ."
+
+exit 0
+
