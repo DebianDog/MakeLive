@@ -699,7 +699,14 @@ usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
 
 # configure keyboard first
 echo -e "\e[0;36mInstall keyboard-configuration \033[0m"
-apt-get install dialog keyboard-configuration --yes
+apt-get install dialog keyboard-configuration cryptsetup cryptsetup-bin gnupg dirmngr apt-utils wget --yes
+
+if [ "$ARCH" = "amd64" ]; then
+# Add google signing key
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+apt-get update # required, google repository key just added
+[ $? -ne 0 ] && apt-get update # try again
+fi
 
 # Merge all install variables into one
 INSTALL="$BASE_INSTALL $BASE_APPS_INSTALL $DESK_APPS_INSTALL $BASE_DOG_APPS_INSTALL $EXTRA_DOG_APPS_INSTALL $FIRMWARE"

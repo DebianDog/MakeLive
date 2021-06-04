@@ -5,9 +5,14 @@
 
 **See also, related:** [A Debian-Stretch-Live Starter Kit](http://murga-linux.com/puppy/viewtopic.php?t=112784)
 
+**Updated 2021-06-04** (kernel install updated to 4.9.0-12 and fixed that google-chrome install wasn't working)
 
-**Update 2019-06-09** [New! mklive-stretch appimages](http://murga-linux.com/puppy/viewtopic.php?p=1030055#1030055)     
-**Updated 2019-10-06** (kernel install updated to 4.9.0-11)         
+**Update 2019-06-09** [New! mklive-stretch appimages](http://murga-linux.com/puppy/viewtopic.php?p=1030055#1030055)
+For 32-bit:  
+[mklive-stretch32](https://debiandog.github.io/MakeLive/mklive-stretch32)     
+ For 64-bit:  
+[mklive-stretch64](https://debiandog.github.io/MakeLive/mklive-stretch64)  
+              
 Bug fixes and improvements, info below updated  
 [Updates and Fixes](http://murga-linux.com/puppy/viewtopic.php?p=962754#962754)                 
 
