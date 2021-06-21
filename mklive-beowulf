@@ -628,8 +628,8 @@ if [ $(command -v apt-get 2>/dev/null) ];then
 fi
 
 # download and install devuan debootstrap deb
-wget --no-check-certificate https://pkgmaster.devuan.org/devuan/pool/main/d/debootstrap/debootstrap_1.0.89-devuan2.1_all.deb -O debootstrap_1.0.89-devuan2.1_all.deb
-dpkg -i debootstrap_1.0.89-devuan2.1_all.deb
+wget --no-check-certificate https://pkgmaster.devuan.org/devuan/pool/main/d/debootstrap/debootstrap_1.0.89+devuan2.1_all.deb -O debootstrap_1.0.89+devuan2.1_all.deb
+dpkg -i debootstrap_1.0.89+devuan2.1_all.deb
 
 if [ -z `which debootstrap` ] || [ ! -e /usr/share/debootstrap/scripts/beowulf ]; then
 	msg=" You don't have devuan debootstrap installed.\nIt's a dependency of this program.\n Please install it."
