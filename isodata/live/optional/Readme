@@ -1,0 +1,11 @@
+Place .squashfs modules in here and these will be loaded if load= is specified on the kernel line,  from porteus 'cheat codes' documentation:
+
+load=module
+load=module[1];module[n]
+
+... Load optional modules from /optional/ directory on the booting
+media. Additional modules can be listed, separated
+by semicolons, without spaces.
+Exampe: 'load=gimp;inkscape' would search for and load any
+modules in the /porteus/optional folder that contain the strings
+'gimp' or 'inkscape'.
