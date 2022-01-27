@@ -1,0 +1,9 @@
+Don't delete this file, else your Live Linux won't work.
+
+All available Disks and CDs are mounted sequentially during the boot process
+and linuxrc script is looking for this porteus.sgn file. It tells linuxrc where
+to mount the live filesystem from.
+
+You may use 'sgnfile=...' boot parameter to search for a different name
+than the default livecd.sgn. This can be useful if you need to store several
+linux-live distros on one disk/disc.

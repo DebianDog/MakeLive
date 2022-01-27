@@ -1,0 +1,121 @@
+#!/bin/bash
+#set -x
+#2007 Lesser GPL licence v2 (http://www.fsf.org/licensing/licenses/lgpl.html)
+#Barry Kauler www.puppylinux.com
+#Edited for 'porteus-boot' on Debiandog for the "save on exit" boot option, by fredx181
+
+export LANG=C #110206 Dougal: I **think** this should not cause problems with filenames
+
+PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R7/bin"
+
+SNAP="/mnt/live/memory/changes"
+cd $SNAP || exit 1
+
+BASE="/mnt/live/memory/images/changes-exit"
+
+FILESAVELIST="/mnt/live/tmp/filesave$RANDOM"
+
+echo "Merging $SNAP onto $BASE..."
+
+SFSPoints=$( ls -d -1 /mnt/live/memory/images/* |sort -u ) #110206 Dougal: get a list of the sfs mountpoints
+
+#Handle Whiteouts...
+find . -mount \( -regex '.*/\.wh\.[^/]*' -type f \) | sed -e 's/\.\///;s/\.wh\.//' |
+while read N
+do
+ BN="`basename "$N"`"
+ DN="`dirname "$N"`"
+ [ "$BN" = ".wh.aufs" ] && continue #w003 aufs has file .wh..wh.aufs in /initrd/pup_rw.
+ #[ "$DN" = "." ] && continue
+ #110212 unionfs and early aufs: '.wh.__dir_opaque' marks ignore all contents in lower layers...
+ if [ "$BN" = "__dir_opaque" ];then #w003
+  #'.wh.__dir_opaque' marks ignore all contents in lower layers...
+  rm -rf "${BASE}/${DN}" 2>/dev/null #wipe anything in save layer. 110212 delete entire dir.
+  mkdir -p "${BASE}/${DN}" #jemimah: files sometimes mysteriously reappear if you don't delete and recreate the directory, aufs bug? 111229 rerwin: need -p, may have to create parent dir.
+  #also need to save the whiteout file to block all lower layers (may be readonly)...
+  touch "${BASE}/${DN}/.wh.__dir_opaque" 2>/dev/null
+  rm -f "$SNAP/$DN/.wh.__dir_opaque" #should force aufs layer "reval".
+  continue
+ fi
+ #110212 recent aufs: .wh.__dir_opaque name changed to .wh..wh..opq ...
+ if [ "$BN" = ".wh..opq" ] ; then
+  rm -rf "${BASE}/${DN}" 2>/dev/null  #wipe anything in save layer.
+  mkdir -p "${BASE}/${DN}" #jemimah: files sometimes mysteriously reappear if you don't delete and recreate the directory, aufs bug? 111229 rerwin: need -p, may have to create parent dir.
+  #also need to save the whiteout file to block all lower layers (may be readonly)...
+  touch "${BASE}/${DN}/.wh..wh..opq" 2>/dev/null 
+  rm -f "$SNAP/$DN/.wh..wh..opq"  #should force aufs layer "reval".
+  continue
+ fi
+ #comes in here with the '.wh.' prefix stripped off, leaving actual filename...
+ rm -rf "$BASE/$N"
+ #if file exists on a lower layer, have to save the whiteout file...
+ #110206 Dougal: speedup and refine the search...
+ for P in $SFSPoints
+ do
+   if [ -e "$P/$N" ] ; then
+     [ ! -d "${BASE}/${DN}" ] && mkdir -p "${BASE}/${DN}"
+     touch "${BASE}/${DN}/.wh.${BN}"
+     break
+   fi
+ done #110206 End Dougal.
+done
+
+#Directories... v409 remove '^var'. w003 remove aufs .wh. dirs.
+#w003 /dev/.udev also needs to be screened out... 100820 added var/tmp #110222 shinobar: remove all /dev
+find . -mount -type d | busybox tail +2 | sed -e 's/\.\///' | grep -v -E '^mnt|^initrd|^proc|^sys|^tmp|^root/tmp|^\.wh\.|/\.wh\.|^dev/|^run|^var/run/udev|^run/udev|^var/tmp|^etc/blkid-cache' |
+#110224 BK revert, leave save of /dev in for now, just take out some subdirs... 110503 added dev/snd
+#find . -mount -type d | busybox tail +2 | sed -e 's/\.\///' | grep -v -E '^mnt|^initrd|^proc|^sys|^tmp|^root/tmp|^\.wh\.|/\.wh\.|^dev/\.|^dev/fd|^dev/pts|^dev/shm|^dev/snd|^var/tmp' |
+while read N
+do
+
+ mkdir -p "$BASE/$N"
+ #i think nathan advised this, to handle non-root user:
+ chmod "$BASE/$N" --reference="$N"
+ OWNER="`stat --format=%U "$N"`"
+ chown $OWNER "$BASE/$N"
+ GRP="`stat --format=%G "$N"`"
+ chgrp $GRP "$BASE/$N"
+ touch "$BASE/$N" --reference="$N"
+done
+
+#Copy Files... v409 remove '^var'. w003 screen out some /dev files. 100222 shinobar: more exclusions. 100422 added ^root/ftpd. 100429 modify 'trash' exclusion. 100820 added var/tmp #110222 shinobar: remove all /dev
+find . -mount -not \( -regex '.*/\.wh\.[^/]*' -type f \) -not -type d |  sed -e 's/\.\///' | grep -v -E '^mnt|^initrd|^proc|^sys|^tmp|^pup_|^zdrv_|^root/tmp|_zdrv_|^dev/|^\.wh\.|^run|^var/run/udev|^run/udev|^root/ftpd|^var/tmp' | grep -v -E -i '\.thumbnails|\.trash|trash/|^etc/blkid-cache|\.part$'  |
+#110224 BK: revert, leave save of /dev in for now... 120103 rerwin: add .XLOADED
+#find . -mount -not \( -regex '.*/\.wh\.[^/]*' -type f \) -not -type d |  sed -e 's/\.\///' | grep -v -E '^mnt|^initrd|^proc|^sys|^tmp|^run|^pup_|^zdrv_|^root/tmp|_zdrv_|^dev/\.|^dev/fd|^dev/pts|^dev/shm|^\.wh\.|^var/run|^root/ftpd|^var/tmp|\.XLOADED$' | grep -v -E -i '\.thumbnails|\.trash|trash/|\.part$'  |
+while read N
+do
+
+[ -L "$BASE/$N" ] && rm -f "$BASE/$N"
+
+# Finally, copy files unconditionally.
+#cp -a -f "$N" "$BASE/$N"
+
+echo "$N" >> "$FILESAVELIST"
+
+ BN="`basename "$N"`" #111229 rerwin: bugfix for jemimah code (110212).
+ DN="`dirname "$N"`" #111229  "
+ [ -e "$BASE/$DN/.wh.${BN}" ] && rm "$BASE/$DN/.wh.${BN}" #110212 jemimah bugfix - I/O errors if you don't do this
+
+done
+
+[ -f "$FILESAVELIST" ] && rsync -a --files-from=$FILESAVELIST "$SNAP" "$BASE"
+
+# Remove files, corresponding with .wh files, from /mnt/live/memory/images/changes-exit
+# Taken from 'cleanup' script included in the official Porteus initrd.xz 
+DEST=`cat /mnt/live/tmp/changes-exit`; NAME=`basename $DEST`; MNAME=/mnt/live/memory/images/changes-exit; 
+find $MNAME -name ".wh.*" 2>/dev/null | while IFS= read -r NAME; do wh=`echo "$NAME" | sed -e 's^$MNAME^^g' -e 's/.wh.//g'`; test -e "$wh" && rm -rf "$NAME"; done
+
+if [ -f "$FILESAVELIST" ]; then 
+mount -no remount,add:1:"$BASE"=ro+wh aufs /
+REMOVE=$(echo $(cat "$FILESAVELIST" | grep -v '\->'))
+cd "$SNAP"
+rm -fr $REMOVE
+rm -f "$FILESAVELIST"
+else
+echo "No changes found, nothing to do!"
+fi
+
+sync
+exit 0
+
+###END###

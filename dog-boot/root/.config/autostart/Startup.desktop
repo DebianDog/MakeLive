@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Startup
+Comment=Start at login from Startup folder
+NoDisplay=true
+Exec=/usr/local/bin/start-up &
+NotShowIn=KDE;

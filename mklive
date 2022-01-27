@@ -1,0 +1,284 @@
+#!/bin/bash
+
+if [ "`whoami`" != "root" ]; then
+echo "This script should be run as root"
+echo "Please run again, e.g. 'sudo ./mklive', exiting now..."
+sleep 3
+exit
+fi
+
+exitfn () {
+    trap SIGINT              # Resore signal handling for SIGINT
+mv -f /etc/fstab.bak /etc/fstab
+if [ -d /WORK/tmpa ]; then
+cd /WORK
+echo -e "\e[0;36mUnmount and remove /WORK/tmpa...\033[0m"
+for i in $(find / -maxdepth 1 -mindepth 1 -type d -not -name tmp -not -name mnt -not -name media -not -name sys -not -name run -not -name live -not -name dev -not -name live -not -name proc -not -name WORK 2> /dev/null); do
+umount tmpa${i} 2> /dev/null
+done
+ for i in $(find / -maxdepth 1 -mindepth 1 -type d 2> /dev/null); do
+rmdir tmpa${i} 2> /dev/null
+done
+rmdir tmpa
+   if [ "$?" -ne "0" ]; then
+   echo -e "\e[0;31mSomething went wrong, directory /WORK/tmpa cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process, exiting...\033[0m"
+   sleep 2
+   fi
+exit 0
+fi
+}
+export -f exitfn
+
+### Unmount everything mounted in /WORK/tmpa and remove /WORK/tmpa 
+trap "exitfn" 1 2 15           # Set up SIGINT trap to call function 'exitfn'.
+
+if [ -d "/WORK" ]; then 
+echo -e "\e[0;33m Working directory /WORK already exists \n To be able to continue, it needs to be removed first\033[0m"
+read -p "Remove? (Y/n)?" choice
+
+case "$choice" in 
+  y|Y|"")
+if [ -d /WORK/tmpa ]; then
+cd /WORK
+echo -e "\e[0;36mUnmount and remove /WORK/tmpa...\033[0m"
+for i in $(find / -maxdepth 1 -mindepth 1 -type d -not -name tmp -not -name mnt -not -name media -not -name sys -not -name run -not -name live -not -name dev -not -name live -not -name proc -not -name WORK 2> /dev/null); do
+umount tmpa${i} 2> /dev/null
+done
+ for i in $(find / -maxdepth 1 -mindepth 1 -type d 2> /dev/null); do
+rmdir tmpa${i} 2> /dev/null
+done
+rmdir tmpa
+   if [ "$?" -ne "0" ]; then
+   echo -e "\e[0;31mSomething went wrong, directory /WORK cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process and try again, exiting...\033[0m"
+   sleep 2
+   exit
+   fi
+rm -rf /WORK
+else
+rm -rf /WORK
+fi
+sleep 1
+echo -e "\e[0;32mOK, removed /WORK and will continue...\033[0m"
+;;
+  n|N)
+echo "Exiting..."
+sleep 3
+exit 0
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, exiting....\033[0m"
+sleep 3
+exit 0
+;;
+esac
+fi
+echo -e "\e[0;36mUpdate the package lists...\033[0m"
+apt-get update
+echo -e "\e[0;36mInstall some required packages, e.g. live-boot, squashfs-tools, etc...\033[0m"
+apt-get install xorriso isolinux live-boot xz-utils squashfs-tools dialog menu pv -y --force-yes
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+apt-get clean
+
+mkdir -p /WORK/
+cd /WORK/
+echo -e "\e[0;36mDownload required archives containing scripts, initrd-skel, etc...\033[0m"
+
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/dog-boot.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/initrdport.tar.gz
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/isodata.tar.gz
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+
+MACHINE_TYPE=`uname -m`
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_amd64.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.31.2_amd64.deb
+dpkg -i *.deb
+apt-get -f install -y --force-yes
+update-menus
+else
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/gtkdialog_0.8.3-1_i386.deb
+wget --no-check-certificate https://raw.githubusercontent.com/DebianDog/MakeLive/gh-pages/deb/yad_0.28.1_i386.deb
+dpkg -i *.deb
+apt-get -f install -y --force-yes
+update-menus
+fi
+
+echo
+echo -e "\e[0;36mExtracting...\033[0m"
+tar -zxvf dog-boot.tar.gz
+tar -zxvf isodata.tar.gz
+tar -zxvf initrdport.tar.gz
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mCopy scripts, required for porteus-boot, to the system...\033[0m"
+cp -af /WORK/dog-boot/* /
+
+update-rc.d snapexit defaults
+
+# make /bin/sh symlink to bash instead of dash:
+echo "dash dash/sh boolean false" | debconf-set-selections
+DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+
+rm -f dog-boot.tar.gz isodata.tar.gz initrdport.tar.gz
+ [ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mStart extracting and creating new 'live' initrd files...\033[0m"
+mkdir /WORK/initrdlive
+cp -af /boot/initrd.img-* /WORK/initrdlive/initrd.img
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+cd /WORK/initrdlive
+zcat initrd.img | cpio -i -d
+rm -f initrd.img
+
+echo -e "\e[0;36mCreating initrd.img, please wait...\033[0m"
+find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd.img
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mCopy kernel modules, contents of lib/modules, from extracted 'live-boot' initrd\n to extracted 'porteus-boot' initrd skeleton, /WORK/initrdport/lib/modules/ ...\033[0m"
+sleep 2 
+echo
+cp -a /WORK/initrdlive/lib/modules/* /WORK/initrdport/lib/modules/
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mCreating initrd1.xz, please wait...\033[0m"
+cd /WORK/initrdport
+find . -print | cpio -o -H newc 2>/dev/null | xz -f --extreme --check=crc32 > ../initrd1.xz
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mCopy initrd.img, initrd1.xz isodata/live...\033[0m"
+mv -f /WORK/initrd.img /WORK/isodata/live/
+mv -f /WORK/initrd1.xz /WORK/isodata/live/
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo -e "\e[0;36mCopy vmlinuz, from /boot/, to isodata/live/vmlinuz1 ...\033[0m"
+cp -af /boot/vmlinuz-* /WORK/isodata/live/vmlinuz1
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+
+echo -e "\e[0;36mStart remastering the system..., create /WORK/isodata/live/01-filesystem.squashfs...\033[0m"
+
+#### Start Remastering ####
+
+function cleanup {
+chmod a=rwx,o+t tmpa/tmp
+ echo "Cleaning..."
+
+ rm -f tmpa/root/.bash_history
+ rm -f tmpa/root/.xsession-errors
+ rm -rf tmpa/root/.cache
+ rm -rf tmpa/root/.thumbnails
+ rm -f tmpa/etc/blkid-cache
+ rm -f tmpa/mnt/* 2> /dev/null
+ rmdir tmpa/mnt/* 2> /dev/null
+ rm -f tmpa/media/* 2> /dev/null
+ rmdir tmpa/media/* 2> /dev/null
+}
+
+cd /WORK
+mkdir /WORK/tmpa
+
+# mount bind, first create directories
+for i in $(find / -maxdepth 1 -mindepth 1 -type d 2> /dev/null); do
+mkdir tmpa${i} 2> /dev/null
+done
+
+for i in $(find / -maxdepth 1 -mindepth 1 -type d -not -name tmp  -not -name mnt -not -name media -not -name sys -not -name run -not -name live -not -name dev -not -name live -not -name proc -not -name WORK 2> /dev/null); do
+mount --bind $i tmpa${i}
+done
+
+cleanup
+mv -f /etc/fstab /etc/fstab.bak
+touch /etc/fstab
+
+echo -e "\e[0;33m Now we will create compressed filesystem: '01-filesystem.squashfs'\nPlease enter your choice, xz compression will give smaller size than gzip, but xz takes much longer time to compress\033[0m"
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
+echo -e "\e[0;36mCreating /WORK/isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs /WORK/tmpa /WORK/isodata/live/01-filesystem.squashfs -wildcards -e 'boot/initrd.img-*' 'boot/vmlinuz-*' 'boot/System.map-*' 'etc/udev/rules.d/70-persistent*' 'var/lib/apt/lists/*' 'var/log/*' 'var/lib/dhcpcd/*.lease' 'var/lib/aptitude/*' -regex -e 'var/lib/dhcp/dhclient.eth0.leases' 'var/lib/dhcp/dhclient.leases' 'root/mklive' 'lost+found' 'WORK'
+;;
+  xz)
+echo -e "\e[0;36mCreating /WORK/isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs /WORK/tmpa /WORK/isodata/live/01-filesystem.squashfs -comp xz -b 512k -wildcards -e 'boot/initrd.img-*' 'boot/vmlinuz-*' 'boot/System.map-*' 'etc/udev/rules.d/70-persistent*' 'var/lib/apt/lists/*' 'var/log/*' 'var/lib/dhcpcd/*.lease' 'var/lib/aptitude/*' -regex -e 'var/lib/dhcp/dhclient.eth0.leases' 'var/lib/dhcp/dhclient.leases' 'root/mklive' 'lost+found' 'WORK'
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, please try again, type: gzip or xz \033[0m"
+sleep 1
+TRYAGAIN=yes
+;;
+esac
+
+if [ "$TRYAGAIN" = "yes" ]; then
+### Second chance in case having made a typo
+read -p "Type gzip or xz : " choice
+
+case "$choice" in 
+  gzip)
+echo -e "\e[0;36mCreating /WORK/isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs /WORK/tmpa /WORK/isodata/live/01-filesystem.squashfs -wildcards -e 'boot/initrd.img-*' 'boot/vmlinuz-*' 'boot/System.map-*' 'etc/udev/rules.d/70-persistent*' 'var/lib/apt/lists/*' 'var/log/*' 'var/lib/dhcpcd/*.lease' 'var/lib/aptitude/*' -regex -e 'var/lib/dhcp/dhclient.eth0.leases' 'var/lib/dhcp/dhclient.leases' 'root/mklive' 'lost+found' 'WORK'
+;;
+  xz)
+echo -e "\e[0;36mCreating /WORK/isodata/live/01-filesystem.squashfs...\033[0m"
+mksquashfs /WORK/tmpa /WORK/isodata/live/01-filesystem.squashfs -comp xz -b 512k -wildcards -e 'boot/initrd.img-*' 'boot/vmlinuz-*' 'boot/System.map-*' 'etc/udev/rules.d/70-persistent*' 'var/lib/apt/lists/*' 'var/log/*' 'var/lib/dhcpcd/*.lease' 'var/lib/aptitude/*' -regex -e 'var/lib/dhcp/dhclient.eth0.leases' 'var/lib/dhcp/dhclient.leases' 'root/mklive' 'lost+found' 'WORK'
+;;
+*)
+echo -e "\e[0;31mNot a valid choice, preparing exiting now... \033[0m"
+sleep 1
+mv -f /etc/fstab.bak /etc/fstab
+cd /WORK
+echo -e "\e[0;36mUnmount and remove /WORK/tmpa...\033[0m"
+for i in $(find / -maxdepth 1 -mindepth 1 -type d -not -name tmp -not -name mnt -not -name media -not -name sys -not -name run -not -name live -not -name dev -not -name live -not -name proc -not -name WORK 2> /dev/null); do
+umount tmpa${i} 2> /dev/null
+done
+ for i in $(find / -maxdepth 1 -mindepth 1 -type d 2> /dev/null); do
+rmdir tmpa${i} 2> /dev/null
+done
+rmdir tmpa
+   if [ "$?" -ne "0" ]; then
+   echo -e "\e[0;31mSomething went wrong, directory /WORK/tmpa cannot be removed\033[0m"
+   echo -e "\e[0;31mMake sure it's not in use by some process, exiting...\033[0m"
+   sleep 2
+   exit
+   fi
+exit 0
+;;
+esac
+fi
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+mv -f /etc/fstab.bak /etc/fstab
+
+echo -e "\e[0;36mUnmount and remove /WORK/tmpa...\033[0m"
+for i in $(find / -maxdepth 1 -mindepth 1 -type d -not -name tmp -not -name mnt -not -name media -not -name sys -not -name run -not -name live -not -name dev -not -name live -not -name proc -not -name WORK 2> /dev/null); do
+umount tmpa${i} 2> /dev/null
+done
+ for i in $(find / -maxdepth 1 -mindepth 1 -type d 2> /dev/null); do
+rmdir tmpa${i} 2> /dev/null
+done
+rmdir tmpa
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+
+#### End Remastering ####
+
+echo -e "\e[0;36mFinally creating ISO...\033[0m"
+
+NEWISO=/WORK/isodata
+LABEL=deblive
+NAME=/WORK/Deblive_Netinst.iso
+
+cd "$NEWISO"
+
+xorriso -as mkisofs -r -J -joliet-long -l -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -partition_offset 16 -V "$LABEL" -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ${NAME} "$NEWISO"
+
+[ $? -eq 0 ] && echo -e "\e[0;32mOK\033[0m" || echo -e "\e[0;31mFAILED\033[0m"
+echo
+echo
+echo -e "\e[0;32mFinished! If all went well, /WORK/Deblive_Netinst.iso has been created. \nAlso the required files for a frugal install are in /WORK/isodata 'live' folder \n\nHave a good day!\033[0m"
+echo
+
+exit 0
