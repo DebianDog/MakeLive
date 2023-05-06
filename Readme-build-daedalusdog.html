@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-    <title>Bookworm build system</title>
+    <title>Devuan build system</title>
   </head>
 <style>
 @font-face {
@@ -718,20 +718,19 @@ body {
 </style>
   <body>
     <article class="markdown-body">
-<h4>Debian ‘bookworm live’ build system</h4>
+<h4>Devuan ‘daedalus live’ build system</h4>
 
 <hr />
 
-<p><strong> Updated 2023-05-06</strong> see <a href="https://forum.puppylinux.com/viewtopic.php?p=48360#p48360">Changes and Fixes</a> <br/>
 Very similar as the ‘mklive-stretch’ or ‘mklive-bullseye' build system see
 e.g.
 <a href="https://github.com/DebianDog/MakeLive/blob/gh-pages/README-Stretch.md">Here</a>
 and <a href="https://forum.puppylinux.com/viewtopic.php?p=14736#p14736">Forum thread
 Bullseye</a> , but
-this will build from ‘Bookworm’ branch and has many changes and
-improvements. <a href="https://forum.puppylinux.com/viewtopic.php?p=48359#p48359">Forum thread Bookworm build script</a></p>
+this will build from Devuan ‘daedalus’ branch and has many changes and
+improvements. <a href="https://forum.puppylinux.com/viewtopic.php?p=48359#p48359">Forum thread Devuan build script</a></p>
 
-<p>Rather than just one script it’s now also packed as appimage (again), reason is
+<p>Rather than just one script it’s also packed as appimage, reason is
 that this way it works ‘out of the box’ on most OS’s including modern
 puppies. The appimage has included e.g. yad, debootstrap, dpkg, xorriso
 (for creating ISO), so nothing extra should be required to install.
@@ -744,22 +743,22 @@ website</a>)</p>
 
 <p><strong>Download mklive-bookworm appimage:</strong> (or see single script below) <br/>
  For 32-bit:
-<a href="https://debiandog.github.io/MakeLive/mklive-bookworm32">mklive-bookworm32</a> <br/>
+<a href="https://debiandog.github.io/MakeLive/mklive-daedalus32">mklive-daedalus32</a> <br/>
  For 64-bit:
-<a href="https://debiandog.github.io/MakeLive/mklive-bookworm64">mklive-bookworm64</a></p>
+<a href="https://debiandog.github.io/MakeLive/mklive-daedalus64">mklive-daedalus64</a></p>
 
 <p>Make executable, e.g: <br/>
- <code>chmod +x mklive-bookworm64</code><br/>
+ <code>chmod +x mklive-daedalus64</code><br/>
  Running without arguments it will show usage help, to run with GUI,
 e.g.: <br/>
- <code>./mklive-bookworm64 -gui</code> <br/>
+ <code>./mklive-daedalus64 -gui</code> <br/>
  It requires root permissions to run, so when logged in as unprivileged
 user, use sudo, e.g. <br/>
- <code>sudo ./mklive-bookworm64 -gui</code></p>
+ <code>sudo ./mklive-daedalus64 -gui</code></p>
 
 <p><strong>Here’s also a single script that should work OOTB on DebianDog,
 BusterDog, StretchDog:</strong>  <br/>
- Attachment and more info here: <a href="https://forum.puppylinux.com/viewtopic.php?p=48359#p48359">Bookworm build script</a>
+ Attachment and more info here: <a href="https://forum.puppylinux.com/viewtopic.php?p=48359#p48359">Devuan build script</a>
  (requirements/dependencies will be downloaded), to use it on Puppy you
 need to have yad, debootstrap, dpkg, xorriso installed first.</p>
 
