@@ -39,6 +39,7 @@
 # 2019-10-09, Changed the install GUI and removed Kiosk DE choice
 # 2019-10-26, MODIFIED FOR Debian Buster
 # 2019-10-26, install elogind, libelogind: replacing systemd, install eudev replacing udev
+# 2023-06-04, fixed that the debootstrap .deb wasn't found, now downlaoding v1.0.114
 #####################################################################################
 
 # set to yes if you want to keep the locale files in /usr/share/locale
@@ -628,9 +629,9 @@ if [ $(command -v apt-get 2>/dev/null) ];then
  ok_or_failed
 fi
 
-# download and install v1.0.89 debootstrap deb
-wget --no-check-certificate http://ftp.de.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.89_all.deb -O debootstrap_1.0.89_all.deb
-dpkg -i debootstrap_1.0.89_all.deb
+# download and install v1.0.114 debootstrap deb
+wget --no-check-certificate http://ftp.de.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.114+deb10u1_all.deb -O debootstrap_1.0.114+deb10u1_all.deb
+dpkg -i debootstrap_1.0.114+deb10u1_all.deb
 
 if [ -z `which debootstrap` ] || [ ! -e /usr/share/debootstrap/scripts/buster ]; then
 	msg=" You don't have debootstrap installed.\nIt's a dependency of this program.\n Please install it."
@@ -650,7 +651,7 @@ fi
 echo -e "\e[0;36mSetting up debootstrap in buster/chroot\033[0m"
 echo -e "\e[0;36mThis may take a while...\033[0m"
 mkdir -p buster/chroot && cd buster &&
-debootstrap --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates buster chroot http://ftp.us.debian.org/debian/
+debootstrap --no-merged-usr --arch=$ARCH --variant=minbase --include=apt-transport-https,ca-certificates buster chroot http://ftp.us.debian.org/debian/
 ret=$?
 echo $ret
 if [ $ret -ne 0 ]; then
@@ -743,10 +744,6 @@ passwd root
 fi
 [ $? -ne 0 ] && echo -e "\e[0;31mWarning: password is not set\033[0m"; sleep 3
 echo
-# add groups fuse and wheel
-addgroup fuse
-addgroup wheel
-echo
 # create user puppy
 echo -e "\e[0;36mAdd user 'puppy'...\033[0m"
 adduser puppy --gecos ",,," --disabled-password 2> /dev/null
@@ -757,7 +754,11 @@ if [ $? -ne 0 ]; then # try again if passwords not match
 echo -e "\e[0;36mPlease try again, type password for puppy\033[0m"
 passwd puppy
 fi
-[ $? -ne 0 ] && echo -e "\e[0;31mWarning: password is not set\033[0m"; sleep 3 
+[ $? -ne 0 ] && echo -e "\e[0;31mWarning: password is not set\033[0m"; sleep 3
+# add groups fuse and wheel
+addgroup fuse
+addgroup wheel
+echo 
 usermod -a -G sudo,cdrom,disk,audio,video,plugdev,fuse,wheel puppy
 
 # configure keyboard first
